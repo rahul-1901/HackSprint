@@ -78,11 +78,11 @@ HackSprint is a **centralized ecosystem** where students:
 
 ## 🌐 Platform Structure
 
-### 1️⃣ **Login Page**
+### 1️⃣ **User Login**
 - Social login options (Google/GitHub).
 - Once logged in, user is redirected to the **Home Page**.
 
-### 2️⃣ **Home Page**
+### 2️⃣ **Application Home Section**
 - Navigation for:
   - **Live Hackathons**
   - **Expired Hackathons**
@@ -90,12 +90,12 @@ HackSprint is a **centralized ecosystem** where students:
   - **Daily Dev Quests**
 - Displays user-specific content and submission history.
 
-### 3️⃣ **Brief Hackathon Page**
+### 3️⃣ **Brief Hackathon Detail**
 - Detailed problem statement
 - Reference materials
 - "Submit Here" section with GitHub/Deployment link upload
 
-### 4️⃣ **Questions Page**
+### 4️⃣ **Dev Quest Section**
 - Aptitude and reasoning MCQs
 - Displays question with 4 options
 - Immediate feedback after each answer
@@ -105,8 +105,10 @@ HackSprint is a **centralized ecosystem** where students:
 
 ```mermaid
 flowchart TD
-    A[👤 User Registration/Login] --> B[📅 Daily Challenge Participation]
-    B --> C[⚙️ Bi-Weekly Hackathons]
-    C --> D[🔗 GitHub Code & Deployment Submission]
-    D --> E[🏆 Leaderboard Scoring & Peer Review]
+    A[👤 User Registration/Login] --> B[📅 Dashboard]
+    B --> C[⚙️ Hackathons Explore]
+    B --> G[🔗 GitHub Code & Deployment Submission]
+    B --> H[🧠 Dev Quests]
+    C --> D[🧪 Aptitude & Software Devlopment Challenges]
+    G --> E[🏆 Leaderboard Scoring & Peer Review]
     E --> F[🧳 Personal Portfolio Growth]
