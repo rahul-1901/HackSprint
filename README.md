@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/frontend/hack-sprint/src/assets/readme.png" alt="HackSprint Logo" width="300"/>
+  <img src="/frontend/hack-sprint/src/assets/readme.png" alt="HackSprint Logo" width="800"/>
 </p>
 
 <h1 align="center">🚀 HackSprint</h1>
@@ -68,7 +68,40 @@ HackSprint is a **centralized ecosystem** where students:
 
 ---
 
-## 🛤️ Platform Workflow
+## 🔐 Authentication
+
+- Login via **Google** or **GitHub OAuth**.
+- Access restricted pages (like submitting solutions or viewing questions) require authentication.
+- After login, users are redirected to a personalized dashboard.
+
+---
+
+## 🌐 Platform Structure
+
+### 1️⃣ **Login Page**
+- Social login options (Google/GitHub).
+- Once logged in, user is redirected to the **Home Page**.
+
+### 2️⃣ **Home Page**
+- Navigation for:
+  - **Live Hackathons**
+  - **Expired Hackathons**
+  - **Leaderboard**
+  - **Daily Dev Quests**
+- Displays user-specific content and submission history.
+
+### 3️⃣ **Brief Hackathon Page**
+- Detailed problem statement
+- Reference materials
+- "Submit Here" section with GitHub/Deployment link upload
+
+### 4️⃣ **Questions Page**
+- Aptitude and reasoning MCQs
+- Displays question with 4 options
+- Immediate feedback after each answer
+- Encourages analytical thinking
+  
+---
 
 ```mermaid
 flowchart TD
