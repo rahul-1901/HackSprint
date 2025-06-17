@@ -8,9 +8,9 @@ const Login = () => {
 
     const responseGoogle = async (authResult) => {
         try {
-            if(authResult['code']) {
+            if (authResult['code']) {
                 const result = await googleAuth(authResult['code']);
-                const {name, email} = result.data.user;
+                const { name, email } = result.data.user;
                 const token = result.data.token;
                 // console.log(result);
                 localStorage.setItem("userToken", token);
@@ -30,7 +30,11 @@ const Login = () => {
     return (
         <>
             <div className='min-h-screen flex justify-center items-center bg-gray-900'>
-                <button onClick={googleLogin} className='text-white border-2 border-green-800 px-4 py-2 rounded-xl cursor-pointer'>Google Login</button>
+                <div className='flex flex-col gap-5 items-center'>
+                    <button onClick={googleLogin} className='text-white border-2 border-green-800 px-4 py-2 rounded-xl cursor-pointer'>Google Login</button>
+                    <p className='text-white'>------Or-------</p>
+                    <button onClick={googleLogin} className='text-white border-2 border-green-800 px-4 py-2 rounded-xl cursor-pointer'>Github Login</button>
+                </div>
             </div>
         </>
     )
