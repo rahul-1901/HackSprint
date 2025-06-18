@@ -107,8 +107,8 @@ HackSprint is a **centralized ecosystem** where students:
 flowchart TD
     A[👤 User Registration/Login] --> B[📅 Dashboard]
     B --> C[⚙️ Hackathons Explore]
-    B --> G[🔗 GitHub Code & Deployment Submission]
-    B --> H[🧠 Dev Quests]
-    C --> D[🧪 Aptitude & Software Devlopment Challenges]
-    G --> E[🏆 Leaderboard Scoring & Peer Review]
+    B --> G[🧠 Dev Quests]
+    B --> H[🏆 Leaderboard Scoring & Peer Review]
+    C --> D[🔗 GitHub Code & Deployment Submission]
+    G --> E[🧪 Aptitude & Software Devlopment Challenges]
     E --> F[🧳 Personal Portfolio Growth]
