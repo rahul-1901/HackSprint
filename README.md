@@ -76,6 +76,20 @@ HackSprint is a **centralized ecosystem** where students:
 
 ---
 
+## 🧪 Tech Stack
+
+The HackSprint platform is built using a modern, scalable, and efficient technology stack:
+
+- **Frontend**: `React.js` — for building responsive, component-based UI  
+- **Backend**: `Node.js` with `Express.js` — for handling APIs and server logic  
+- **Database**:
+  - `MongoDB` — as the primary NoSQL database  
+  - `Redis` — for caching and fast session management  
+- **Automation**: `Kestra` — for workflow orchestration, background job handling, and automated pipelines  
+- **OAuth**: Google and GitHub login integrated using APIs  
+
+---
+
 ## 🌐 Platform Structure
 
 ### 1️⃣ **User Login**
