@@ -3,9 +3,9 @@ import express from 'express'
 import hackathonModel from "../models/hackathon.models.js"
 import { all } from "axios"
 
-export const sendHackathons = async (req,res,next) => {
+export const sendHackathons = async (req,res) => {
     try {
-        const allHackathons = hackathonModel.find({
+        const allHackathons = await hackathonModel.find({
             status: true
         })
         res.status(200).json({
@@ -17,11 +17,10 @@ export const sendHackathons = async (req,res,next) => {
         })     
     }
 }
-export const sendExpiredHackathons = async (req,res,next) => {
+export const sendInactiveHackathons = async (req,res) => {
     try {
         const allHackathons = await hackathonModel.find({
-            status: false,
-            endDate : {$lt : new Date(Date.now())}
+            status: false
         })
         res.status(200).json({
             allHackathons
