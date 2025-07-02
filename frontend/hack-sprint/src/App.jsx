@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home'
 import Footer from './components/Footer'
 import Navbar from './components/Navbar'
@@ -8,27 +8,35 @@ import Loader from './components/Loader'
 import Quest from './pages/Quest'
 import About from './pages/About'
 import Login from './pages/Login'
-import './App.css'
+import NotFoundPage from './pages/NotFound';
+import { GoogleOAuthProvider } from '@react-oauth/google'
 
 function App() {
+  const GoogleAuthWrapper = () => {
+    return <Login />;
+  };
+
   return (
     <>
       <Router>
         <HideRoute>
           <Navbar />
         </HideRoute>
+        
         <Routes>
           <Route path="/" element={<Home />} caseSensitive></Route>
           <Route path="/quest" element={<Quest />} caseSensitive></Route>
           <Route path="/about" element={<About />} caseSensitive></Route>
-          <Route path='/login' element={<Login />} caseSensitive></Route>
+          <Route path='/login' element={<GoogleAuthWrapper />} caseSensitive></Route>
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
+
         <HideRoute>
           <Footer />
         </HideRoute>
       </Router>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
