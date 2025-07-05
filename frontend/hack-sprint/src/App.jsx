@@ -15,7 +15,11 @@ import ExpiredHackathons from './pages/ExpiredHackathons';
 
 function App() {
   const GoogleAuthWrapper = () => {
-    return <Login />;
+    return (
+      <GoogleOAuthProvider clientId={`${import.meta.env.VITE_GOOGLE_CLIENT_ID}`}>
+        <Login></Login>
+      </GoogleOAuthProvider>
+    )
   };
 
   return (
@@ -24,7 +28,6 @@ function App() {
         <HideRoute>
           <Navbar />
         </HideRoute>
-        
         <Routes>
           <Route path="/" element={<Home />} caseSensitive></Route>
           <Route path="/activehackathons" element={<ActiveHackathons/>} caseSensitive></Route>
@@ -34,7 +37,6 @@ function App() {
           <Route path='/login' element={<GoogleAuthWrapper />} caseSensitive></Route>
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-
         <HideRoute>
           <Footer />
         </HideRoute>
