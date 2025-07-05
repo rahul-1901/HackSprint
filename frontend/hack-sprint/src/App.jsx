@@ -10,6 +10,8 @@ import About from './pages/About'
 import Login from './pages/Login'
 import NotFoundPage from './pages/NotFound';
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import ActiveHackathons from './pages/ActiveHackathons';
+import ExpiredHackathons from './pages/ExpiredHackathons';
 
 function App() {
   const GoogleAuthWrapper = () => {
@@ -25,6 +27,8 @@ function App() {
         
         <Routes>
           <Route path="/" element={<Home />} caseSensitive></Route>
+          <Route path="/activehackathons" element={<ActiveHackathons/>} caseSensitive></Route>
+          <Route path="/expiredhackathons" element={<ExpiredHackathons/>} caseSensitive></Route>
           <Route path="/quest" element={<Quest />} caseSensitive></Route>
           <Route path="/about" element={<About />} caseSensitive></Route>
           <Route path='/login' element={<GoogleAuthWrapper />} caseSensitive></Route>
