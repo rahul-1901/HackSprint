@@ -22,7 +22,7 @@ function App() {
   };
 
   return (
-  <>
+    <>
       <Router>
         <HideRoute>
           <Navbar />
@@ -39,7 +39,7 @@ function App() {
           <Footer />
         </HideRoute>
       </Router>
-      </>
+    </>
   );
 }
 
