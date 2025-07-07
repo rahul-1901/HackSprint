@@ -3,49 +3,71 @@ import {
     SiHtml5, SiGithub, SiPython, SiNodedotjs,
     SiJavascript, SiMysql, SiTensorflow, SiReact, SiCss3
 } from 'react-icons/si';
+import QuestImg from '../assets/quest.png'
+import './Allcss.css'
 
 const Quest = () => {
+
+    const logos = [
+        [
+            SiHtml5, SiGithub, SiPython
+        ], [
+            SiNodedotjs,
+            SiJavascript, SiMysql
+        ], [
+            SiTensorflow, SiReact, SiCss3
+        ]
+    ]
+
     return (
-        <div className="relative h-screen bg-[#0b0e1c] text-white pt-40 px-6 md:px-20 font-sans overflow-hidden">
+        <div className="flex mt-45 items-start justify-around text-white font-sans overflow-hidden lg:overflow-none">
+            <div className='ml-[-2vw]flex flex-col'>
+                <h1 className="text-3xl md:text-6xl leading-tight font-semibold text-white mb-30">
+                    Ignite Your Tech Journey with<br />
+                    HackSprint <span className="text-white">Dev Quests</span>
+                </h1>
 
-            {/* Heading */}
-            <h1 className="text-3xl md:text-5xl leading-tight text-white mb-18">
-                Ignite Your Tech Journey with<br />
-                HackSprint <span className="text-white">Dev Quests</span>
-            </h1>
-
-            {/* Left: Image*/}
-            <div className="w-full lg:w-1/2 h-full">
-                <img
-                    src="/devquest.png"
-                    alt="DevQuest Preview"
-                    className="w-full h-[350px] object-cover rounded-xl border border-green-400 shadow-[0_0_40px_4px_rgba(34,197,94,0.5)]"
-                />
+                <div className="w-[55vw] h-full">
+                    <img
+                        src={QuestImg}
+                        alt="DevQuest Preview"
+                        className="w-full object-cover -mb-30 rounded-xl shadow-[0_0_10px_10px_rgba(0,255,255,0.2)]"
+                        style={{
+                            boxShadow: `
+                          0px 0px 1.15px rgba(25, 87, 84, 1),
+                          0px 0px 2.29px rgba(25, 87, 84, 1),
+                          0px 0px 8.03px rgba(25, 87, 84, 1),
+                          0px 0px 16.06px rgba(25, 87, 84, 1),
+                          0px 0px 27.53px rgba(25, 87, 84, 1),
+                          0px 0px 48.18px rgba(25, 87, 84, 1)
+                        `
+                        }}
+                    />
+                </div>
             </div>
 
-            
-            <div className="absolute top-[110px] right-[200px] flex flex-col items-end space-y-6">
-
-                {/* Grid of languages symbols*/}
-                <div className="grid grid-cols-3 gap-4">
-                    {[SiHtml5, SiGithub, SiPython, SiNodedotjs, SiJavascript, SiMysql, SiTensorflow, SiReact, SiCss3].map((Icon, i) => (
-                        <Icon key={i} className="w-25 h-25 text-white" />
+            <div className="flex flex-col gap-10">
+                <div className='flex flex-col gap-8 items-center ml-[-50px]'>
+                    {logos.map((items) => (
+                        <div className='flex items-center gap-8'>
+                            {items.map((Icon, i) => (
+                                <Icon key={i} className="w-18 h-18 text-white" />
+                            ))}
+                        </div>
                     ))}
                 </div>
 
-                {/* join daily.... */}
-                <div className="text-center text-xl md:text-2xl leading-snug mb-0">
-                    <p>Join daily to</p>
-                    <p>enhance your skills through</p>
-                    <p><span className="font-semibold">Quests</span> and <span className="font-semibold">Coding Challenges</span>.</p>
+                <div className="flex flex-col items-end text-xl md:text-[2rem] leading-snug mt-2">
+                    <p>Join daily to enhance your skills</p>
+                    <p>through <span className="font-bold">Quests</span> and <span className="font-bold">Coding</span></p>
+                    <p><span className="">challenges.</span></p>
                 </div>
 
-                {/* Question Button */}
-                <div className="flex justify-center"></div>
-                <button className="bg-black hover:bg-[#0c0c0c] text-white text-xl md:text-5xl px-17 py-7 rounded-xl border-2 border-green-500 shadow-[0_0_20px_3px_rgba(34,197,94,0.5)] transition-all hover:scale-105">
-                    Question
-                </button>
-
+                <div className=''>
+                    <button className="w-full bgButton text-white mt-10 text-xl md:text-5xl py-7 rounded-3xl cursor-pointer">
+                        Question
+                    </button>
+                </div>
             </div>
         </div>
     );
