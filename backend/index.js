@@ -11,7 +11,11 @@ dotenv.config()
 connectDB()
 
 app.use(express.json())
-app.use(cors())
+app.use(cors(
+    {
+        origin: '*'
+    }
+))
 
 app.use("/api/hackathons", hackathonRoutes)
 app.use("/api", oauthRoutes)
