@@ -1,15 +1,26 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import HackSprint from '/hackSprint.webp'
 import './Navbar.css'
 
 const Navbar = () => {
-
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
-  const navItems = [{ name: 'Home', pageLink: '/' }, { name: 'About', pageLink: '/about' }, { name: 'Quest', pageLink: '/quest' }, { name: 'Account', pageLink: '/login' }]
+  const navItems = [
+    { name: 'Home', pageLink: '/' },
+    { name: 'About', pageLink: '/about' },
+    { name: 'Quest', pageLink: '/quest' },
+    { name: isLoggedIn ? 'Dashboard' : 'Account', pageLink: isLoggedIn ? '/dashboard' : '/login' }
+  ]
+
+  useEffect(() => {
+    const token = localStorage.getItem("userToken")
+    setIsLoggedIn(!!token)
+  }, [location])
 
   return (
     <nav className="bg-gray-900 top-0 fixed text-gray-300 border-b-[1px] border-green-900 w-full z-50 shadow-xl">
@@ -27,16 +38,17 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <div key={item.name} className="relative group">
-                  <button 
-                  onClick={() => {navigate(`${item.pageLink}`)}} 
-                  className="cursor-pointer flex items-center space-x-1 hover:text-green-400 transition duration-300">
-                    <span>{item.name}</span>
-                  </button>
+                <button
+                  onClick={() => { navigate(`${item.pageLink}`) }}
+                  className="cursor-pointer flex items-center space-x-1 hover:text-green-400 transition duration-300"
+                >
+                  <span>{item.name}</span>
+                </button>
               </div>
             ))}
           </div>
 
-          {/*mobile*/}
+          {/* Mobile menu toggle */}
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -47,18 +59,27 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* Mobile dropdown menu */}
         {isOpen && (
-          <div className="md:hidden py-4">
+          <div className="md:hidden py-4 space-y-2">
             {navItems.map((item) => (
-              <div key={item.name} className="space-y-2">
-                <div className="font-medium px-2 py-1">{item.name}</div>
+              <div key={item.name}>
+                <button
+                  onClick={() => {
+                    navigate(item.pageLink)
+                    setIsOpen(false)
+                  }}
+                  className="block w-full text-left px-4 py-2 text-gray-300 hover:text-green-400"
+                >
+                  {item.name}
+                </button>
               </div>
             ))}
           </div>
         )}
       </div>
     </nav>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar
