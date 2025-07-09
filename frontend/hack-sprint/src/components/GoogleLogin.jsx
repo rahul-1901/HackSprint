@@ -41,7 +41,7 @@ export default function GoogleLogin() {
     <div>
       <button
         onClick={googleLogin}
-        className="text-lg text-center text-gray-900 cursor-pointer w-full py-1.5 mt-3 mb-3 rounded-full bg-gray-300"
+        className="text-lg text-center text-[#00FFC3] cursor-pointer w-full py-1.5 mt-3 mb-3 rounded-full bg-[#00FFC311] border-2 border-[#00FFC3] hover:border-[#00cfff] hover:bg-[#00cfff21] hover:text-[#00cfff] transition-transform duration-300 hover:scale-105"
       >
         <i class="fa-brands fa-google"></i> &nbsp; Login with Google
       </button>

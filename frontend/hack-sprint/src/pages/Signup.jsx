@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import GoogleLogin from "../components/GoogleLogin.jsx";
 
 function Signup() {
   const navigate = useNavigate();
@@ -40,15 +42,24 @@ function Signup() {
     }
   };
 
+  const GoogleAuthWrapper = () => {
+    return (
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        <GoogleLogin />
+      </GoogleOAuthProvider>
+    );
+  };
+
+
   return (
-    <div className="flex items-center justify-center bg-indigo-300 min-h-screen">
-      <div className="text-white bg-slate-900 p-10 rounded-xl shadow-lg w-full sm:w-136">
-        <h2 className="text-4xl font-medium text-center text-indigo-300 mb-3">
+    <div className="flex items-center justify-center bg-gray-900 min-h-screen">
+      <div className="text-white p-8 shadow-[0_0_25px_#5fff60] p-10 rounded-xl w-full sm:w-136">
+        <h2 className="text-4xl font-medium text-center text-green-500 mb-3">
           Signup
         </h2>
-        <p className="text-lg text-center mb-6">Create your account!</p>
+        <p className="text-lg text-green-300 text-center mb-6">Create your account!</p>
         <form onSubmit={handleSignup}>
-          <div className="text-lg mb-6 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
+          <div className="text-lg text-green-400 mb-6 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
             <i className="fa-solid fa-user"></i>
             <input
               className="bg-transparent outline-none"
@@ -60,7 +71,7 @@ function Signup() {
             />
           </div>
 
-          <div className="text-lg mb-6 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
+          <div className="text-lg text-green-400 mb-6 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
             {/* <i class="fa-regular fa-envelope"></i> */}
             <i className="fa-solid fa-envelope"></i>
             <input
@@ -73,7 +84,7 @@ function Signup() {
             />
           </div>
 
-          <div className="text-lg mb-6 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
+          <div className="text-lg text-green-400 mb-6 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
             <i className="fa-solid fa-lock"></i>
             <input
               className="bg-transparent outline-none"
@@ -85,14 +96,14 @@ function Signup() {
             />
           </div>
 
-          <button className="text-xl cursor-pointer w-full py-2 my-6 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900">
+          <button className="text-xl cursor-pointer w-full py-2 my-6 rounded-full bg-green-500">
             Signup
           </button>
 
-          <p className="text-md px-4 mb-3">
+          <p className="text-md text-green-300 px-4 mb-3">
             Alread have an account? &nbsp;{" "}
             <a
-              className="text-indigo-500 cursor-pointer underline"
+              className="text-green-500 cursor-pointer underline"
               href="/account/login"
             >
               Login
@@ -101,15 +112,13 @@ function Signup() {
 
           {/* <p className="text-center text-lg">--- or ---</p> */}
           <div className="flex items-center justify-center my-4 mx-5">
-            <hr className="border-t border-gray-300 flex-grow" />
-            <span className="px-4 text-gray-500 text-lg">or</span>
-            <hr className="border-t border-gray-300 flex-grow" />
+            <hr className="border-t border-green-300 flex-grow" />
+            <span className="px-4 text-green-500 text-lg">or</span>
+            <hr className="border-t border-green-300 flex-grow" />
           </div>
 
-          <button className="text-lg text-center text-gray-900 cursor-pointer w-full py-1.5 mt-3 mb-3 rounded-full bg-gray-300">
-            <i className="fa-brands fa-google"></i> &nbsp; Login with Google
-          </button>
         </form>
+        <GoogleAuthWrapper />
       </div>
     </div>
   );

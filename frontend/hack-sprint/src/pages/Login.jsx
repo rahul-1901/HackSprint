@@ -108,14 +108,14 @@ function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center bg-indigo-300 min-h-screen">
-      <div className="text-white bg-slate-900 p-10 rounded-xl shadow-lg w-full sm:w-136">
-        <h2 className="text-4xl font-medium text-center text-indigo-300 mb-3">
+    <div className="flex items-center justify-center bg-gray-900 min-h-screen">
+      <div className="text-white shadow-[0_0_25px_#5fff60] p-10 rounded-xl w-full sm:w-136">
+        <h2 className="text-4xl font-medium text-center text-green-500 mb-3">
           Login
         </h2>
-        <p className="text-lg text-center mb-6">Login to your account!</p>
+        <p className="text-lg text-green-300 text-center mb-6">Login to your account!</p>
         <form onSubmit={handleLogin}>
-          <div className="text-lg mb-6 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
+          <div className="text-lg text-green-400 mb-6 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
             {/* <i class="fa-regular fa-envelope"></i> */}
             <i class="fa-solid fa-envelope"></i>
             <input
@@ -128,7 +128,7 @@ function Login() {
             />
           </div>
 
-          <div className="text-lg mb-2 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
+          <div className="text-lg text-green-400 mb-2 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
             <i class="fa-solid fa-lock"></i>
             <input
               className="bg-transparent outline-none"
@@ -141,20 +141,20 @@ function Login() {
           </div>
 
           <a
-            className="text-sm px-4 text-indigo-500 cursor-pointer"
+            className="text-sm px-4 text-green-500 cursor-pointer"
             href="/account/reset-password"
           >
             Forgot password?
           </a>
 
-          <button className="text-xl cursor-pointer w-full py-2 mt-6 mb-3 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900">
+          <button className="text-xl cursor-pointer w-full py-2 mt-6 mb-3 rounded-full bg-green-500">
             Login
           </button>
 
-          <p className="text-md px-4 mb-3">
+          <p className="text-md text-green-300 px-4 mb-3">
             Dont have an account? &nbsp;{" "}
             <a
-              className="text-indigo-500 cursor-pointer underline"
+              className="text-green-500 cursor-pointer underline"
               href="/account/signup"
             >
               Signup
@@ -163,9 +163,9 @@ function Login() {
 
           {/* <p className="text-center text-lg">--- or ---</p> */}
           <div class="flex items-center justify-center my-4 mx-5">
-            <hr class="border-t border-gray-300 flex-grow" />
-            <span class="px-4 text-gray-500 text-lg">or</span>
-            <hr class="border-t border-gray-300 flex-grow" />
+            <hr class="border-t border-green-300 flex-grow" />
+            <span class="px-4 text-green-500 text-lg">or</span>
+            <hr class="border-t border-green-300 flex-grow" />
           </div>
         </form>
         <GoogleAuthWrapper />

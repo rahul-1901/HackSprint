@@ -109,21 +109,21 @@ function ResetPassword({ length = 6 }) {
   };
 
   return (
-    <div className="flex items-center justify-center bg-gradient-to-br from-blue-200 to-purple-400 min-h-screen">
+    <div className="flex items-center justify-center bg-gray-900 min-h-screen">
       {/* Enter email id */}
 
       {!isEmailSent && (
         <form
           onSubmit={submitEmail}
-          className="flex flex-col items-center text-white bg-slate-900 p-10 rounded-xl shadow-lg w-full sm:w-116"
+          className="flex flex-col items-center text-white shadow-[0_0_25px_#5fff60] p-10 rounded-xl w-full sm:w-116"
         >
-          <h2 className="text-4xl font-medium text-center text-indigo-300 mb-3">
+          <h2 className="text-4xl font-medium text-center text-green-500 mb-3">
             Reset Password
           </h2>
-          <p className="text-lg text-center mb-6">
+          <p className="text-lg text-green-300 text-center mb-6">
             Enter your registered email address.
           </p>
-          <div className="text-lg flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
+          <div className="text-lg text-green-400 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
             <i class="fa-solid fa-envelope"></i>
             <input
               className="bg-transparent outline-none"
@@ -135,7 +135,7 @@ function ResetPassword({ length = 6 }) {
             />
           </div>
 
-          <button className="text-xl cursor-pointer w-full py-2 mt-6 mb-3 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900">
+          <button className="text-xl cursor-pointer w-full py-2 mt-6 mb-3 rounded-full bg-green-500">
             Submit
           </button>
         </form>
@@ -146,12 +146,12 @@ function ResetPassword({ length = 6 }) {
       {!isOtpSubmitted && isEmailSent && (
         <form
           onSubmit={submitOTP}
-          className="flex flex-col items-center text-white bg-slate-900 p-10 rounded-xl shadow-lg w-full sm:w-116"
+          className="flex flex-col items-center text-white p-10 shadow-[0_0_25px_#5fff60] rounded-xl w-full sm:w-116"
         >
-          <h2 className="text-4xl font-medium text-center text-indigo-300 mb-3">
+          <h2 className="text-4xl font-medium text-center text-green-500 mb-3">
             Reset Password OTP
           </h2>
-          <p className="text-lg text-center mb-6">
+          <p className="text-lg text-green-300 text-center mb-6">
             Enter the 6-digit code sent to your email id.
           </p>
           <div className="flex gap-3 mb-4" onPaste={handlePaste}>
@@ -160,7 +160,7 @@ function ResetPassword({ length = 6 }) {
                 key={index}
                 type="text"
                 maxLength="1"
-                className="w-12 h-12 text-center text-xl border-2 border-gray-400 bg-[#333A5C] rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-12 h-12 text-center text-xl text-green-400 border-2 border-green-300 bg-[#333A5C] rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 value={digit}
                 onChange={(e) => handleChange(e.target, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
@@ -172,7 +172,7 @@ function ResetPassword({ length = 6 }) {
           <button
             type="submit"
             // className="bg-indigo-600 text-white px-4 py-2 rounded-full hover:bg-indigo-700"
-            className="text-xl text-white cursor-pointer w-70 py-2 my-6 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900"
+            className="text-xl text-white cursor-pointer w-70 py-2 my-6 rounded-full bg-green-500"
           >
             Verify OTP
           </button>
@@ -184,15 +184,15 @@ function ResetPassword({ length = 6 }) {
       {isOtpSubmitted && isEmailSent && (
         <form
           onSubmit={submitNewPassword}
-          className="flex flex-col items-center text-white bg-slate-900 p-10 rounded-xl shadow-lg w-full sm:w-116"
+          className="flex flex-col items-center text-white p-10 shadow-[0_0_25px_#5fff60] rounded-xl w-full sm:w-116"
         >
-          <h2 className="text-4xl font-medium text-center text-indigo-300 mb-3">
+          <h2 className="text-4xl font-medium text-center text-green-500 mb-3">
             New Password
           </h2>
-          <p className="text-lg text-center mb-6">
+          <p className="text-lg text-green-300 text-center mb-6">
             Enter the new password below.
           </p>
-          <div className="text-lg flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
+          <div className="text-lg text-green-400 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
             <i class="fa-solid fa-lock"></i>
             <input
               className="bg-transparent outline-none"
@@ -204,7 +204,7 @@ function ResetPassword({ length = 6 }) {
             />
           </div>
 
-          <button className="text-xl cursor-pointer w-full py-2 mt-6 mb-3 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900">
+          <button className="text-xl cursor-pointer w-full py-2 mt-6 mb-3 rounded-full bg-green-500">
             Submit
           </button>
         </form>

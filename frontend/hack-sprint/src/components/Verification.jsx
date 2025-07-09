@@ -95,12 +95,12 @@ function Verification({ length = 6 }) {
   };
 
   return (
-    <div className="flex items-center justify-center bg-gradient-to-br from-blue-200 to-purple-400 min-h-screen">
-      <div className="text-white bg-slate-900 p-10 rounded-xl shadow-lg w-full sm:w-136">
-        <h2 className="text-4xl font-medium text-center text-indigo-300 mb-3">
+    <div className="flex items-center justify-center bg-gray-900 min-h-screen">
+      <div className="text-white p-10 shadow-[0_0_25px_#5fff60] rounded-xl w-full sm:w-136">
+        <h2 className="text-4xl font-medium text-center text-green-500 mb-3">
           Email Verify OTP
         </h2>
-        <p className="text-sm text-center mb-6">
+        <p className="text-sm text-green-300 text-center mb-6">
           Enter the 6-digit code sent to your email id.
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col items-center">
@@ -110,7 +110,7 @@ function Verification({ length = 6 }) {
                 key={index}
                 type="text"
                 maxLength="1"
-                className="w-12 h-12 text-center text-xl border-2 border-gray-400 bg-[#333A5C] rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-12 h-12 text-center text-green-400 text-xl border-2 border-green-300 bg-[#333A5C] rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 value={digit}
                 onChange={(e) => handleChange(e.target, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
@@ -122,7 +122,7 @@ function Verification({ length = 6 }) {
           <button
             type="submit"
             // className="bg-indigo-600 text-white px-4 py-2 rounded-full hover:bg-indigo-700"
-            className="text-xl text-white cursor-pointer w-70 py-2 my-6 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900"
+            className="text-xl text-white cursor-pointer w-70 py-2 my-6 rounded-full bg-green-500"
           >
             Verify OTP
           </button>
