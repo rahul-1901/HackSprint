@@ -11,7 +11,7 @@ import Login from './pages/Login.jsx';
 import NotFoundPage from './pages/NotFound';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import Dashboard from './pages/dashboard.jsx';
-import Signup from './pages/Signup.jsx';
+import Signup from './pages/SignUp.jsx';
 import Verification from './components/Verification.jsx';
 import ResetPassword from './components/ResetPassword.jsx';
 
@@ -28,6 +28,7 @@ function App() {
         <ToastContainer />
 
         <Routes>
+
           <Route path="/" element={<Home />} caseSensitive />
           <Route path="/quest" element={<Quest />} caseSensitive />
           <Route path="/about" element={<About />} caseSensitive />
