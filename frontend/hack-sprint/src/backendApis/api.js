@@ -5,7 +5,8 @@ const API = axios.create({
 })
 
 export const googleAuth = (code) =>
-  API.get(`/api/authInfo?code=${code}`)
+  // API.get(`/api/authInfo?code=${code}`)
+  API.get(`/api/account/google?code=${code}`)
 
 export const getDashboard = () => {
   const token = localStorage.getItem("userToken");

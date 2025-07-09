@@ -19,7 +19,7 @@ const Navbar = () => {
 
   // Check login status
   useEffect(() => {
-    const token = localStorage.getItem("userToken")
+    const token = localStorage.getItem("token")
     setIsLoggedIn(!!token)
   }, [location])
 
@@ -39,7 +39,7 @@ const Navbar = () => {
     { name: 'About', pageLink: '/about', icon: BookOpen },
     { name: 'Quest', pageLink: '/quest', icon: Terminal },
     { name: 'Leaderboard', pageLink: '/leaderboard', icon: Trophy },
-    { name: isLoggedIn ? 'Dashboard' : 'Account', pageLink: isLoggedIn ? '/dashboard' : '/login', icon: User }
+    { name: isLoggedIn ? 'Dashboard' : 'Account', pageLink: isLoggedIn ? '/dashboard' : '/account/login', icon: User }
   ]
 
   const handleNavigate = (link) => {
