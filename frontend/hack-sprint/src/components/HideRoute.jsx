@@ -5,18 +5,14 @@ const HideRoute = ({ children }) => {
     const location = useLocation();
     const [showNavbar, setShowNavbar] = useState(true);
 
+    const navVisible = ["/", "/login", "/dashboard", "/quest", "/about"]
+
     useEffect(() => {
-        const pathsToHideNavbar = []; // Mention the paths where the navbar should be hidden
-
-        let hideCurrentPath = false;
-        for (const pathToHide of pathsToHideNavbar) {
-            if (matchPath({ path: pathToHide, exact: true }, location.pathname)) {
-                hideCurrentPath = true;
-                break;
-            }
+        if(!navVisible.includes(location.pathname)) {
+            setShowNavbar(false)
+        } else  {
+            setShowNavbar(true)
         }
-        setShowNavbar(!hideCurrentPath);
-
     }, [location]);
 
     return <div>{showNavbar && children}</div>;

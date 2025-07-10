@@ -1,11 +1,9 @@
-/* Works for most browsers */
 body {
-  overflow: auto; /* allows scrolling */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE 10+ */
+  overflow: auto; 
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
 }
 
-/* Chrome, Edge, Safari */
 body::-webkit-scrollbar {
   display: none;
 }
