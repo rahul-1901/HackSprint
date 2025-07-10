@@ -1,152 +1,127 @@
-import "../index.css";
-import { Link , useNavigate} from "react-router-dom";
-import { useState } from "react";
+import React from "react";
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AppContent } from "../context/AppContext";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import GoogleLogin from "../components/GoogleLogin.jsx";
 
-function SignUp() {
+function Signup() {
+  const navigate = useNavigate();
+
+  const { backendUrl, setIsLoggedIn, getUserData } = useContext(AppContent);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const navigate = useNavigate();
+  const handleSignup = async (e) => {
+    try {
+      e.preventDefault();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    navigate('/');
-    
-    if (!name || !email || !password) {
-    alert("Please fill all fields");
-    return;
+      const { data } = await axios.post(`${backendUrl}/api/account/signup`, {
+        name,
+        email,
+        password,
+      });
 
-  }
-  }
+      if (data.success) {
+        console.log(data.verifyToken)
+        localStorage.setItem("verifyToken", data.verifyToken)
+        navigate("/account/verify-email");
+      } else {
+        toast.error(data.message, {
+          className: "text-sm max-w-xs",
+        });
+      }
+    } catch (err) {
+      toast.error(data.message, {
+        className: "text-sm max-w-xs",
+      });
+    }
+  };
+
+  const GoogleAuthWrapper = () => {
+    return (
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        <GoogleLogin />
+      </GoogleOAuthProvider>
+    );
+  };
+
 
   return (
-    <>
-      <div className="min-h-screen flex flex-col items-center gap-1 bg-[rgb(6,10,33)] px-2 py-8">
-        <p
-          style={{
-            
-            fontFamily: "techbit",
-            color: "#19B03F",
-            fontSize: "102px",
-          }}
-        >
-          HACKSPRINT
-        </p>
-
-        <div className="bg-gradient-to-r from-blue-900 to-blue-600 p-6 rounded-2xl shadow-xl w-full max-w-md flex items-center flex-col gap-1 border-1 border-green-500">
-          <div className="text-[#FFFCDE] text-3xl font-semibold">
-            <h3>Signup</h3>
+    <div className="flex items-center justify-center bg-gray-900 min-h-screen">
+      <div className="text-white p-8 shadow-[0_0_25px_#5fff60] p-10 rounded-xl w-full sm:w-136">
+        <h2 className="text-4xl font-medium text-center text-green-500 mb-3">
+          Signup
+        </h2>
+        <p className="text-lg text-green-300 text-center mb-6">Create your account!</p>
+        <form onSubmit={handleSignup}>
+          <div className="text-lg text-green-400 mb-6 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
+            <i className="fa-solid fa-user"></i>
+            <input
+              className="bg-transparent outline-none"
+              type="text"
+              placeholder="Full Name"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
 
-          <div className="text-sm text-[#FFFFFF]">
-            <h6>Start your journey!</h6>
+          <div className="text-lg text-green-400 mb-6 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
+            {/* <i class="fa-regular fa-envelope"></i> */}
+            <i className="fa-solid fa-envelope"></i>
+            <input
+              className="bg-transparent outline-none"
+              type="email"
+              placeholder="Email Id"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
 
-          <div className="w-full my-5">
-            <div className="relative my-3">
-              <img
-                src="/person.png"
-                alt="person"
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
-              />
-              <input
-                value={name}
-                onChange={(e)=>{setName(e.target.value)}}
-                className="bg-[#7B8BAB66] rounded-[2rem] w-full text-[#FFFFFF] placeholder-white px-10 py-2 cursor-pointer"
-                placeholder="Full Name"
-                type="text"
-              />
-            </div>
-            <div className="relative my-3">
-              <img
-                src="/Mail.png"
-                alt="email"
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
-              />
-              <input
-                value={email}
-                onChange={(e)=>{setEmail(e.target.value)}}
-                className="bg-[#7B8BAB66] rounded-[2rem] w-full text-[#FFFFFF] placeholder-white px-10 py-2 cursor-pointer"
-                placeholder="Email Id"
-                type="text"
-              />
-            </div>
-            <div className="relative my-3">
-              <img
-                src="/Lock.png"
-                alt="person"
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
-              />
-              <input
-                value={password}
-                onChange={(e)=>{setPassword(e.target.value)}}
-                className="bg-[#7B8BAB66] rounded-[2rem] w-full text-[#FFFFFF] placeholder-white px-10 py-2 cursor-pointer"
-                placeholder="Password"
-                type="text"
-              />
-            </div>
+          <div className="text-lg text-green-400 mb-6 flex items-center gap-3 px-5 py-2.5 w-full rounded-full bg-[#333A5C]">
+            <i className="fa-solid fa-lock"></i>
+            <input
+              className="bg-transparent outline-none"
+              type="password"
+              placeholder="Password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
 
+          <button className="text-xl cursor-pointer w-full py-2 my-6 rounded-full bg-green-500">
+            Signup
+          </button>
 
-          <div className="bg-[#058DA2] w-full rounded-4xl flex items-center justify-center py-2">
-            <button 
-            onClick={handleSubmit}
-            className="text-white font-semibold cursor-pointer">
-              Signup
-            </button>
-          </div>
-
-
-          <div className="text-white text-sm flex gap-2 py-1 items-start justify-start w-full px-1">
-            <p>Already have an account?</p>
-            <Link
-              to="/login"
-              className="underline hover:text-indigo-300 transition duration-200"
+          <p className="text-md text-green-300 px-4 mb-3">
+            Alread have an account? &nbsp;{" "}
+            <a
+              className="text-green-500 cursor-pointer underline"
+              href="/account/login"
             >
               Login
-            </Link>
+            </a>
+          </p>
+
+          {/* <p className="text-center text-lg">--- or ---</p> */}
+          <div className="flex items-center justify-center my-4 mx-5">
+            <hr className="border-t border-green-300 flex-grow" />
+            <span className="px-4 text-green-500 text-lg">or</span>
+            <hr className="border-t border-green-300 flex-grow" />
           </div>
 
-          <div className="w-full">
-            <div className="flex items-center my-4">
-              <div className="flex-grow h-px bg-gray-300"></div>
-              <span className="mx-2 text-gray-300">OR</span>
-              <div className="flex-grow h-px bg-gray-300"></div>
-            </div>
-          </div>
-           
-           <div className="w-full">
-             <button
-          // onClick={googleLogin}
-          className="w-full flex items-center justify-center gap-2 border border-[#535353CC] py-2 rounded-2xl bg-white"
-        >
-          <img
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            alt="Google"
-            className="w-5 h-5"
-          />
-          Login with Google
-        </button>
-
-        <button
-          // onClick={githubAuthLogin}
-          className="w-full mt-2 flex items-center justify-center gap-2 border border-[#535353CC] py-2 rounded-2xl bg-white"
-        >
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/25/25231.png"
-            alt="Github"
-            className="w-5 h-5"
-          />
-          Login with Github
-        </button>
-           </div>
-
-        </div>
+        </form>
+        <GoogleAuthWrapper />
       </div>
-    </>
+    </div>
   );
 }
 
-export default SignUp;
+export default Signup;
