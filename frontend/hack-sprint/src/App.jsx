@@ -18,7 +18,6 @@ import ResetPassword from './components/ResetPassword.jsx';
 import { ToastContainer } from 'react-toastify';
 
 function App() {
-
   return (
     <>
       <Router>
@@ -32,16 +31,14 @@ function App() {
           <Route path="/" element={<Home />} caseSensitive />
           <Route path="/quest" element={<Quest />} caseSensitive />
           <Route path="/about" element={<About />} caseSensitive />
-          {/* <Route path="/login" element={<GoogleAuthWrapper />} caseSensitive /> */}
-
-          <Route path="/account/login" element={<Login />} caseSensitive></Route>
-          <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
-          <Route path="/account/verify-email" element={<Verification />} caseSensitive></Route>
-          <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive></Route>
-
+          <Route path="/account/login" element={<Login />} caseSensitive />
+          <Route path="/account/signup" element={<Signup />} caseSensitive />
+          <Route path="/account/verify-email" element={<Verification />} caseSensitive />
+          <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive />
           <Route path="/dashboard" element={<Dashboard />} caseSensitive />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+
         <HideRoute>
           <Footer />
         </HideRoute>
