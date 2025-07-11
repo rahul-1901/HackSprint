@@ -48,7 +48,7 @@
 
 import React from "react";
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -58,7 +58,7 @@ import GoogleLogin from "../components/GoogleLogin.jsx";
 function Login() {
   const navigate = useNavigate();
 
-  const { backendUrl, setIsLoggedIn} = useContext(AppContent);
+  const { backendUrl, setIsLoggedIn } = useContext(AppContent);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -67,7 +67,7 @@ function Login() {
     try {
       e.preventDefault();
 
-    //   axios.defaults.withCredentials = true;
+      //   axios.defaults.withCredentials = true;
 
 
       const { data } = await axios.post(
@@ -153,12 +153,7 @@ function Login() {
 
           <p className="text-md text-green-300 px-4 mb-3">
             Dont have an account? &nbsp;{" "}
-            <a
-              className="text-green-500 cursor-pointer underline"
-              href="/account/signup"
-            >
-              Signup
-            </a>
+            <Link to="/account/signup" className="text-green-500 cursor-pointer underline">Signup</Link>
           </p>
 
           {/* <p className="text-center text-lg">--- or ---</p> */}

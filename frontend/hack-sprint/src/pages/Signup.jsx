@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -102,12 +102,7 @@ function Signup() {
 
           <p className="text-md text-green-300 px-4 mb-3">
             Alread have an account? &nbsp;{" "}
-            <a
-              className="text-green-500 cursor-pointer underline"
-              href="/account/login"
-            >
-              Login
-            </a>
+            <Link to="/account/login" className="text-green-500 cursor-pointer underline">Login</Link>
           </p>
 
           {/* <p className="text-center text-lg">--- or ---</p> */}
