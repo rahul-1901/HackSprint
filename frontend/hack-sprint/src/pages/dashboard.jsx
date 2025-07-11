@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getDashboard } from '../backendApis/api';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Dashboard = () => {
   const [data, setData] = useState(null);
@@ -12,17 +13,13 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) navigate('/login'); // Fallback in case route isn't wrapped
-  }, []);
-
-  useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await getDashboard();
-        setData(res.data);
+        setData(res.data.userData);
+        // console.log(res.data.userData)
       } catch (err) {
-        console.error('❌ Dashboard fetch error:', err);
+        console.error('Dashboard fetch error:', err);
       } finally {
         setLoading(false);
       }
@@ -33,18 +30,22 @@ const Dashboard = () => {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate('/login');
+    toast.success("Logout successfull...", { autoClose: 1000 })
+    setTimeout(() => {
+      navigate('/');
+    }, 1700)
   };
 
   return (
     <div
       style={{
         padding: '2rem',
-        paddingTop: '6rem', // Offset for fixed navbar
+        paddingTop: '6rem',
         minHeight: 'calc(100vh - 120px)',
         backgroundColor: '#0a0e17',
         color: 'white',
         fontFamily: "'Courier New', Courier, monospace",
+        overflow: "hidden"
       }}
     >
       <h1
@@ -89,7 +90,7 @@ const Dashboard = () => {
             />
             <div>
               <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-                {data.nickname || 'Unnamed User'}
+                {data.name || 'Unnamed User'}
               </h2>
               <p>🐙 {data.github_id || 'unknown.github'}</p>
             </div>
@@ -139,7 +140,7 @@ const Dashboard = () => {
             </h3>
 
             {Array.isArray(data.submissions) &&
-            data.submissions.length > 0 ? (
+              data.submissions.length > 0 ? (
               <table
                 style={{
                   width: '100%',

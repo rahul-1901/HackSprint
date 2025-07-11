@@ -160,7 +160,7 @@ const sendVerficationToken = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const verificationToken =  Math.floor(
+    const verificationToken = Math.floor(
       100000 + Math.random() * 900000
     ).toString();
 
@@ -187,7 +187,7 @@ const sendVerficationToken = async (req, res) => {
 
     await transporter.sendMail(mailOption);
   } catch (err) {
-    res.json({
+    return res.status(504).json({
       message: err.message,
       success: false,
     });
@@ -354,11 +354,11 @@ const resetPassword = async (req, res) => {
 
     const isPasswordEqual = await bcrypt.compare(newPassword, user.password);
 
-    if(isPasswordEqual){
-        return res.json({
-            message: "New password cannot be same as old password!",
-            success: false
-        })
+    if (isPasswordEqual) {
+      return res.json({
+        message: "New password cannot be same as old password!",
+        success: false
+      })
     }
 
     const newHashedPassword = await bcrypt.hash(newPassword, 10);
@@ -407,8 +407,8 @@ const googleLogin = async (req, res) => {
     let isFirstTime = false
 
     if (!user) {
-        isFirstTime = true
-        
+      isFirstTime = true
+
       user = await UserModel.create({
         name,
         email,
@@ -440,8 +440,8 @@ const googleLogin = async (req, res) => {
       text: `Welcome to HackSprint. Your account has been created using this email ${user.email}`,
     };
 
-    if(isFirstTime){
-        await transporter.sendMail(mailOptions);
+    if (isFirstTime) {
+      await transporter.sendMail(mailOptions);
     }
 
     return res.status(201).json({
