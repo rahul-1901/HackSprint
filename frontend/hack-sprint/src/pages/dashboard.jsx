@@ -12,7 +12,7 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('userToken');
+    const token = localStorage.getItem('token');
     if (!token) navigate('/login'); // Fallback in case route isn't wrapped
   }, []);
 
