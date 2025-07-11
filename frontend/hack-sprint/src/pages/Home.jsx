@@ -3,6 +3,7 @@ import Loader from '../components/Loader'
 import { Users, Calendar, Timer, ArrowRight, Code, Trophy, Zap, Star, Github, ExternalLink } from 'lucide-react'
 
 
+
 const FloatingParticles = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     {[...Array(20)].map((_, i) => (
@@ -64,52 +65,48 @@ const HackathonCard = ({ hackathon, isExpired = false }) => {
 
   return (
 
-    <div 
-      className={`border border-green-500/20 bg-white/5 backdrop-blur-sm hover:border-green-400 hover:scale-[1.02] transition-all duration-300 px-4 sm:px-5 py-4 sm:py-5 rounded-xl cursor-pointer relative group overflow-hidden ${
-        isHovered ? 'shadow-2xl shadow-green-500/20' : ''
-      }`}
+    <div
+      className={`border border-green-500/20 bg-white/5 backdrop-blur-sm hover:border-green-400 hover:scale-[1.02] transition-all duration-300 px-4 sm:px-5 py-4 sm:py-5 rounded-xl cursor-pointer relative group overflow-hidden ${isHovered ? 'shadow-2xl shadow-green-500/20' : ''
+        }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Scan line effect */}
-      <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-green-400/20 to-transparent transform -skew-x-12 transition-transform duration-1000 ${
-        isHovered ? 'translate-x-full' : '-translate-x-full'
-      }`} />
-      
+      <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-green-400/20 to-transparent transform -skew-x-12 transition-transform duration-1000 ${isHovered ? 'translate-x-full' : '-translate-x-full'
+        }`} />
+
       {/* Glow effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-green-400/0 via-green-400/5 to-green-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-      <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-        <div className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full ${
-          isExpired ? 'bg-red-500/10' : 'bg-green-500/10'
-        }`}>
-          <Timer size={12} className={isExpired ? 'text-red-400' : 'text-green-400'} />
-          <span className={`font-mono text-xs sm:text-sm ${
-            isExpired ? 'text-red-400' : 'text-green-400'
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
+        <div className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full ${isExpired ? 'bg-red-500/10' : 'bg-green-500/10'
           }`}>
+          <Timer size={12} className={isExpired ? 'text-red-400' : 'text-green-400'} />
+          <span className={`font-mono text-xs sm:text-sm ${isExpired ? 'text-red-400' : 'text-green-400'
+            }`}>
             {isExpired ? '0d 0h 0m' : '3d 14h 22m'}
           </span>
         </div>
       </div>
 
       <div className='flex flex-col relative z-10'>
-        <div className='flex flex-col flex-1 pr-16 sm:pr-20'>
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className='font-semibold text-lg sm:text-xl lg:text-2xl text-white/90'>
+        <div className='flex flex-col flex-1 pr-20 sm:pr-24 md:pr-28 lg:pr-32'>
+          <div className="flex flex-col gap-2 mb-2">
+            <h3 className='font-semibold text-lg sm:text-xl lg:text-2xl text-white/90 pr-2'>
               {hackathon.title}
             </h3>
-            <div className="flex gap-1">
-              <span className="px-2 py-1 text-xs bg-green-500/20 text-green-400 rounded-full">
+            <div className="flex gap-1 flex-wrap">
+              <span className="px-2 py-1 text-xs bg-green-500/20 text-green-400 rounded-full whitespace-nowrap">
                 {hackathon.difficulty}
               </span>
-              <span className="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-full">
+              <span className="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-full whitespace-nowrap">
                 {hackathon.category}
               </span>
             </div>
           </div>
-          
+
           <p className='text-gray-400 text-sm sm:text-base mb-3'>{hackathon.description}</p>
-          
+
           <div className="flex flex-wrap gap-2 mb-3">
             {hackathon.techStack.map((tech, index) => (
               <span key={index} className="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded">
@@ -138,7 +135,7 @@ const HackathonCard = ({ hackathon, isExpired = false }) => {
       {/* Progress bar for active hackathons */}
       {!isExpired && (
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700/50">
-          <div 
+          <div
             className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300"
             style={{ width: `${hackathon.progress}%` }}
           />
@@ -224,6 +221,8 @@ const Home = () => {
     }
   ]
 
+
+
   return (
     <div className='bg-gray-900 relative overflow-hidden min-h-screen -mt-16'>
       <Loader />
@@ -236,9 +235,9 @@ const Home = () => {
             HackSprint
             <div className="absolute inset-0 bg-gradient-to-b from-green-400 to-green-800 blur-3xl opacity-20 -z-10" />
           </h1>
-          
-          <TypingText 
-            text="Where Code Meets Innovation" 
+
+          <TypingText
+            text="Where Code Meets Innovation"
             className="text-xl sm:text-2xl text-gray-400 mt-4 font-mono"
           />
         </div>
@@ -252,7 +251,7 @@ const Home = () => {
             <Code size={16} className="text-green-400 mb-2 mx-auto" />
             There's nothing like the bonding experience of fixing a deployment bug five minutes before the deadline.
           </div>
-          
+
           <div
             className="absolute border border-green-400/30 bg-gray-900/90 backdrop-blur-sm rounded-lg text-white text-center px-4 py-3 max-w-xs opacity-70 hover:opacity-100 hover:border-green-400 transition-all duration-300 cursor-default shadow-lg"
             style={{ top: '15%', right: '3%' }}
@@ -260,7 +259,7 @@ const Home = () => {
             <Zap size={16} className="text-green-400 mb-2 mx-auto" />
             Trust in peer-to-peer systems is tricky. In hackathons, we trust someone will push to main at 3AM.
           </div>
-          
+
           <div
             className="absolute border border-green-400/30 bg-gray-900/90 backdrop-blur-sm rounded-lg text-white text-center px-4 py-3 max-w-xs opacity-70 hover:opacity-100 hover:border-green-400 transition-all duration-300 cursor-default shadow-lg"
             style={{ bottom: '15%', left: '3%' }}
@@ -268,7 +267,7 @@ const Home = () => {
             <Star size={16} className="text-green-400 mb-2 mx-auto" />
             Every sprint starts with hope and ends with console.logs. Somewhere in between, there's magic.
           </div>
-          
+
           <div
             className="absolute border border-green-400/30 bg-gray-900/90 backdrop-blur-sm rounded-lg text-white text-center px-4 py-3 max-w-xs opacity-70 hover:opacity-100 hover:border-green-400 transition-all duration-300 cursor-default shadow-lg"
             style={{ bottom: '15%', right: '3%' }}
@@ -287,7 +286,7 @@ const Home = () => {
             <Code size={14} className="text-green-400 mb-1 mx-auto" />
             Fixing bugs five minutes before deadline builds character.
           </div>
-          
+
           <div
             className="absolute border border-green-400/30 bg-gray-900/90 backdrop-blur-sm rounded-lg text-white text-center px-3 py-2 max-w-xs opacity-60 hover:opacity-100 hover:border-green-400 transition-all duration-300 cursor-default shadow-lg text-sm"
             style={{ top: '20%', right: '2%' }}
@@ -298,6 +297,8 @@ const Home = () => {
         </div>
 
         {/* Mobile Quote Boxes - Only show on medium and smaller screens */}
+
+
         <div className="lg:hidden absolute inset-0 w-full h-full z-10">
           <div
             className="absolute left-1/2 transform -translate-x-1/2 border border-green-400/30 bg-gray-900/90 backdrop-blur-sm rounded-lg text-white text-center px-2 py-2 text-xs opacity-50 hover:opacity-70 transition-all duration-300 cursor-default max-w-[140px]"
@@ -306,7 +307,7 @@ const Home = () => {
             <Code size={12} className="text-green-400 mb-1 mx-auto" />
             Fixing bugs builds character.
           </div>
-          
+
           <div
             className="absolute border border-green-400/30 bg-gray-900/90 backdrop-blur-sm rounded-lg text-white text-center px-2 py-2 text-xs opacity-50 hover:opacity-70 transition-all duration-300 cursor-default max-w-[130px]"
             style={{ bottom: '20%', left: '2%' }}
@@ -314,7 +315,7 @@ const Home = () => {
             <Github size={12} className="text-green-400 mb-1 mx-auto" />
             Git conflicts, half understanding.
           </div>
-          
+
           <div
             className="absolute border border-green-400/30 bg-gray-900/90 backdrop-blur-sm rounded-lg text-white text-center px-2 py-2 text-xs opacity-50 hover:opacity-70 transition-all duration-300 cursor-default max-w-[120px]"
             style={{ bottom: '20%', right: '2%' }}
@@ -336,7 +337,7 @@ const Home = () => {
               </span>
               Active Hackathons
             </h2>
-            
+
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-400">
                 <span className="text-green-400 font-mono">{activeHackathons.length}</span> active
@@ -364,7 +365,7 @@ const Home = () => {
               Expired Hackathons
             </h2>
             <button className="text-gray-400 cursor-pointer hover:text-gray-300 flex items-center gap-2 transition-colors text-sm sm:text-base group">
-              View All 
+              View All
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </div>

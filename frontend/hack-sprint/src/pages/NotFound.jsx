@@ -100,16 +100,17 @@ const NotFound = () => {
             </h1>
 
             {/* Main 404 Content Container */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "30px", marginBottom: "40px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "clamp(15px, 4vw, 30px)", marginBottom: "40px", flexWrap: "nowrap", width: "100%", maxWidth: "800px" }}>
                 {/* First 4 */}
                 <div style={{ 
                     color: "#FFF", 
                     textAlign: "center", 
                     fontFamily: "'Impact', 'Arial Black', sans-serif", 
-                    fontSize: "clamp(120px, 15vw, 200px)", 
+                    fontSize: "clamp(60px, 12vw, 200px)", 
                     fontWeight: "400", 
                     lineHeight: "1.2", 
-                    minWidth: "100px", 
+                    minWidth: "auto",
+                    flex: "0 0 auto",
                     textShadow: "0 0 30px rgba(255, 255, 255, 0.2), 0 0 60px rgba(15, 196, 72, 0.3)",
                     animation: "textGlow 3s ease-in-out infinite alternate"
                 }}>
@@ -117,12 +118,12 @@ const NotFound = () => {
                 </div>
 
                 {/* Skull and DEAD CODE Container */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minWidth: "120px", position: "relative" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minWidth: "auto", flex: "0 0 auto", position: "relative" }}>
                     {/* Rotating ring around skull */}
                     <div style={{
                         position: "absolute",
-                        width: "clamp(140px, 20vw, 220px)",
-                        height: "clamp(140px, 20vw, 220px)",
+                        width: "clamp(70px, 14vw, 220px)",
+                        height: "clamp(70px, 14vw, 220px)",
                         border: "2px solid rgba(214, 43, 43, 0.3)",
                         borderRadius: "50%",
                         animation: "rotate 10s linear infinite"
@@ -130,16 +131,16 @@ const NotFound = () => {
                     
                     {/* Skull placeholder - you can replace with your skull.png */}
                     <div style={{ 
-                        width: "clamp(120px, 18vw, 200px)", 
-                        height: "clamp(120px, 18vw, 200px)", 
-                        marginBottom: "15px", 
+                        width: "clamp(60px, 12vw, 200px)", 
+                        height: "clamp(60px, 12vw, 200px)", 
+                        marginBottom: "0px", 
                         filter: "drop-shadow(0 0 15px rgba(255, 255, 255, 0.1)) drop-shadow(0 0 30px rgba(214, 43, 43, 0.3))",
                         background: "radial-gradient(circle, rgba(214, 43, 43, 0.1) 0%, transparent 70%)",
                         borderRadius: "50%",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "clamp(60px, 8vw, 100px)",
+                        fontSize: "clamp(30px, 6vw, 100px)",
                         animation: "float 6s ease-in-out infinite"
                     }}>
                         💀
@@ -151,10 +152,11 @@ const NotFound = () => {
                     color: "#FFF", 
                     textAlign: "center", 
                     fontFamily: "'Impact', 'Arial Black', sans-serif", 
-                    fontSize: "clamp(120px, 15vw, 200px)", 
+                    fontSize: "clamp(60px, 12vw, 200px)", 
                     fontWeight: "400", 
                     lineHeight: "1.2", 
-                    minWidth: "100px", 
+                    minWidth: "auto",
+                    flex: "0 0 auto",
                     textShadow: "0 0 30px rgba(255, 255, 255, 0.2), 0 0 60px rgba(15, 196, 72, 0.3)",
                     animation: "textGlow 3s ease-in-out infinite alternate"
                 }}>
