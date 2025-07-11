@@ -1,8 +1,6 @@
 import React from 'react';
-import {
-    SiHtml5, SiGithub, SiPython, SiNodedotjs,
-    SiJavascript, SiMysql, SiTensorflow, SiReact, SiCss3
-} from 'react-icons/si';
+import { SiReact, SiCss3 } from "react-icons/si";
+
 
 const Quest = () => {
     return (
