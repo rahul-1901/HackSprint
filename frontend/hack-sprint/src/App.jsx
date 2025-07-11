@@ -34,6 +34,7 @@ function App() {
     <>
       <Router>
         <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} />
+        <Loader />
         <HideRoute>
           <Navbar />
         </HideRoute>
