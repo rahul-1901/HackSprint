@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const Loader = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [opacity, setOpacity] = useState(1);
+    const location = useLocation()
 
     useEffect(() => {
+        setIsLoading(true)
+        setOpacity(1)
+
         setTimeout(() => {
             setOpacity(0);
         }, 1000);
@@ -12,13 +17,14 @@ const Loader = () => {
         setTimeout(() => {
             setIsLoading(false);
         }, 2000);
-    }, []);
+
+    }, [location])
 
     if (!isLoading) return null;
 
     return (
         <div
-            className="fixed inset-0 bg-gray-900 z-50 flex items-center justify-center"
+            className="fixed inset-0 bg-gray-900 z-10000 flex items-center justify-center"
             style={{
                 transition: 'opacity 1s ease-in-out',
                 opacity: opacity

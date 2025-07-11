@@ -5,7 +5,7 @@ dotenv.config();
 
 const userAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+  const token = authHeader && authHeader.startsWith("Bearer "); // Bearer <token>
 
   if (!token) {
     return res.status(401).json({
@@ -14,14 +14,13 @@ const userAuth = async (req, res, next) => {
     });
   }
 
-  try {
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+  const jsonToken = authHeader.split(" ")[1];
 
-    if (decoded.userId) {
-      req.user = {
-        id: decoded.userId,
-        email: decoded.email,
-      };
+  try {
+    const decoded = jwt.verify(jsonToken, process.env.SECRET_KEY);
+
+    if (decoded.email) {
+      req.email = decoded.email
       next();
     } else {
       return res.status(401).json({
@@ -70,4 +69,4 @@ const verifyAuth = async (req, res, next) => {
 };
 
 
-export {verifyAuth, userAuth}
+export { verifyAuth, userAuth }
