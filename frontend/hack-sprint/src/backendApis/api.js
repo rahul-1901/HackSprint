@@ -2,11 +2,11 @@ import axios from 'axios'
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: true, // if using cookies/session auth
 })
 
 export const googleAuth = (code) =>
-  API.get(`/api/authInfo?code=${code}`)
+  // API.get(`/api/authInfo?code=${code}`)
+  API.get(`/api/account/google?code=${code}`)
 
 export const getDashboard = () => {
   const token = localStorage.getItem("userToken");
