@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const Dashboard = () => {
+
   const [data, setData] = useState({
     nickname: 'User_Name', // Dummy data
     github_id: 'example_id.github', // Dummy data
@@ -28,9 +29,13 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
 
+
   const handleLogout = () => {
     localStorage.clear();
-    navigate('/login');
+    toast.success("Logout successfull...", { autoClose: 1000 })
+    setTimeout(() => {
+      navigate('/');
+    }, 1700)
   };
 
   return (
@@ -38,6 +43,7 @@ const Dashboard = () => {
       style={{
         padding: '2rem',
         paddingTop: '6rem',
+ 
         minHeight: '100vh',
         backgroundColor: '#0a0e17',
         color: 'white',
@@ -45,6 +51,7 @@ const Dashboard = () => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+
       }}
     >
       {/* Header (as seen in the image) - Ideally a separate component */}
@@ -143,7 +150,7 @@ const Dashboard = () => {
                 border: '3px solid #00ff9f',
                 overflow: 'hidden', // Ensure image stays within bounds
                 marginBottom: '10px', // Space between avatar and "Nickname"
-              }}
+
             >
               <img
                 src={data.avatar_url} // Uses the dummy avatar_url
@@ -156,6 +163,7 @@ const Dashboard = () => {
                 }}
               />
               
+
             </div>
             <span
               style={{
@@ -215,6 +223,7 @@ const Dashboard = () => {
             Logout
           </button>
         </div>
+
 
         {/* Submitted Hackathons Section */}
         <div
@@ -295,6 +304,7 @@ const Dashboard = () => {
                     }}
                   >
                     <span
+
                       style={{
                         width: '10px',
                         height: '10px',
