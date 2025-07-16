@@ -5,6 +5,7 @@ import UserModel from '../models/user.models.js'
 import axios from 'axios'
 import jwt from 'jsonwebtoken'
 import { google } from 'googleapis'
+import { transporter } from "../nodemailer/nodemailerConfig.js";
 
 export const googleAuthLogin = async (req, res) => {
     try {
@@ -24,8 +25,18 @@ export const googleAuthLogin = async (req, res) => {
         if(!user) {
             user = await UserModel.create({
                 name,
+                isVerified: true,
                 email
             })
+
+            const mailOptions = {
+                from: process.env.SENDER_EMAIL,
+                to: email,
+                subject: "HackSprint",
+                text: `Welcome to HackSprint. Your account has been created using this email ${email}`,
+              };
+          
+              await transporter.sendMail(mailOptions);
         }
 
         const { _id } = user
@@ -44,6 +55,31 @@ export const googleAuthLogin = async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             message: "Internal server Error...."
+        })
+    }
+}
+
+export const userData = async (req, res) => {
+    try {
+        const {email} = req
+        const userData = await UserModel.findOne({
+            email
+        })
+
+        if(!userData) {
+            return res.status(504).json({
+                message: "User not in db...."
+            })
+        }
+
+        return res.status(200).json({
+            userData,
+            success: true
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: "Error...",
+            success: false
         })
     }
 }

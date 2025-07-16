@@ -20,7 +20,7 @@ const Quest = () => {
     ]
 
     return (
-        <div className="flex mt-45 items-start justify-around text-white font-sans overflow-hidden lg:overflow-none">
+        <div className="flex mt-20 items-start justify-around text-white font-sans overflow-hidden lg:overflow-none">
             <div className='ml-[-2vw]flex flex-col'>
                 <h1 className="text-3xl md:text-6xl leading-tight font-semibold text-white mb-30">
                     Ignite Your Tech Journey with<br />
@@ -46,7 +46,7 @@ const Quest = () => {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-10">
+            <div className="flex flex-col gap-10 mt-10">
                 <div className='flex flex-col gap-8 items-center ml-[-50px]'>
                     {logos.map((items) => (
                         <div className='flex items-center gap-8'>

@@ -1,7 +1,5 @@
 import axios from "axios";
-import { useEffect } from "react";
-import { useState } from "react";
-import { createContext } from "react";
+import { useEffect, useState, createContext } from "react";
 import { toast } from "react-toastify";
 
 export const AppContent = createContext();
@@ -14,20 +12,21 @@ export const AppContextProvider = (props) => {
 
   const getUserData = async () => {
     try {
-        const token = localStorage.getItem("token");
-      const { data } = await axios.get(`${backendUrl}/api/user/data`, {
-      headers: {
-        Authorization: `Bearer ${token}` 
-      }
-    });
+      const token = localStorage.getItem("token");
+      const { data } = await axios.get(`${backendUrl}/api/userData`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
       console.log(data);
+      setIsLoggedIn(true);
 
       data.success
         ? setUserData(data.userData)
         : toast.error(data.message, {
-            className: "text-sm max-w-xs",
-          });
+          className: "text-sm max-w-xs",
+        });
     } catch (err) {
       setIsLoggedIn(false);
       toast.error(err.message, {
@@ -50,11 +49,11 @@ export const AppContextProvider = (props) => {
   }, [isLoggedIn]);
 
   useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    setIsLoggedIn(true);
-  }
-}, []);
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
 
 
   const value = {
