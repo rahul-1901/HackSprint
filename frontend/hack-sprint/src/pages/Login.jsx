@@ -62,7 +62,7 @@ function Login() {
             <i className="fa-solid fa-envelope"></i>
             <input
               className="bg-transparent outline-none w-full"
-              type="email"
+              type="email" 
               placeholder="Email Id"
               required
               value={email}
