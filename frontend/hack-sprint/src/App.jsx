@@ -54,7 +54,6 @@ function App() {
           <Route path="/account/verify-email" element={<Verification />} caseSensitive></Route>
           <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive></Route>
           <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />}/>} caseSensitive />
-
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
 
