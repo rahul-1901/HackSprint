@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 const Dashboard = () => {
 
@@ -43,7 +43,7 @@ const Dashboard = () => {
       style={{
         padding: '2rem',
         paddingTop: '6rem',
- 
+
         minHeight: '100vh',
         backgroundColor: '#0a0e17',
         color: 'white',
@@ -54,8 +54,7 @@ const Dashboard = () => {
 
       }}
     >
-      {/* Header (as seen in the image) - Ideally a separate component */}
-      <div
+      {/* <div
         style={{
           position: 'absolute',
           top: 0,
@@ -110,7 +109,7 @@ const Dashboard = () => {
             border: '2px solid white',
           }}
         ></div>
-      </div>
+      </div> */}
 
       <div
         style={{
@@ -150,7 +149,7 @@ const Dashboard = () => {
                 border: '3px solid #00ff9f',
                 overflow: 'hidden', // Ensure image stays within bounds
                 marginBottom: '10px', // Space between avatar and "Nickname"
-
+              }}
             >
               <img
                 src={data.avatar_url} // Uses the dummy avatar_url
@@ -162,7 +161,7 @@ const Dashboard = () => {
                   borderRadius: '9px', // Slightly smaller border radius for inner image
                 }}
               />
-              
+
 
             </div>
             <span
@@ -240,7 +239,7 @@ const Dashboard = () => {
           >
             SUBMITTED HACKATHONS
             {/* Inner div for blur/glow effect */}
-            
+
           </h3>
 
           <table
