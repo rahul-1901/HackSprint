@@ -5,6 +5,7 @@ import connectDB from './db/database.js'
 import hackathonRoutes from './routes/hackathon.routes.js'
 import oauthRoutes from './routes/googleAuth.routes.js'
 import authRoutes from "./routes/auth.route.js"
+import devquestRoutes from './routes/devquest.routes.js'
 
 const app = express()
 dotenv.config()
@@ -17,6 +18,7 @@ app.use(cors(
     }
 ))
 
+app.use("/api/devquest", devquestRoutes)
 app.use("/api/hackathons", hackathonRoutes)
 app.use("/api", oauthRoutes)
 app.use("/api/account", authRoutes)
