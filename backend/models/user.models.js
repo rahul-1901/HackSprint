@@ -61,6 +61,7 @@ const userSchema = new mongoose.Schema(
     },
 
     verificationTokenExpiresAt: Date,
+    // Submissions
   },
   { timestamps: true }
 );
