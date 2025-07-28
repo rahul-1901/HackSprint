@@ -54,6 +54,7 @@ const Dashboard = () => {
 
       }}
     >
+      {/* Header (as seen in the image) - Ideally a separate component */}
       {/* <div
         style={{
           position: 'absolute',

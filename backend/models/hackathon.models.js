@@ -1,8 +1,10 @@
+// import { array, number, required } from 'joi'
 import mongoose from 'mongoose'
 
 const hackathonSchema = new mongoose.Schema({
     title: {
-        type: String
+        type: String,
+        required : true
     }, 
     subTitle: {
         type: String
@@ -12,6 +14,7 @@ const hackathonSchema = new mongoose.Schema({
     },
     submissions: {
         type: Array
+        //No. of participants of a hackathon are equal to submissions array no.of elements.
     },
     startDate: {
         type: Date
@@ -25,6 +28,27 @@ const hackathonSchema = new mongoose.Schema({
     status: {
         type: Boolean,
         default : false
+    },
+    difficulty:{
+        type : String,
+        enum:{
+            values : ["Advanced" , "Expert" , "Intermediate"]
+        }
+    },
+    category : {
+        type : Array , 
+        // enum : {
+        //     values : ["Web Dev" , "AI/ML" , "Blockchain" , "IoT"]
+        // }
+    },
+    prizeMoney :{
+        type : Number
+    },
+    techStackUsed : {
+        type : Array,
+        // enum : {
+        //     values : ["React" , "Node.js","MongoDB" , "Socket.io","Python","TensorFlow" , "OpenAI" , "FastAPI","Solidity" , "Web3.js" , "IPFS","Arduino" , "PostgreSQL"]
+        // }
     }
 })
 
