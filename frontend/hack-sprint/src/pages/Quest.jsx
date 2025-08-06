@@ -130,18 +130,18 @@ const Quest = () => {
 
     if (!quizStarted) {
         return (
-            <div className="flex mt-20 items-start justify-around text-white font-sans overflow-hidden lg:overflow-none">
-                <div className='ml-[-2vw]flex flex-col'>
-                    <h1 className="text-3xl md:text-6xl leading-tight font-semibold text-white mb-30 animate-fade-in-up">
+            <div className="flex mt-20 items-start justify-around text-white font-sans overflow-hidden lg:overflow-none max-lg:flex-col max-lg:items-center max-lg:px-4">
+                <div className='ml-[-2vw] flex flex-col max-lg:ml-0 max-lg:w-full'>
+                    <h1 className="text-3xl md:text-6xl leading-tight font-semibold text-white mb-30 max-lg:text-2xl max-sm:text-xl max-lg:text-center max-lg:mb-8 animate-fade-in-up">
                         Ignite Your Tech Journey with<br />
                         HackSprint <span className="text-white">Dev Quests</span>
                     </h1>
 
-                    <div className="w-[55vw] h-full animate-fade-in-left">
+                    <div className="w-[55vw] h-full max-lg:w-full animate-fade-in-left">
                         <img
                             src={QuestImg}
                             alt="DevQuest Preview"
-                            className="w-full object-cover -mb-30 rounded-xl shadow-[0_0_10px_10px_rgba(0,255,255,0.2)] hover:scale-105 transition-transform duration-500"
+                            className="w-full object-cover -mb-30 rounded-xl shadow-[0_0_10px_10px_rgba(0,255,255,0.2)] max-lg:mb-8 hover:scale-105 transition-transform duration-500"
                             style={{
                                 boxShadow: `
                             0px 0px 1.15px rgba(25, 87, 84, 1),
@@ -156,14 +156,14 @@ const Quest = () => {
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-10 mt-10 animate-fade-in-right">
-                    <div className='flex flex-col gap-8 items-center ml-[-50px] animate-float'>
+                <div className="flex flex-col gap-10 mt-10 max-lg:gap-6 max-lg:mt-0 max-lg:w-full max-lg:items-center animate-fade-in-right">
+                    <div className='flex flex-col gap-8 items-center ml-[-50px] max-lg:gap-4 max-lg:ml-0 animate-float'>
                         {logos.map((items, groupIndex) => (
-                            <div className='flex items-center gap-8' key={groupIndex}>
+                            <div className='flex items-center gap-8 max-lg:gap-4' key={groupIndex}>
                                 {items.map((Icon, i) => (
                                     <Icon
                                         key={i}
-                                        className="w-18 h-18 text-white hover:text-cyan-400 transition-colors duration-300 hover:scale-110 transform transition-transform"
+                                        className="w-18 h-18 text-white max-lg:w-8 max-lg:h-8 max-sm:w-6 max-sm:h-6 hover:text-cyan-400 transition-colors duration-300 hover:scale-110 transform transition-transform"
                                         style={{
                                             animationDelay: `${(groupIndex * items.length + i) * 0.1}s`
                                         }}
@@ -173,16 +173,16 @@ const Quest = () => {
                         ))}
                     </div>
 
-                    <div className="flex flex-col items-end text-xl md:text-[2rem] leading-snug mt-2 animate-fade-in-up">
+                    <div className="flex flex-col items-end text-xl md:text-[2rem] leading-snug mt-2 max-lg:items-center max-lg:text-center max-lg:text-lg max-sm:text-base animate-fade-in-up">
                         <p className="animate-slide-in-right" style={{ animationDelay: '0.3s' }}>Join daily to enhance your skills</p>
                         <p className="animate-slide-in-right" style={{ animationDelay: '0.5s' }}>through <span className="font-bold">Quests</span> and <span className="font-bold">Coding</span></p>
                         <p className="animate-slide-in-right" style={{ animationDelay: '0.7s' }}><span className="">challenges.</span></p>
                     </div>
 
-                    <div className='animate-bounce-in'>
+                    <div className='max-lg:w-full max-lg:flex max-lg:justify-center max-lg:px-8 max-lg:ml-11 animate-bounce-in'>
                         <button
                             onClick={startQuiz}
-                            className="w-full bgButton text-white mt-10 text-xl md:text-5xl py-7 rounded-3xl cursor-pointer hover:scale-105 hover:shadow-lg transition-all duration-300 transform">
+                            className="w-full bgButton text-white mt-10 text-xl md:text-5xl py-7 rounded-3xl cursor-pointer max-lg:text-2xl max-sm:text-xl max-lg:py-4 max-lg:mt-6 max-lg:max-w-xs hover:scale-105 hover:shadow-lg transition-all duration-300 transform">
                             Question
                         </button>
                     </div>
@@ -289,6 +289,21 @@ const Quest = () => {
                     .animate-float {
                         animation: float 3s ease-in-out infinite;
                         animation-delay: 1.5s;
+                    }
+
+                    @media (max-width: 1023px) {
+                        .animate-fade-in-left,
+                        .animate-fade-in-right {
+                            animation-delay: 0.1s;
+                        }
+                        
+                        .animate-slide-in-right {
+                            animation-delay: 0.2s !important;
+                        }
+                        
+                        .animate-bounce-in {
+                            animation-delay: 0.5s;
+                        }
                     }
                 `}</style>
             </div>
