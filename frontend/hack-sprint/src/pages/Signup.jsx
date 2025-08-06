@@ -113,7 +113,8 @@ function Signup() {
           </div>
 
         </form>
-         <GoogleAuthWrapper /> 
+        <GoogleAuthWrapper />
+
       </div>
     </div>
   );
