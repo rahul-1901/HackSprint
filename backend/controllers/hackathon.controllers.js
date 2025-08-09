@@ -49,3 +49,18 @@ export const sendExpiredHackathons = async(req,res)=>{
         })
     }
 }
+
+export const addhackathons = async(req,res)=>{
+    try{
+        const hackathonsdata = new hackathonModel(req.body);
+        await hackathonsdata.save();
+        res.status(201).json({
+            "message":"Hackathon Added Successfully",
+            "data": hackathonsdata
+        })
+    }catch(err){
+        res.status(400).json({
+            error: err.message
+        });
+    }
+}

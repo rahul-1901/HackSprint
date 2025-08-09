@@ -59,7 +59,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-
+    isGitHubloggedIn:{
+      type : Boolean
+    },
+    isGoogleLoggedIn:{
+      type : Boolean
+    },
     verificationTokenExpiresAt: Date,
     // Submissions
   },
