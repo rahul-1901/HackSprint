@@ -49,6 +49,9 @@ const hackathonSchema = new mongoose.Schema({
         // enum : {
         //     values : ["React" , "Node.js","MongoDB" , "Socket.io","Python","TensorFlow" , "OpenAI" , "FastAPI","Solidity" , "Web3.js" , "IPFS","Arduino" , "PostgreSQL"]
         // }
+    },
+    numParticipants : {
+        type : Number
     }
 })
 
