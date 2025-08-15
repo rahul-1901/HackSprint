@@ -4,32 +4,81 @@ import {
     SiHtml5, SiGithub, SiPython, SiNodedotjs,
     SiJavascript, SiMysql, SiTensorflow, SiReact, SiCss3
 } from 'react-icons/si';
-import QuestImg from '../assets/quest.png'
 import './Allcss.css'
 
 const Questions = () => {
     const [quizStarted, setQuizStarted] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [timeLeft, setTimeLeft] = useState(90);
+    const [timeLeft, setTimeLeft] = useState(20);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [showExplanation, setShowExplanation] = useState(false);
     const [explanationTimer, setExplanationTimer] = useState(0);
     const [isCorrect, setIsCorrect] = useState(false);
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [questions, setQuestions] = useState([]);
+    const [userAnswers, setUserAnswers] = useState([]); // Track user answers
 
-    const logos = [
-        [
-            SiHtml5, SiGithub, SiPython
-        ], [
-            SiNodedotjs,
-            SiJavascript, SiMysql
-        ], [
-            SiTensorflow, SiReact, SiCss3
-        ]
-    ]
+    // Local Storage keys
+    const STORAGE_KEYS = {
+        CURRENT_INDEX: 'devquest_current_index',
+        TIME_LEFT: 'devquest_time_left',
+        USER_ANSWERS: 'devquest_user_answers',
+        QUIZ_STARTED: 'devquest_quiz_started',
+        QUIZ_COMPLETED: 'devquest_quiz_completed'
+    };
 
+    // Load progress from localStorage on component mount
+    const loadProgress = () => {
+        try {
+            const savedIndex = localStorage.getItem(STORAGE_KEYS.CURRENT_INDEX);
+            const savedTimeLeft = localStorage.getItem(STORAGE_KEYS.TIME_LEFT);
+            const savedAnswers = localStorage.getItem(STORAGE_KEYS.USER_ANSWERS);
+            const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
+            const savedQuizCompleted = localStorage.getItem(STORAGE_KEYS.QUIZ_COMPLETED);
 
+            if (savedIndex !== null) {
+                setCurrentQuestionIndex(parseInt(savedIndex, 10));
+            }
+            if (savedTimeLeft !== null) {
+                setTimeLeft(parseInt(savedTimeLeft, 10));
+            }
+            if (savedAnswers !== null) {
+                setUserAnswers(JSON.parse(savedAnswers));
+            }
+            if (savedQuizStarted !== null) {
+                setQuizStarted(JSON.parse(savedQuizStarted));
+            }
+            if (savedQuizCompleted !== null) {
+                setQuizCompleted(JSON.parse(savedQuizCompleted));
+            }
+        } catch (error) {
+            console.error('Error loading progress from localStorage:', error);
+        }
+    };
+
+    // Save progress to localStorage
+    const saveProgress = () => {
+        try {
+            localStorage.setItem(STORAGE_KEYS.CURRENT_INDEX, currentQuestionIndex.toString());
+            localStorage.setItem(STORAGE_KEYS.TIME_LEFT, timeLeft.toString());
+            localStorage.setItem(STORAGE_KEYS.USER_ANSWERS, JSON.stringify(userAnswers));
+            localStorage.setItem(STORAGE_KEYS.QUIZ_STARTED, JSON.stringify(quizStarted));
+            localStorage.setItem(STORAGE_KEYS.QUIZ_COMPLETED, JSON.stringify(quizCompleted));
+        } catch (error) {
+            console.error('Error saving progress to localStorage:', error);
+        }
+    };
+
+    // Clear progress from localStorage
+    const clearProgress = () => {
+        try {
+            Object.values(STORAGE_KEYS).forEach(key => {
+                localStorage.removeItem(key);
+            });
+        } catch (error) {
+            console.error('Error clearing progress from localStorage:', error);
+        }
+    };
 
     useEffect(() => {
         const fetchQuestions = async () => {
@@ -45,18 +94,33 @@ const Questions = () => {
                     explanation: item.explanation
                 }));
 
-                setQuestions(formattedQuestions); // This updates the UI automatically
+                setQuestions(formattedQuestions);
+
+                // Load progress after questions are loaded
+                loadProgress();
+
+                // If no saved state, start quiz with default values
+                const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
+                if (savedQuizStarted === null) {
+                    setQuizStarted(true);
+                    setTimeLeft(20);
+                }
             } catch (err) {
                 console.error("Error fetching questions:", err);
             }
         };
 
         fetchQuestions();
-        setQuizStarted(true);
     }, []);
 
+    // Save progress whenever state changes
+    useEffect(() => {
+        if (questions.length > 0) {
+            saveProgress();
+        }
+    }, [currentQuestionIndex, timeLeft, userAnswers, quizStarted, quizCompleted, questions.length]);
 
-    // Timer for questions (90 seconds)
+    // Timer for questions (20 seconds)
     useEffect(() => {
         if (quizStarted && !showExplanation && !quizCompleted && timeLeft > 0) {
             const timer = setTimeout(() => {
@@ -82,6 +146,11 @@ const Questions = () => {
     }, [explanationTimer, showExplanation]);
 
     const handleTimeUp = () => {
+        // Save unanswered question as null
+        const newAnswers = [...userAnswers];
+        newAnswers[currentQuestionIndex] = null;
+        setUserAnswers(newAnswers);
+
         if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
             setTimeLeft(20);
@@ -97,6 +166,17 @@ const Questions = () => {
         setSelectedAnswer(answerIndex);
         const correct = answerIndex === questions[currentQuestionIndex].correctAnswer;
         setIsCorrect(correct);
+
+        // Save user's answer
+        const newAnswers = [...userAnswers];
+        newAnswers[currentQuestionIndex] = {
+            selectedAnswer: answerIndex,
+            isCorrect: correct,
+            timeSpent: 20 - timeLeft
+        };
+        setUserAnswers(newAnswers);
+
+        // Show explanation immediately
         setShowExplanation(true);
         setExplanationTimer(correct ? 5 : 10); // 5 sec for correct, 10 sec for wrong
     };
@@ -114,12 +194,24 @@ const Questions = () => {
         }
     };
 
+    const handleNextButton = () => {
+        moveToNextQuestion();
+    };
+
     const startQuiz = () => {
+        clearProgress(); // Clear any existing progress
         setQuizStarted(true);
+        setCurrentQuestionIndex(0);
         setTimeLeft(20);
+        setSelectedAnswer(null);
+        setShowExplanation(false);
+        setExplanationTimer(0);
+        setQuizCompleted(false);
+        setUserAnswers([]);
     };
 
     const resetQuiz = () => {
+        clearProgress(); // Clear saved progress
         setQuizStarted(false);
         setCurrentQuestionIndex(0);
         setTimeLeft(20);
@@ -127,13 +219,34 @@ const Questions = () => {
         setShowExplanation(false);
         setExplanationTimer(0);
         setQuizCompleted(false);
+        setUserAnswers([]);
     };
 
+    const getQuizStats = () => {
+        const answeredQuestions = userAnswers.filter(answer => answer !== null);
+        const correctAnswers = answeredQuestions.filter(answer => answer && answer.isCorrect);
+        return {
+            total: questions.length,
+            answered: answeredQuestions.length,
+            correct: correctAnswers.length,
+            percentage: answeredQuestions.length > 0 ? Math.round((correctAnswers.length / answeredQuestions.length) * 100) : 0
+        };
+    };
+
+    // Show loading screen if questions haven't loaded yet
     if (!quizStarted || questions.length === 0) {
-        return
+        return (
+            <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+                    <p className="text-xl">Loading Quiz...</p>
+                </div>
+            </div>
+        );
     }
 
     if (quizCompleted) {
+        const stats = getQuizStats();
         return (
             <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-8 relative overflow-hidden">
                 {/* Animated Background Elements */}
@@ -153,9 +266,27 @@ const Questions = () => {
                     <h1 className="text-4xl md:text-6xl font-bold mb-8 text-cyan-400 animate-pulse-slow">Quest Completed!</h1>
 
                     <div className="mb-8 p-6 bg-gray-800 rounded-2xl border border-cyan-500/30 shadow-lg animate-fade-in-up" style={{ animationDelay: '0.2s', opacity: 0 }}>
-                        <p className="text-xl md:text-2xl mb-4 text-white">No more questions available</p>
-                        <p className="text-lg text-gray-300">
-                            You've completed all {questions.length} questions. Great job on finishing the DevQuest challenge!
+                        <p className="text-xl md:text-2xl mb-4 text-white">Quiz Statistics</p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div className="bg-gray-700/50 p-3 rounded-lg">
+                                <div className="text-2xl font-bold text-cyan-400">{stats.total}</div>
+                                <div className="text-sm text-gray-300">Total</div>
+                            </div>
+                            <div className="bg-gray-700/50 p-3 rounded-lg">
+                                <div className="text-2xl font-bold text-blue-400">{stats.answered}</div>
+                                <div className="text-sm text-gray-300">Answered</div>
+                            </div>
+                            <div className="bg-gray-700/50 p-3 rounded-lg">
+                                <div className="text-2xl font-bold text-green-400">{stats.correct}</div>
+                                <div className="text-sm text-gray-300">Correct</div>
+                            </div>
+                            <div className="bg-gray-700/50 p-3 rounded-lg">
+                                <div className="text-2xl font-bold text-yellow-400">{stats.percentage}%</div>
+                                <div className="text-sm text-gray-300">Score</div>
+                            </div>
+                        </div>
+                        <p className="text-lg text-gray-300 mt-4">
+                            Great job on finishing the DevQuest challenge!
                         </p>
                     </div>
 
@@ -276,6 +407,9 @@ const Questions = () => {
     }
 
     const currentQuestion = questions[currentQuestionIndex];
+    const hasAnsweredCurrent = userAnswers[currentQuestionIndex] !== undefined;
+    const canShowNext = selectedAnswer !== null;
+
     return (
         <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6 lg:p-8 relative overflow-hidden flex flex-col items-center pt-8">
             {/* Enhanced Animated Background */}
@@ -296,8 +430,14 @@ const Questions = () => {
                 <div className="text-center mb-4 sm:mb-6 animate-fade-in-down">
                     <div className="mb-3 sm:mb-4 relative">
                         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-cyan-400 mb-2 relative leading-tight">
+                            DevQuest - Continue Your Journey
                             <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 blur-xl opacity-70 animate-pulse"></div>
                         </h1>
+                        {hasAnsweredCurrent && (
+                            <div className="text-sm text-green-400 animate-fade-in">
+                                ✓ Previously answered
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0 mb-4 bg-gray-800/50 backdrop-blur-sm rounded-2xl p-3 sm:p-4 border border-gray-700/50 shadow-xl">
@@ -372,6 +512,17 @@ const Questions = () => {
                             ))}
                         </div>
 
+                        {/* Next Button */}
+                        <div className="flex justify-center mb-4">
+                            <button
+                                onClick={handleNextButton}
+                                className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 animate-fade-in border border-purple-400/30 shadow-lg"
+                            >
+                                {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Finish Quiz'} →
+                            </button>
+                        </div>
+
+
                         {/* Enhanced Explanation */}
                         {showExplanation && (
                             <div className={`relative p-4 sm:p-5 lg:p-6 rounded-xl mb-4 animate-explanation-enter border ${isCorrect ? 'bg-green-800/80 border-green-500/50 shadow-green-500/20' : 'bg-red-800/80 border-red-500/50 shadow-red-500/20'} shadow-xl backdrop-blur-sm`}>
@@ -384,7 +535,7 @@ const Questions = () => {
                                         </h3>
                                         <div className="flex items-center gap-2 text-base sm:text-lg font-bold bg-gray-900/50 px-3 sm:px-4 py-2 rounded-lg animate-pulse">
                                             <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-cyan-500 rounded-full animate-bounce"></div>
-                                            Next in {explanationTimer}s
+                                            Auto-advance in {explanationTimer}s
                                         </div>
                                     </div>
                                     <div className="p-3 sm:p-4 bg-gray-900/30 rounded-lg border border-gray-700/50">
@@ -727,6 +878,14 @@ const Questions = () => {
 
                     .animate-explanation-enter {
                         animation: explanationEnter 0.5s ease-out forwards;
+                    }
+
+                    .animate-fade-in-up {
+                        animation: fadeInUp 0.5s ease-out forwards;
+                    }
+
+                    .animate-bounce-in {
+                        animation: bounceIn 0.6s ease-out forwards;
                     }
 
                     /* Mobile-specific adjustments */

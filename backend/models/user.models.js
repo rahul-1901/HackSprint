@@ -69,4 +69,3 @@ const userSchema = new mongoose.Schema(
 const UserModel = mongoose.model("users", userSchema)
 
 export default UserModel
-
