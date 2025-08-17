@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Loader from '../components/Loader'
-import { Users, Calendar, Timer, ArrowRight, Code, Trophy, Zap, Star, Github, ExternalLink } from 'lucide-react'
-
+import { Users, Calendar, Timer, ArrowRight, Code, Trophy, Zap, Star, Github, ExternalLink, Terminal, Coffee, Bug, Lightbulb, Cpu, Database } from 'lucide-react'
+import axios from "axios";
 
 
 const FloatingParticles = () => (
@@ -60,11 +60,53 @@ const TypingText = ({ text, className = "" }) => {
   )
 }
 
-const HackathonCard = ({ hackathon, isExpired = false }) => {
+const HackathonCard = ({ hackathon }) => {
   const [isHovered, setIsHovered] = useState(false)
 
-  return (
+  function getProgress(startDate, endDate) {
+    const now = new Date().getTime();
+    const start = new Date(startDate).getTime();
+    const end = new Date(endDate).getTime();
 
+    if (now <= start) return 0;
+    if (now >= end) return 100;
+
+    const totalDuration = end - start;
+    const elapsed = now - start;
+
+    return ((elapsed / totalDuration) * 100).toFixed(2); // keep 2 decimals
+  }
+
+  const getCountdown = (endDate) => {
+    const now = new Date().getTime();
+    const target = new Date(endDate).getTime();
+    const diff = target - now;
+
+    if (diff <= 0) {
+      setIsExpired(true);
+      return "0d 0h 0m";
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    return `${days}d ${hours}h ${minutes}m`;
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdown(getCountdown(hackathon.endDate));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [hackathon.endDate]);
+
+
+  // Dynamically determine if hackathon is expired
+  const isExpired = hackathon.status === false
+
+  return (
     <div
       className={`border border-green-500/20 bg-white/5 backdrop-blur-sm hover:border-green-400 hover:scale-[1.02] transition-all duration-300 px-4 sm:px-5 py-4 sm:py-5 rounded-xl cursor-pointer relative group overflow-hidden ${isHovered ? 'shadow-2xl shadow-green-500/20' : ''
         }`}
@@ -84,7 +126,7 @@ const HackathonCard = ({ hackathon, isExpired = false }) => {
           <Timer size={12} className={isExpired ? 'text-red-400' : 'text-green-400'} />
           <span className={`font-mono text-xs sm:text-sm ${isExpired ? 'text-red-400' : 'text-green-400'
             }`}>
-            {isExpired ? '0d 0h 0m' : '3d 14h 22m'}
+            {isExpired ? '0d 0h 0m' : getCountdown(hackathon.endDate)}
           </span>
         </div>
       </div>
@@ -92,23 +134,32 @@ const HackathonCard = ({ hackathon, isExpired = false }) => {
       <div className='flex flex-col relative z-10'>
         <div className='flex flex-col flex-1 pr-20 sm:pr-24 md:pr-28 lg:pr-32'>
           <div className="flex flex-col gap-2 mb-2">
-            <h3 className='font-semibold text-lg sm:text-xl lg:text-2xl text-white/90 pr-2'>
+            <h3 className="font-semibold text-lg sm:text-xl lg:text-2xl text-white/90 pr-2">
               {hackathon.title}
             </h3>
             <div className="flex gap-1 flex-wrap">
+              {/* Difficulty tag */}
               <span className="px-2 py-1 text-xs bg-green-500/20 text-green-400 rounded-full whitespace-nowrap">
                 {hackathon.difficulty}
               </span>
-              <span className="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-full whitespace-nowrap">
-                {hackathon.category}
-              </span>
+
+              {/* Multiple category tags */}
+              {(hackathon.category || []).map((cat, idx) => (
+                <span
+                  key={idx}
+                  className="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-full whitespace-nowrap"
+                >
+                  {cat}
+                </span>
+              ))}
             </div>
           </div>
+
 
           <p className='text-gray-400 text-sm sm:text-base mb-3'>{hackathon.description}</p>
 
           <div className="flex flex-wrap gap-2 mb-3">
-            {hackathon.techStack.map((tech, index) => (
+            {(hackathon.techStack || []).map((tech, index) => (
               <span key={index} className="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded">
                 {tech}
               </span>
@@ -122,7 +173,7 @@ const HackathonCard = ({ hackathon, isExpired = false }) => {
             </div>
             <div className='flex items-center text-xs sm:text-sm'>
               <Trophy size={14} className='text-gray-500' />
-              <span className='ml-1 text-gray-400'>{hackathon.prize}</span>
+              <span className='ml-1 text-gray-400'>${hackathon.prize}</span>
             </div>
             <div className='flex items-center text-xs sm:text-sm'>
               <Calendar size={14} className='text-gray-500' />
@@ -137,7 +188,7 @@ const HackathonCard = ({ hackathon, isExpired = false }) => {
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700/50">
           <div
             className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300"
-            style={{ width: `${hackathon.progress}%` }}
+            style={{ width: `${getProgress(hackathon.startDate, hackathon.endDate)}%` }}
           />
         </div>
       )}
@@ -145,7 +196,9 @@ const HackathonCard = ({ hackathon, isExpired = false }) => {
   )
 }
 
+
 const Home = () => {
+
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -173,53 +226,39 @@ const Home = () => {
     };
   }, []);
 
-  const activeHackathons = [
-    {
-      title: "Building HackSprint Platform",
-      description: "A centralized platform for hackathons, dev quests and events",
-      participants: 500,
-      prize: "$10,000",
-      dates: "10/06/2025 - 20/06/2025",
-      difficulty: "Advanced",
-      category: "Web Dev",
-      techStack: ["React", "Node.js", "MongoDB", "Socket.io"],
-      progress: 65
-    },
-    {
-      title: "AI Code Assistant Challenge",
-      description: "Build an intelligent coding assistant using machine learning",
-      participants: 342,
-      prize: "$7,500",
-      dates: "15/06/2025 - 25/06/2025",
-      difficulty: "Expert",
-      category: "AI/ML",
-      techStack: ["Python", "TensorFlow", "OpenAI", "FastAPI"],
-      progress: 40
-    }
-  ]
+  const [activeHackathons, setActiveHackathons] = useState([]);
+  const [expiredHackathons, setExpiredHackathons] = useState([]);
 
-  const expiredHackathons = [
-    {
-      title: "Blockchain Voting System",
-      description: "Create a secure, transparent voting platform using blockchain",
-      participants: 278,
-      prize: "$5,000",
-      dates: "01/05/2025 - 10/05/2025",
-      difficulty: "Advanced",
-      category: "Blockchain",
-      techStack: ["Solidity", "Web3.js", "React", "IPFS"]
-    },
-    {
-      title: "Green Tech Solutions",
-      description: "Develop sustainable technology solutions for environmental challenges",
-      participants: 156,
-      prize: "$3,000",
-      dates: "20/04/2025 - 30/04/2025",
-      difficulty: "Intermediate",
-      category: "IoT",
-      techStack: ["Arduino", "Python", "React", "PostgreSQL"]
-    }
-  ]
+
+  useEffect(() => {
+    const fetchHackathons = async () => {
+      try {
+        const [activeRes, expiredRes] = await Promise.all([
+          axios.get("http://localhost:3000/api/hackathons"),
+          axios.get("http://localhost:3000/api/hackathons/expiredHackathons"),
+        ]);
+
+        const mapData = (data) =>
+          (data || []).map((h) => ({
+            ...h,
+            participants: h.numParticipants || 0, // rename for component
+            prize: h.prizeMoney,         // rename for component
+            techStack: h.techStackUsed || [], // ensure techStack is an array
+            category: h.category || 'General', // default category if not provided
+
+            dates: `${new Date(h.startDate).toLocaleDateString()} - ${new Date(h.endDate).toLocaleDateString()}`
+          }));
+
+        setActiveHackathons(mapData(activeRes.data.allHackathons));
+        setExpiredHackathons(mapData(expiredRes.data.expiredHackathons));
+      } catch (error) {
+        console.error("Error fetching hackathons:", error);
+      }
+    };
+
+    fetchHackathons();
+  }, []);
+
 
 
 
@@ -374,30 +413,6 @@ const Home = () => {
             {expiredHackathons.map((hackathon, index) => (
               <HackathonCard key={index} hackathon={hackathon} isExpired={true} />
             ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Footer Statistics */}
-      <div className="border-t border-green-500/20 bg-gray-900/80 backdrop-blur-sm py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl font-bold text-green-400 mb-2">1,250+</div>
-              <div className="text-gray-400">Total Participants</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-green-400 mb-2">47</div>
-              <div className="text-gray-400">Hackathons Completed</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-green-400 mb-2">$125K</div>
-              <div className="text-gray-400">Total Prize Money</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-green-400 mb-2">98%</div>
-              <div className="text-gray-400">Satisfaction Rate</div>
-            </div>
           </div>
         </div>
       </div>
