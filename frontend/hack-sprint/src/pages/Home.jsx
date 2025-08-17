@@ -199,50 +199,6 @@ const HackathonCard = ({ hackathon }) => {
 
 const Home = () => {
 
-  const [stats, setStats] = useState({
-    participants: 0,
-    hackathons: 0,
-    prizeMoney: 0,
-    satisfaction: 0
-  });
-
-  useEffect(() => {
-    const animateStats = () => {
-      const targetStats = {
-        participants: 1250,
-        hackathons: 47,
-        prizeMoney: 125,
-        satisfaction: 98
-      };
-
-      const duration = 2000; // 2 seconds
-      const steps = 60;
-      const stepDuration = duration / steps;
-
-      let step = 0;
-      const timer = setInterval(() => {
-        step++;
-        const progress = step / steps;
-
-        setStats({
-          participants: Math.floor(targetStats.participants * progress),
-          hackathons: Math.floor(targetStats.hackathons * progress),
-          prizeMoney: Math.floor(targetStats.prizeMoney * progress),
-          satisfaction: Math.floor(targetStats.satisfaction * progress)
-        });
-
-        if (step >= steps) {
-          clearInterval(timer);
-          setStats(targetStats);
-        }
-      }, stepDuration);
-    };
-
-    // Trigger animation when page loads
-    const timer = setTimeout(animateStats, 2500); // After loader
-    return () => clearTimeout(timer);
-  }, []);
-
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -285,7 +241,7 @@ const Home = () => {
         const mapData = (data) =>
           (data || []).map((h) => ({
             ...h,
-            participants: h.submissions, // rename for component
+            participants: h.numParticipants || 0, // rename for component
             prize: h.prizeMoney,         // rename for component
             techStack: h.techStackUsed || [], // ensure techStack is an array
             category: h.category || 'General', // default category if not provided
@@ -457,30 +413,6 @@ const Home = () => {
             {expiredHackathons.map((hackathon, index) => (
               <HackathonCard key={index} hackathon={hackathon} isExpired={true} />
             ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Footer Statistics */}
-      <div className="border-t border-green-500/20 bg-gray-900/80 backdrop-blur-sm py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl font-bold text-green-400 mb-2">{stats.participants.toLocaleString()}+</div>
-              <div className="text-gray-400">Total Participants</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-green-400 mb-2">{stats.hackathons}</div>
-              <div className="text-gray-400">Hackathons Completed</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-green-400 mb-2">${stats.prizeMoney}K</div>
-              <div className="text-gray-400">Total Prize Money</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-green-400 mb-2">{stats.satisfaction}%</div>
-              <div className="text-gray-400">Satisfaction Rate</div>
-            </div>
           </div>
         </div>
       </div>
