@@ -94,4 +94,3 @@ userSchema.virtual("submissions", {
 const UserModel = mongoose.model("users", userSchema)
 
 export default UserModel
-
