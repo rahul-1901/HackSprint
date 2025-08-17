@@ -314,8 +314,8 @@ const Hackathons = () => {
     const fetchHackathons = async () => {
       try {
         const [activeRes, expiredRes, upcomingRes] = await Promise.all([
-          axios.get("http://localhost:3000/api/hackathons"),
-          axios.get("http://localhost:3000/api/hackathons/expiredHackathons"),
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons`),
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/expiredHackathons`),
           // axios.get("http://localhost:3000/api/hackathons/upcomingHackathons"), // Assuming this endpoint exists
         ]);
 
