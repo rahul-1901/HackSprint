@@ -238,7 +238,7 @@ const Questions = () => {
         return (
             <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400 mx-auto mb-4"></div>
                     <p className="text-xl">Loading Quiz...</p>
                 </div>
             </div>
@@ -258,30 +258,30 @@ const Questions = () => {
 
                 <div className="text-center max-w-2xl animate-fade-in-up relative z-10">
                     <div className="mb-8 animate-celebration-badge">
-                        <div className="inline-block p-6 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 shadow-2xl">
+                        <div className="inline-block p-6 rounded-full bg-gradient-to-r from-green-500 to-green-600 shadow-2xl">
                             <span className="text-6xl animate-bounce-celebration">🏆</span>
                         </div>
                     </div>
 
-                    <h1 className="text-4xl md:text-6xl font-bold mb-8 text-cyan-400 animate-pulse-slow">Quest Completed!</h1>
+                    <h1 className="text-4xl md:text-6xl font-bold mb-8 text-green-400 animate-pulse-slow">Quest Completed!</h1>
 
-                    <div className="mb-8 p-6 bg-gray-800 rounded-2xl border border-cyan-500/30 shadow-lg animate-fade-in-up" style={{ animationDelay: '0.2s', opacity: 0 }}>
+                    <div className="mb-8 p-6 bg-gray-800 rounded-2xl border border-green-500/30 shadow-lg animate-fade-in-up" style={{ animationDelay: '0.2s', opacity: 0 }}>
                         <p className="text-xl md:text-2xl mb-4 text-white">Quiz Statistics</p>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                             <div className="bg-gray-700/50 p-3 rounded-lg">
-                                <div className="text-2xl font-bold text-cyan-400">{stats.total}</div>
+                                <div className="text-2xl font-bold text-green-400">{stats.total}</div>
                                 <div className="text-sm text-gray-300">Total</div>
                             </div>
                             <div className="bg-gray-700/50 p-3 rounded-lg">
-                                <div className="text-2xl font-bold text-blue-400">{stats.answered}</div>
+                                <div className="text-2xl font-bold text-green-500">{stats.answered}</div>
                                 <div className="text-sm text-gray-300">Answered</div>
                             </div>
                             <div className="bg-gray-700/50 p-3 rounded-lg">
-                                <div className="text-2xl font-bold text-green-400">{stats.correct}</div>
+                                <div className="text-2xl font-bold text-green-300">{stats.correct}</div>
                                 <div className="text-sm text-gray-300">Correct</div>
                             </div>
                             <div className="bg-gray-700/50 p-3 rounded-lg">
-                                <div className="text-2xl font-bold text-yellow-400">{stats.percentage}%</div>
+                                <div className="text-2xl font-bold text-green-200">{stats.percentage}%</div>
                                 <div className="text-sm text-gray-300">Score</div>
                             </div>
                         </div>
@@ -292,7 +292,7 @@ const Questions = () => {
 
                     <button
                         onClick={resetQuiz}
-                        className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white px-8 py-4 rounded-xl text-xl cursor-pointer transition-all duration-300 transform hover:scale-105 animate-bounce-in shadow-xl border border-cyan-400/30"
+                        className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl text-xl cursor-pointer transition-all duration-300 transform hover:scale-105 animate-bounce-in shadow-xl border border-green-400/30"
                         style={{ animationDelay: '0.7s', opacity: 0 }}
                     >
                         Take Quest Again
@@ -301,19 +301,19 @@ const Questions = () => {
 
                 <style jsx>{`
                     .celebration-bg-1 {
-                        background: linear-gradient(45deg, rgba(6, 182, 212, 0.1), rgba(147, 51, 234, 0.1));
+                        background: linear-gradient(45deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.1));
                         top: 10%;
                         left: 10%;
                     }
                     
                     .celebration-bg-2 {
-                        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.1));
+                        background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(34, 197, 94, 0.1));
                         top: 20%;
                         right: 15%;
                     }
                     
                     .celebration-bg-3 {
-                        background: linear-gradient(225deg, rgba(236, 72, 153, 0.1), rgba(168, 85, 247, 0.1));
+                        background: linear-gradient(225deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.1));
                         bottom: 20%;
                         left: 20%;
                     }
@@ -421,18 +421,14 @@ const Questions = () => {
                 <div className="floating-orb-4 absolute w-12 h-12 sm:w-18 sm:h-18 lg:w-24 lg:h-24 rounded-full opacity-20 animate-float-4"></div>
 
                 {/* Animated Lines */}
-                <div className="animated-line-1 absolute h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-30"></div>
-                <div className="animated-line-2 absolute w-px bg-gradient-to-b from-transparent via-purple-500 to-transparent opacity-30"></div>
+                <div className="animated-line-1 absolute h-px bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-30"></div>
+                <div className="animated-line-2 absolute w-px bg-gradient-to-b from-transparent via-green-500 to-transparent opacity-30"></div>
             </div>
 
-            <div className="max-w-4xl w-full relative z-10">
+            <div className="max-w-2xl w-full relative z-10">
                 {/* Enhanced Header */}
                 <div className="text-center mb-4 sm:mb-6 animate-fade-in-down">
                     <div className="mb-3 sm:mb-4 relative">
-                        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-cyan-400 mb-2 relative leading-tight">
-                            DevQuest - Continue Your Journey
-                            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 blur-xl opacity-70 animate-pulse"></div>
-                        </h1>
                         {hasAnsweredCurrent && (
                             <div className="text-sm text-green-400 animate-fade-in">
                                 ✓ Previously answered
@@ -442,7 +438,7 @@ const Questions = () => {
 
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0 mb-4 bg-gray-800/50 backdrop-blur-sm rounded-2xl p-3 sm:p-4 border border-gray-700/50 shadow-xl">
                         <div className="flex items-center gap-2 sm:gap-3 animate-slide-in-left">
-                            <div className="w-2 h-2 sm:w-3 sm:h-3 bg-cyan-500 rounded-full animate-pulse"></div>
+                            <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full animate-pulse"></div>
                             <span className="text-base sm:text-lg font-semibold">Question {currentQuestionIndex + 1} of {questions.length}</span>
                         </div>
                         <div className="flex items-center gap-2 sm:gap-4 animate-slide-in-right">
@@ -458,7 +454,7 @@ const Questions = () => {
                     <div className="relative w-full bg-gray-800 rounded-full h-2 sm:h-3 mb-4 animate-fade-in border border-gray-700/50 shadow-inner">
                         <div className="absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-full opacity-50"></div>
                         <div
-                            className="bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 h-2 sm:h-3 rounded-full transition-all duration-700 ease-out relative overflow-hidden shadow-lg"
+                            className="bg-gradient-to-r from-green-500 via-green-400 to-green-300 h-2 sm:h-3 rounded-full transition-all duration-700 ease-out relative overflow-hidden shadow-lg"
                             style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-shimmer"></div>
@@ -468,16 +464,16 @@ const Questions = () => {
 
                 {/* Enhanced Question Container */}
                 <div className="relative bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 animate-question-enter border border-gray-700/50 shadow-2xl">
-                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5 rounded-2xl"></div>
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-t-2xl"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-green-400/5 rounded-2xl"></div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-green-400 rounded-t-2xl"></div>
 
                     <div className="relative z-10">
                         <div className="flex items-center justify-center mb-4 sm:mb-6">
-                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-cyan-500 rounded-full animate-pulse mr-2 sm:mr-3 flex-shrink-0"></div>
+                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse mr-2 sm:mr-3 flex-shrink-0"></div>
                             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-center animate-type-writer leading-tight px-2">
                                 {currentQuestion.question}
                             </h2>
-                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-cyan-500 rounded-full animate-pulse ml-2 sm:ml-3 flex-shrink-0"></div>
+                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse ml-2 sm:ml-3 flex-shrink-0"></div>
                         </div>
 
                         {/* Enhanced Options */}
@@ -488,7 +484,7 @@ const Questions = () => {
                                     onClick={() => handleAnswerClick(index)}
                                     disabled={selectedAnswer !== null}
                                     className={`relative p-3 sm:p-4 lg:p-5 rounded-xl text-left transition-all duration-300 transform hover:scale-105 border ${selectedAnswer === null ? 'animate-option-enter' : ''} ${selectedAnswer === null
-                                        ? 'bg-gray-700/80 hover:bg-gray-600/80 cursor-pointer hover:shadow-xl border-gray-600/50 hover:border-cyan-500/50'
+                                        ? 'bg-gray-700/80 hover:bg-gray-600/80 cursor-pointer hover:shadow-xl border-gray-600/50 hover:border-green-500/50'
                                         : selectedAnswer === index
                                             ? isCorrect
                                                 ? 'bg-green-600/90 animate-correct-answer border-green-400 shadow-green-500/30'
@@ -516,7 +512,7 @@ const Questions = () => {
                         <div className="flex justify-center mb-4">
                             <button
                                 onClick={handleNextButton}
-                                className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 animate-fade-in border border-purple-400/30 shadow-lg"
+                                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 animate-fade-in border border-green-400/30 shadow-lg"
                             >
                                 {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Finish Quiz'} →
                             </button>
@@ -534,7 +530,7 @@ const Questions = () => {
                                             {isCorrect ? 'Correct!' : 'Incorrect!'}
                                         </h3>
                                         <div className="flex items-center gap-2 text-base sm:text-lg font-bold bg-gray-900/50 px-3 sm:px-4 py-2 rounded-lg animate-pulse">
-                                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-cyan-500 rounded-full animate-bounce"></div>
+                                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-bounce"></div>
                                             Auto-advance in {explanationTimer}s
                                         </div>
                                     </div>
@@ -550,8 +546,8 @@ const Questions = () => {
                 <style jsx>{`
                     .bg-grid {
                         background-image: 
-                            linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px);
+                            linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px);
                         background-size: 30px 30px;
                     }
 
@@ -568,25 +564,25 @@ const Questions = () => {
                     }
 
                     .floating-orb-1 {
-                        background: linear-gradient(45deg, rgba(6, 182, 212, 0.2), rgba(147, 51, 234, 0.2));
+                        background: linear-gradient(45deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.2));
                         top: 10%;
                         left: 5%;
                     }
 
                     .floating-orb-2 {
-                        background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(59, 130, 246, 0.2));
+                        background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(34, 197, 94, 0.2));
                         top: 60%;
                         right: 10%;
                     }
 
                     .floating-orb-3 {
-                        background: linear-gradient(225deg, rgba(236, 72, 153, 0.2), rgba(168, 85, 247, 0.2));
+                        background: linear-gradient(225deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.2));
                         bottom: 20%;
                         left: 15%;
                     }
 
                     .floating-orb-4 {
-                        background: linear-gradient(315deg, rgba(251, 146, 60, 0.2), rgba(239, 68, 68, 0.2));
+                        background: linear-gradient(315deg, rgba(74, 222, 128, 0.2), rgba(34, 197, 94, 0.2));
                         top: 30%;
                         right: 30%;
                     }
