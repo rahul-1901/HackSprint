@@ -1,0 +1,406 @@
+import mongoose from "mongoose"
+import express from 'express'
+import UserModel from "../models/user.models.js"
+import { all } from "axios"
+
+export const saveGitHubLink = async (req, res) => {
+  try {
+    const { code, state } = req.body; // Expecting code from request body for PUT request
+    
+    if (!code) {
+      return res.status(400).json({ 
+        message: "Missing authorization code from GitHub OAuth" 
+      });
+    }
+
+    // Verify user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ 
+        message: "User not authenticated" 
+      });
+    }
+
+    // Check if GitHub is already linked
+    const existingUser = await UserModel.findById(req.user.id);
+    if (existingUser?.isGitHubloggedIn && existingUser?.gitHubAccessToken) {
+      return res.status(409).json({ 
+        message: "GitHub account is already linked to this user" 
+      });
+    }
+
+    // Exchange code for access token
+    const params = new URLSearchParams({
+      client_id: process.env.GITHUB_CLIENT_ID,
+      client_secret: process.env.GITHUB_CLIENT_SECRET,
+      code: code
+    });
+
+    const tokenResponse = await axios.post(
+      "https://github.com/login/oauth/access_token", 
+      params,
+      {
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        timeout: 10000 // 10 second timeout
+      }
+    );
+
+    const { access_token, token_type, error, error_description } = tokenResponse.data;
+
+    if (error) {
+      console.error('GitHub OAuth error:', error_description);
+      return res.status(400).json({ 
+        message: "GitHub OAuth failed", 
+        error: error_description 
+      });
+    }
+
+    if (!access_token) {
+      return res.status(400).json({ 
+        message: "Failed to obtain GitHub access token" 
+      });
+    }
+
+    // Get GitHub user information
+    const githubUserResponse = await axios.get("https://api.github.com/user", {
+      headers: { 
+        Authorization: `${token_type || 'token'} ${access_token}`,
+        "User-Agent": process.env.APP_NAME || "YourAppName"
+      },
+      timeout: 10000
+    });
+
+    const githubUser = githubUserResponse.data;
+
+    // Check if this GitHub account is already linked to another user
+    const existingGithubUser = await UserModel.findOne({
+      gitHubUserId: githubUser.id,
+      _id: { $ne: req.user.id } // Exclude current user
+    });
+
+    if (existingGithubUser) {
+      return res.status(409).json({ 
+        message: "This GitHub account is already linked to another user" 
+      });
+    }
+
+    // Save GitHub information to user account
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      req.user.id,
+      {
+        gitHubAccessToken: access_token,
+        isGitHubLoggedIn: true,
+        // gitHubUserId: githubUser.id,
+        // gitHubUsername: githubUser.login,
+        // gitHubEmail: githubUser.email,
+        // gitHubName: githubUser.name,
+        // gitHubAvatarUrl: githubUser.avatar_url,
+        // gitHubLinkedAt: new Date(),
+        // updatedAt: new Date()
+      },
+      { 
+        new: true,
+        select: '-gitHubAccessToken' // Don't return the token in response
+      }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ 
+        message: "User not found" 
+      });
+    }
+
+    // Return success response with GitHub user info
+    return res.status(200).json({ 
+      message: "GitHub account linked successfully",
+      githubUser: {
+        id: githubUser.id,
+        login: githubUser.login,
+        name: githubUser.name,
+        email: githubUser.email,
+        avatar_url: githubUser.avatar_url,
+        bio: githubUser.bio,
+        public_repos: githubUser.public_repos,
+        followers: githubUser.followers,
+        following: githubUser.following,
+        created_at: githubUser.created_at
+      },
+      user: {
+        id: updatedUser._id,
+        isGitHubLoggedIn: updatedUser.isGitHubLoggedIn,
+        gitHubUsername: updatedUser.gitHubUsername,
+        gitHubLinkedAt: updatedUser.gitHubLinkedAt
+      }
+    });
+
+  } catch (error) {
+    console.error('Save GitHub link error:', error);
+    
+    // Handle specific axios errors
+    if (error.response) {
+      const status = error.response.status;
+      
+      if (status === 401) {
+        return res.status(401).json({ 
+          message: "Invalid GitHub authorization code" 
+        });
+      } else if (status === 403) {
+        return res.status(403).json({ 
+          message: "GitHub API rate limit exceeded. Please try again later." 
+        });
+      } else if (status === 422) {
+        return res.status(400).json({ 
+          message: "Invalid or expired GitHub authorization code" 
+        });
+      }
+    }
+
+    // Handle network timeouts
+    if (error.code === 'ECONNABORTED') {
+      return res.status(408).json({ 
+        message: "Request timeout. Please try again." 
+      });
+    }
+
+    return res.status(500).json({
+      message: "Internal server error while linking GitHub account",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// Optional: Function to update GitHub link (refresh token/info)
+export const updateGitHubLink = async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.user.id);
+    
+    if (!user || !user.gitHubAccessToken) {
+      return res.status(400).json({ 
+        message: "GitHub account not linked" 
+      });
+    }
+
+    // Refresh GitHub user information
+    const githubUserResponse = await axios.get("https://api.github.com/user", {
+      headers: { 
+        Authorization: `token ${user.gitHubAccessToken}`,
+        "User-Agent": process.env.APP_NAME || "YourAppName"
+      },
+      timeout: 10000
+    });
+
+    const githubUser = githubUserResponse.data;
+
+    // Update user's GitHub information
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      req.user.id,
+      {
+        gitHubUsername: githubUser.login,
+        gitHubEmail: githubUser.email,
+        gitHubName: githubUser.name,
+        gitHubAvatarUrl: githubUser.avatar_url,
+        lastGitHubSync: new Date(),
+        updatedAt: new Date()
+      },
+      { 
+        new: true,
+        select: '-gitHubAccessToken'
+      }
+    );
+
+    return res.status(200).json({ 
+      message: "GitHub information updated successfully",
+      githubUser: {
+        id: githubUser.id,
+        login: githubUser.login,
+        name: githubUser.name,
+        email: githubUser.email,
+        avatar_url: githubUser.avatar_url,
+        bio: githubUser.bio,
+        public_repos: githubUser.public_repos,
+        followers: githubUser.followers,
+        following: githubUser.following
+      },
+      user: {
+        id: updatedUser._id,
+        gitHubUsername: updatedUser.gitHubUsername,
+        lastGitHubSync: updatedUser.lastGitHubSync
+      }
+    });
+
+  } catch (error) {
+    console.error('Update GitHub link error:', error);
+    
+    if (error.response?.status === 401) {
+      // Token is invalid, clear GitHub connection
+      await UserModel.findByIdAndUpdate(
+        req.user.id,
+        {
+          $unset: { 
+            gitHubAccessToken: 1,
+            gitHubUserId: 1,
+            gitHubUsername: 1,
+            gitHubEmail: 1,
+            gitHubName: 1,
+            gitHubAvatarUrl: 1
+          },
+          isGitHubLoggedIn: false,
+          updatedAt: new Date()
+        }
+      );
+      
+      return res.status(401).json({ 
+        message: "GitHub token invalid. Please reconnect your GitHub account." 
+      });
+    }
+
+    return res.status(500).json({ 
+      message: "Failed to update GitHub information" 
+    });
+  }
+};
+
+// Function to remove GitHub link
+export const removeGitHubLink = async (req, res) => {
+  try {
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      req.user.id,
+      {
+        $unset: { 
+          gitHubAccessToken: 1,
+          // gitHubUserId: 1,
+          // gitHubUsername: 1,
+          // gitHubEmail: 1,
+          // gitHubName: 1,
+          // gitHubAvatarUrl: 1,
+          // gitHubLinkedAt: 1,
+          // lastGitHubSync: 1
+        },
+        isGitHubLoggedIn: false,
+        // updatedAt: new Date()
+      },
+      { 
+        new: true,
+        select: '-gitHubAccessToken'
+      }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ 
+        message: "User not found" 
+      });
+    }
+
+    return res.status(200).json({ 
+      message: "GitHub account unlinked successfully",
+      user: {
+        id: updatedUser._id,
+        isGitHubLoggedIn: updatedUser.isGitHubLoggedIn
+      }
+    });
+
+  } catch (error) {
+    console.error('Remove GitHub link error:', error);
+    return res.status(500).json({ 
+      message: "Failed to unlink GitHub account" 
+    });
+  }
+};
+
+export const checkAndUpdateGitHubStatus = async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.gitHubAccessToken) {
+      user.isGitHubloggedIn = false;
+      await user.save();
+      return res.status(200).json({
+        isGitHubloggedIn: false,
+        message: "GitHub not connected. Please log in with GitHub to submit."
+      });
+    }
+
+    // Verify token with GitHub API
+    try {
+      const ghRes = await axios.get("https://api.github.com/user", {
+        headers: { Authorization: `token ${user.gitHubAccessToken}` },
+      });
+
+      if (ghRes.status === 200) {
+        user.isGitHubloggedIn = true;
+        await user.save();
+        return res.status(200).json({
+          isGitHubloggedIn: true,
+          message: "GitHub connected, you can submit now",
+          githubUser: ghRes.data
+        });
+      }
+    } catch (err) {
+      // Token invalid or expired
+      user.isGitHubloggedIn = false;
+      await user.save();
+      return res.status(200).json({
+        isGitHubloggedIn: false,
+        message: "GitHub token invalid or expired. Please log in again."
+      });
+    }
+
+  } catch (error) {
+    console.error("Error checking GitHub login status:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const increaseStreak = async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ message: "userId is required" });
+        }
+
+        const user = await UserModel.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.streaks += 1; // Increment streak by 1
+        await user.save();
+
+        res.status(200).json({ message: "Streak increased", streaks: user.streaks });
+    } catch (error) {
+        console.error("Error increasing streak:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const resetStreak = async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ message: "userId is required" });
+        }
+
+        const user = await UserModel.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.streaks = 0; // Reset streak to 0
+        await user.save();
+
+        res.status(200).json({ message: "Streak reset", streaks: user.streaks });
+    } catch (error) {
+        console.error("Error resetting streak:", error);
+        res.status(500).json({ message: error.message });
+    }
+};

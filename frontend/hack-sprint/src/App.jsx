@@ -13,7 +13,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import ActiveHackathons from './pages/ActiveHackathons';
 import ExpiredHackathons from './pages/ExpiredHackathons';
 import Dashboard from './pages/dashboard.jsx';
-import Signup from './pages/Signup.jsx';
+// import Signup from './pages/Signup.jsx';
 import Verification from './components/Verification.jsx';
 import ResetPassword from './components/ResetPassword.jsx';
 import RouteHandler from './components/RouteHandler.jsx'
@@ -50,7 +50,7 @@ function App() {
           <Route path="/about" element={<About />} caseSensitive />
           {/* <Route path="/login" element={<GoogleAuthWrapper />} caseSensitive /> */}
           <Route path="/account/login" element={<Login />} caseSensitive></Route>
-          <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
+          {/* <Route path="/account/signup" element={<Signup />} caseSensitive></Route> */}
           <Route path="/account/verify-email" element={<Verification />} caseSensitive></Route>
           <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive></Route>
           <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />}/>} caseSensitive />

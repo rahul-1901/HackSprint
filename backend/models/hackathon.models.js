@@ -13,7 +13,7 @@ const hackathonSchema = new mongoose.Schema({
         type: String
     },
     submissions: {
-        type: Array
+        type: [{ type: mongoose.Schema.Types.ObjectId, ref: "submissions" }],
         //No. of participants of a hackathon are equal to submissions array no.of elements.
     },
     startDate: {
@@ -32,7 +32,7 @@ const hackathonSchema = new mongoose.Schema({
     difficulty: {
         type: String,
         enum: {
-            values: ["Advanced", "Expert", "Intermediate"]
+            values: ["Advanced", "Expert", "Intermediate", "Beginner"]
         }
     },
     category: {
@@ -51,8 +51,35 @@ const hackathonSchema = new mongoose.Schema({
         // }
     },
     numParticipants : {
-        type : Number
-    }
+        type : Number,
+        default : 0
+    },
+    overview:{
+        type: String
+    },
+    themes:{
+        type:[String]  
+    },
+    FAQs:{
+        type: [String]
+    },
+    teams:{
+        type : [
+        { type: mongoose.Schema.Types.ObjectId, ref: "teams" },
+        ]
+    },
+    aboutUs : {
+        type : String
+    },
+    projectSubmission:{
+        type : [String]
+    },
+    TandCforHackathon:{
+        type : [String]
+    },
+    evaluationCriteria:{
+        type : [String]
+    },
 })
 
 hackathonSchema.pre(/^find/, async function (next) {
