@@ -46,8 +46,8 @@ function App() {
         <Routes>
 
           <Route path="/" element={<Home />} caseSensitive />
-          <Route path="/activehackathons" element={<ActiveHackathons/>} caseSensitive></Route>
-          <Route path="/expiredhackathons" element={<ExpiredHackathons/>} caseSensitive></Route>
+          <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
+          <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
           <Route path="/quest" element={<Quest />} caseSensitive />
           <Route path="/about" element={<About />} caseSensitive />
           <Route path="/admin" element={<Admin />} caseSensitive />
@@ -57,7 +57,7 @@ function App() {
           <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
           <Route path="/account/verify-email" element={<Verification />} caseSensitive></Route>
           <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive></Route>
-          <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />}/>} caseSensitive />
+          <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />} />} caseSensitive />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
 
