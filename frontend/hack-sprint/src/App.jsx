@@ -51,8 +51,13 @@ function App() {
           <Route path="/" element={<Home />} caseSensitive />
           <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
           <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
+          <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
+          <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
           <Route path="/quest" element={<Quest />} caseSensitive />
           <Route path="/about" element={<About />} caseSensitive />
+          <Route path="/hackathons" element={<Hackathons />} caseSensitive />
+          <Route path="/admin" element={<Admin />} caseSensitive />
+          <Route path="/questions" element={<Questions />} caseSensitive />
           <Route path="/hackathons" element={<Hackathons />} caseSensitive />
           <Route path="/admin" element={<Admin />} caseSensitive />
           <Route path="/questions" element={<Questions />} caseSensitive />
