@@ -19,7 +19,8 @@ import Signup from './pages/Signup.jsx';
 import Verification from './components/Verification.jsx';
 import ResetPassword from './components/ResetPassword.jsx';
 import RouteHandler from './components/RouteHandler.jsx'
-import Hackathons from './pages/Hackathon.jsx';
+import AllHackathons from './pages/AllHackathons.jsx'
+// import Hackathons from './pages/Hackathon.jsx';
 import { ToastContainer } from 'react-toastify';
 import HackathonDetails from './pages/Hackathon.jsx';
 import { RegistrationForm } from './hackathon/RegistrationForm.jsx';
@@ -55,10 +56,10 @@ function App() {
           <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
           <Route path="/quest" element={<Quest />} caseSensitive />
           <Route path="/about" element={<About />} caseSensitive />
-          <Route path="/hackathons" element={<Hackathons />} caseSensitive />
+          <Route path="/hackathons" element={<AllHackathons />} caseSensitive />
           <Route path="/admin" element={<Admin />} caseSensitive />
           <Route path="/questions" element={<Questions />} caseSensitive />
-          <Route path="/hackathons" element={<Hackathons />} caseSensitive />
+          {/* <Route path="/hackathon" element={<Hackathons />} caseSensitive /> */}
           <Route path="/admin" element={<Admin />} caseSensitive />
           <Route path="/questions" element={<Questions />} caseSensitive />
           {/* <Route path="/login" element={<GoogleAuthWrapper />} caseSensitive /> */}
@@ -66,12 +67,9 @@ function App() {
           <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
           <Route path="/account/verify-email" element={<Verification />} caseSensitive></Route>
           <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive></Route>
-
-          <Route path="/hackathons/:id" element={<HackathonDetails />} />
-          <Route path="/hackathons/RegistrationForm" element={<RegistrationForm />} />
-
+          <Route path="/hackathon/:id" element={<HackathonDetails />} />
+          <Route path="/hackathon/RegistrationForm" element={<RegistrationForm />} />
           <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />} />} caseSensitive />
-
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
 
