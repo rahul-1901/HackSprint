@@ -194,6 +194,7 @@ const Loader = () => (
 );
 
 export default function HackathonDetails() {
+  const { id } = useParams(); 
   const [hackathon, setHackathon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -208,7 +209,8 @@ export default function HackathonDetails() {
       setError("");
       await new Promise((r) => setTimeout(r, 600));
       if (USE_DUMMY_DATA) {
-        const found = dummyHackathons[0];
+        const found = dummyHackathons.find(h => h._id === id); // Find by id
+        if (!found) setError("Hackathon not found!");
         setHackathon(found);
       }
       setLoading(false);
