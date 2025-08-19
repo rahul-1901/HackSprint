@@ -1,130 +1,8 @@
-import axios from 'axios'
-import { useState, useEffect } from "react";
-import { HeroSection } from "../hackathon/Hero-section";
-import { SidebarNav } from "../hackathon/Sidebar-nav";
-import { ContentSection } from "../hackathon/Content-section";
-import { SocialShare } from "../hackathon/Social-share";
-import { RegistrationForm } from "../hackathon/RegistrationForm";
-import { useParams } from 'react-router-dom';
-
-// --- DUMMY MODE ---
-const USE_DUMMY_DATA = false;
-
-
-const Loader = () => (
-  <div className="flex items-center justify-center min-h-screen bg-background">
-    <div className="relative">
-      <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-hero-primary"></div>
-      <div
-        className="absolute inset-0 w-16 h-16 border-4 border-dashed rounded-full animate-spin border-hero-secondary"
-        style={{ animationDirection: "reverse", animationDuration: "1.5s" }}
-      ></div>
-    </div>
-  </div>
-);
-
-export default function HackathonDetails() {
-  const { id } = useParams(); 
-  const [hackathon, setHackathon] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [activeSection, setActiveSection] = useState("overview");
-
-  // --- State for managing views ---
-  const [view, setView] = useState("details"); // Can be 'details' or 'form'
-
- useEffect(() => {
-  const loadData = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${id}`);
-      if (!res.data) {
-        setError("Hackathon not found");
-        setHackathon(null);
-      } else {
-        setHackathon(res.data);
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Hackathon not found!");
-      setHackathon(null);
-    }
-    setLoading(false);
-  };
-  loadData();
-}, [id]);
-
-  // --- Handlers for registration flow ---
-  const handleRegister = () => {
-    // This function will be called from the HeroSection component
-    // when a logged-in and verified user clicks the register button
-    setView("form");
-  };
-
-  const handleFormSubmit = async (formData) => {
-    try {
-      // In a real app, you'd send the data to a backend API here
-      console.log("Submitting registration data to backend:", formData);
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // After successful registration, go back to details view
-      setView("details");
-
-      // The HeroSection component will handle updating the registration status
-      // through its own state management
-
-    } catch (error) {
-      console.error('Registration error:', error);
-      // Handle error appropriately
-    }
-  };
-
-  // --- Render logic ---
-  if (loading) return <Loader />;
-
-  if (error)
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background text-destructive font-mono text-2xl p-8 text-center">
-        {error}
-      </div>
-    );
-
-  // Conditionally render the registration form
-  if (view === "form") {
-    return <RegistrationForm onBack={() => setView("details")} onSubmit={handleFormSubmit} />;
-  }
-
-  // Render the main hackathon details page
-  return (
-    <div className="min-h-screen bg-[#101622]">
-      <HeroSection
-        title={hackathon.title}
-        subTitle={hackathon.subTitle}
-        isActive={hackathon.status}
-        startDate={hackathon.startDate}
-        endDate={hackathon.endDate}
-        participantCount={hackathon.submissions?.length || 0}
-        prizeMoney={hackathon.prizeMoney}
-        imageUrl="/assets/hackathon-banner.png"
-        hackathonId={hackathon._id}
-        onRegister={handleRegister}
-      />
-
-      <div className="flex">
-        <SidebarNav
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-        />
-        <ContentSection activeSection={activeSection} hackathon={hackathon} />
-        <SocialShare />
-      </div>
-    </div>
-  );
-}
-
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from "react-router-dom";
+import Loader from '../components/Loader'
+import { Users, Calendar, Timer, ArrowRight, Code, Trophy, Zap, Star, Github, ExternalLink, Terminal, Coffee, Bug, Lightbulb, Cpu, Database } from 'lucide-react'
+import axios from "axios";
 
 
 const FloatingParticles = () => (
@@ -159,15 +37,17 @@ const GridBackground = () => (
 const TabButton = ({ active, onClick, children, count, icon: Icon }) => (
   <button
     onClick={onClick}
-    className={`relative px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-300 flex items-center gap-2 sm:gap-3 font-medium text-sm sm:text-base ${active
+    className={`relative px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-300 flex items-center gap-2 sm:gap-3 font-medium text-sm sm:text-base ${
+      active
         ? 'bg-green-500/20 text-green-300 border border-green-500/30'
         : 'bg-white/5 text-gray-400 border border-gray-700/50 hover:bg-white/10 hover:text-green-400 hover:border-green-500/20'
-      }`}
+    }`}
   >
     <Icon size={16} className={active ? 'text-green-400' : 'text-gray-500'} />
     <span>{children}</span>
-    <span className={`px-2 py-0.5 rounded-full text-xs font-mono ${active ? 'bg-green-500/30 text-green-300' : 'bg-gray-700/50 text-gray-400'
-      }`}>
+    <span className={`px-2 py-0.5 rounded-full text-xs font-mono ${
+      active ? 'bg-green-500/30 text-green-300' : 'bg-gray-700/50 text-gray-400'
+    }`}>
       {count}
     </span>
     {active && (
@@ -177,6 +57,7 @@ const TabButton = ({ active, onClick, children, count, icon: Icon }) => (
 )
 
 const HackathonCard = ({ hackathon }) => {
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false)
   const [countdown, setCountdown] = useState('')
   const [imageLoaded, setImageLoaded] = useState(false)
@@ -237,6 +118,7 @@ const HackathonCard = ({ hackathon }) => {
         }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => navigate(`/hackathon/${hackathon._id}`)}
     >
       {/* Scan line effect */}
       <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-green-400/20 to-transparent transform -skew-x-12 transition-transform duration-1000 ${isHovered ? 'translate-x-full' : '-translate-x-full'
@@ -256,8 +138,9 @@ const HackathonCard = ({ hackathon }) => {
                 <img
                   src={hackathon.image}
                   alt={hackathon.title}
-                  className={`w-full h-full object-cover transition-all duration-500 ${imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
-                    } ${isHovered ? 'scale-105' : 'scale-100'}`}
+                  className={`w-full h-full object-cover transition-all duration-500 ${
+                    imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
+                  } ${isHovered ? 'scale-105' : 'scale-100'}`}
                   onLoad={() => setImageLoaded(true)}
                   onError={() => setImageError(true)}
                 />
@@ -312,8 +195,9 @@ const HackathonCard = ({ hackathon }) => {
             </div>
 
             {/* Geometric overlay effect */}
-            <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isHovered ? 'animate-pulse' : ''
-              }`}>
+            <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
+              isHovered ? 'animate-pulse' : ''
+            }`}>
               <div className="absolute top-0 right-0 w-32 h-32 bg-green-400/5 rotate-45 transform translate-x-16 -translate-y-16" />
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-400/5 rotate-12 transform -translate-x-12 translate-y-12" />
             </div>
@@ -452,7 +336,7 @@ const Hackathons = () => {
 
         setActiveHackathons(mapData(activeRes.data.allHackathons, 'active'));
         setExpiredHackathons(mapData(expiredRes.data.expiredHackathons, 'expired'));
-        setUpcomingHackathons(mapData(upcomingRes.data.upcomingHackathons || [], 'upcoming')); // Handle if endpoint doesn't exist yet
+        // setUpcomingHackathons(mapData(upcomingRes.data.upcomingHackathons || [], 'upcoming')); // Handle if endpoint doesn't exist yet
       } catch (error) {
         console.error("Error fetching hackathons:", error);
         // Handle the case where upcoming endpoint doesn't exist yet
@@ -596,3 +480,4 @@ const Hackathons = () => {
   )
 }
 
+export default Hackathons
