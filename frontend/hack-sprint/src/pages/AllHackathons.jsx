@@ -336,7 +336,7 @@ const Hackathons = () => {
 
         setActiveHackathons(mapData(activeRes.data.allHackathons, 'active'));
         setExpiredHackathons(mapData(expiredRes.data.expiredHackathons, 'expired'));
-        setUpcomingHackathons(mapData(upcomingRes.data.upcomingHackathons || [], 'upcoming')); // Handle if endpoint doesn't exist yet
+        // setUpcomingHackathons(mapData(upcomingRes.data.upcomingHackathons || [], 'upcoming')); // Handle if endpoint doesn't exist yet
       } catch (error) {
         console.error("Error fetching hackathons:", error);
         // Handle the case where upcoming endpoint doesn't exist yet
