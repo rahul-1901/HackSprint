@@ -371,7 +371,9 @@ export const increaseStreak = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        user.streaks += 1; // Increment streak by 1
+        user.points += 1;
+        user.streaks+=1; // Increment streak by 1
+        user.devQuestionsCorrectlyAnswered+=1;
         await user.save();
 
         res.status(200).json({ message: "Streak increased", streaks: user.streaks });
@@ -394,8 +396,11 @@ export const resetStreak = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-
-        user.streaks = 0; // Reset streak to 0
+        user.devQuestionsIncorrectlyAnswered+=1;
+        if(user.devQuestionsCorrectlyAnswered < user.devQuestionsIncorrectlyAnswered){
+          user.streaks = 0;
+        }
+        // if(user.devquestions) // Reset streak to 0
         await user.save();
 
         res.status(200).json({ message: "Streak reset", streaks: user.streaks });
@@ -404,3 +409,26 @@ export const resetStreak = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export const devQuestionsAnsweredData = async(req,res)=>{
+  try{
+    const user = await UserModel.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const {correctAnswers , incorrectAnswers} = req.body;
+    if(correctAnswers >= incorrectAnswers){
+      user.streaks+=(correctAnswers);
+    }else{
+      user.streaks = 0;
+    }
+    await user.save();
+    res.status(200).json({
+      message : "Streaks updated",
+      streaks : user.streaks
+    })
+  }catch (error) {
+        console.error("Error resetting streak:", error);
+        res.status(500).json({ message: error.message });
+  }
+}

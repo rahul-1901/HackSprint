@@ -24,7 +24,7 @@ const teamSchema = new mongoose.Schema({
     ref: "hackathons",
     required: true
   },
-
+  
   createdAt: {
     type: Date,
     default: Date.now
@@ -32,6 +32,12 @@ const teamSchema = new mongoose.Schema({
   teamSize : {
     type : Number
   }
+});
+
+teamSchema.pre("save", function (next) {
+  // teamSize = leader (1) + number of members
+  this.teamSize = 1 + this.members.length;
+  next();
 });
 
 const TeamModel = mongoose.model("teams", teamSchema);

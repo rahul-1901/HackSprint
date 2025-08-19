@@ -70,6 +70,18 @@ const userSchema = new mongoose.Schema(
       type:Number,
       default: 0
     },
+    points:{
+      type : Number,
+      default : 0
+    },
+    devQuestionsCorrectlyAnswered : {
+      type : Number,
+      default : 0
+    },
+    devQuestionsIncorrectlyAnswered:{
+      type : Number,
+      default : 0
+    },
     contactNumber: {
       type: String,
       // required: true,
