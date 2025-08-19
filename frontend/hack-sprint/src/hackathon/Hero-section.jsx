@@ -15,7 +15,7 @@ export const HeroSection = ({
   participantCount,
   prizeMoney,
   onRegister,
-  imageUrl = "/assets/hackathon-banner.png",
+  imageUrl = "../assets/hackathon-banner.png",
   hackathonId = "hackathon_001"
 }) => {
   const [imageError, setImageError] = useState(false);
