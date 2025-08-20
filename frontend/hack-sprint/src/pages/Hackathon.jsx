@@ -5,7 +5,7 @@ import { SidebarNav } from "../hackathon/Sidebar-nav";
 import { ContentSection } from "../hackathon/Content-section";
 import { SocialShare } from "../hackathon/Social-share";
 import { RegistrationForm } from "../hackathon/RegistrationForm";
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const Loader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -20,6 +20,7 @@ const Loader = () => (
 );
 
 export default function HackathonDetails() {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [hackathon, setHackathon] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -50,6 +51,7 @@ export default function HackathonDetails() {
   }, [id]);
 
   const handleRegister = () => {
+    navigate(`/hackathon/RegistrationForm/${hackathon._id}`);
     setView("form");
   };
 
@@ -72,9 +74,6 @@ export default function HackathonDetails() {
       </div>
     );
 
-  if (view === "form") {
-    return <RegistrationForm onBack={() => setView("details")} onSubmit={handleFormSubmit} />;
-  }
 
   return (
     <div className="min-h-screen bg-[#101622]">
