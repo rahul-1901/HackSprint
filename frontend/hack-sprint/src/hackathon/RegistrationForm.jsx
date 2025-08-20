@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Button } from "./Button";
 import { getDashboard } from "../backendApis/api";
+import axios from "axios";
 
 const FormRow = ({ label, required, children }) => (
   <div className="mb-6">
@@ -13,11 +15,14 @@ const FormRow = ({ label, required, children }) => (
   </div>
 );
 
-export const RegistrationForm = ({ onBack, onSubmit }) => {
+export const RegistrationForm = ({ onBack, onSubmit = () => {} }) => {
+  const { id: hackathonId } = useParams();
   const [isVerified, setIsVerified] = useState(false);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [formType, setFormType] = useState("individual");
+
+  console.log('hackathonId in RegistrationForm:', hackathonId);
 
   const [individualForm, setIndividualForm] = useState({
     fullName: "",
@@ -115,25 +120,63 @@ export const RegistrationForm = ({ onBack, onSubmit }) => {
     }
   };
 
-  const handleIndividualSubmit = (e) => {
+  const handleIndividualSubmit = async (e) => {
     e.preventDefault();
-    if (!individualForm.agreeTerms) {
-      // Note: alert() might not work in all embedded environments.
-      // Consider a modal for a better user experience.
-      console.error("User must agree to the Terms and Services.");
-      return;
-    }
-    onSubmit(individualForm);
+  if (!individualForm.agreeTerms) {
+    console.error("User must agree to the Terms and Services.");
+    return;
+  }
+  try {
+    // Replace with actual userId and hackathonId
+    const userId = userData?._id;
+    const payload = {
+      userId,
+      name: individualForm.fullName,
+      contactNumber: individualForm.contactNumber,
+      email: individualForm.email,
+      currentLocation: individualForm.location,
+      yearsOfExperience: individualForm.experience,
+      workEmailAddress: individualForm.workEmail,
+      // Add other fields as needed
+    };
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}/api/register/${hackathonId}`,
+      payload
+    );
+    onSubmit(individualForm); // or handle success
+  } catch (err) {
+    console.error("Registration error:", err);
+  }
   };
 
-  const handleTeamSubmit = (e) => {
-    e.preventDefault();
-    if (!teamForm.agreeTerms) {
-      console.error("User must agree to the Terms and Services.");
-      return;
-    }
-    onSubmit(teamForm);
-  };
+  const handleTeamSubmit = async (e) => {
+  e.preventDefault();
+  if (!teamForm.agreeTerms) {
+    console.error("User must agree to the Terms and Services.");
+    return;
+  }
+  try {
+    // Replace with actual leaderId and hackathonId
+    const leaderId = userData?._id;
+    const payload = {
+      teamName: teamForm.teamName,
+      leaderId,
+      workEmailAddress: teamForm.workEmail,
+      yearsOfExperience: teamForm.experience,
+      leadEmail: teamForm.teamLeadEmail,
+      leadName: teamForm.teamLead,
+      teamMembers: teamForm.members, // comma separated
+      // Add other fields as needed
+    };
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}/api/register/${hackathonId}/team`,
+      payload
+    );
+    onSubmit(teamForm); // or handle success
+  } catch (err) {
+    console.error("Team registration error:", err);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#101622] p-4 md:p-8 flex items-center justify-center">
