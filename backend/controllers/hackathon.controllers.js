@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import express from "express";
 import hackathonModel from "../models/hackathon.models.js";
-import { all } from "axios";
+import UserModel from "../models/user.models.js";
 
 export const sendHackathons = async (req, res) => {
   try {
@@ -39,7 +39,6 @@ export const sendExpiredHackathons = async (req, res) => {
       status: false,
       endDate: { $lt: currentTime },
     });
-
     res.status(200).json({
       expiredHackathons,
     });
@@ -65,14 +64,32 @@ export const addhackathons = async (req, res) => {
   }
 };
 
+
+export const sendUpcomingHackathons = async (req, res) => {
+  try {
+    const currentTime = new Date(Date.now());
+    const upcomingHackathonsdata = await hackathonModel.find({
+      status: false,
+      startDate: { $gt: currentTime },
+    });
+
+    return res.status(200).json({
+      upcomingHackathonsdata,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
 export const sendDetailsOfId = async (req, res) => {
   try {
     const detailsOfId = await hackathonModel.findById(req.params.id);
     if (!detailsOfId) {
-      res.status(404).json({ message: 'Hackathon not there' });
+      return res.status(404).json({ message: 'Hackathon not there' });
     }
-    res.json(detailsOfId);
+    return res.json(detailsOfId);
   } catch (err) {
-    res.status(500).json({ message: "Server error", err });
+    return res.status(500).json({ message: "Server error", err });
   }
 };
