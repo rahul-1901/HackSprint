@@ -9,6 +9,8 @@ import authRoutes from "./routes/auth.route.js"
 import devquestRoutes from './routes/devquest.routes.js'
 import githubRoutes from "./routes/githubAuth.routes.js";
 import dailyQuizRoutes from "./routes/dailyQuiz.routes.js";
+import registrationRoutes from "./routes/registration.routes.js";
+import submitRoutes from "./routes/submission.routes.js";
 import "./controllers/dailyQuiz.js";
 const app = express()
 dotenv.config()
@@ -25,6 +27,8 @@ app.use("/api/devquest", devquestRoutes)
 app.use("/api/hackathons", hackathonRoutes)
 app.use("/api/user",userRoutes)
 app.use("/api/dailyquiz", dailyQuizRoutes);
+app.use("/api/register" , registrationRoutes);
+app.use("/api/submit" , submitRoutes);
 app.use("/api", githubRoutes)
 app.use("/api", oauthRoutes)
 app.use("/api/account", authRoutes)

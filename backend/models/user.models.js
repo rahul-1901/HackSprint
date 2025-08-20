@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    
+
     role: {
       type: String,
       enum: ["participant", "organizer"],
@@ -66,32 +66,38 @@ const userSchema = new mongoose.Schema(
       default: ""
       // required: true
     },
-    streaks:{
-      type:Number,
+    streaks: {
+      type: Number,
       default: 0
     },
-    points:{
-      type : Number,
-      default : 0
+    points: {
+      type: Number,
+      default: 0
     },
-    devQuestionsCorrectlyAnswered : {
-      type : Number,
-      default : 0
+    devQuestionsCorrectlyAnswered: {
+      type: Number,
+      default: 0
     },
-    devQuestionsIncorrectlyAnswered:{
-      type : Number,
-      default : 0
+    devQuestionsIncorrectlyAnswered: {
+      type: Number,
+      default: 0
     },
     contactNumber: {
       type: String,
       // required: true,
       validate: {
-      validator: function(v) {
-          return /^\+?[0-9]{10,15}$/.test(v); 
+        validator: function (v) {
+          return /^\+?[0-9]{10,15}$/.test(v);
         },
         message: props => `${props.value} is not a valid phone number!`
       }
     },
+    registeredHackathons: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "hackathons" }
+    ],
+    submittedHackathons: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "hackathons" }
+    ],
     verificationTokenExpiresAt: Date,
     // Submissions
   },

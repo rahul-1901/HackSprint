@@ -50,36 +50,39 @@ const hackathonSchema = new mongoose.Schema({
         //     values : ["React" , "Node.js","MongoDB" , "Socket.io","Python","TensorFlow" , "OpenAI" , "FastAPI","Solidity" , "Web3.js" , "IPFS","Arduino" , "PostgreSQL"]
         // }
     },
-    numParticipants : {
-        type : Number,
-        default : 0
+    numParticipants: {
+        type: Number,
+        default: 0
     },
-    overview:{
+    overview: {
         type: String
     },
-    themes:{
-        type:[String]  
-    },
-    FAQs:{
+    themes: {
         type: [String]
     },
-    teams:{
-        type : [
-        { type: mongoose.Schema.Types.ObjectId, ref: "teams" },
+    FAQs: {
+        type: [String]
+    },
+    teams: {
+        type: [
+            { type: mongoose.Schema.Types.ObjectId, ref: "teams" },
         ]
     },
-    aboutUs : {
-        type : String
+    aboutUs: {
+        type: String
     },
-    projectSubmission:{
-        type : [String]
+    projectSubmission: {
+        type: [String]
     },
-    TandCforHackathon:{
-        type : [String]
+    TandCforHackathon: {
+        type: [String]
     },
-    evaluationCriteria:{
-        type : [String]
+    evaluationCriteria: {
+        type: [String]
     },
+    registeredParticipants: [
+        { type: mongoose.Schema.Types.ObjectId, ref: "registeredParticipants" }
+    ]
 })
 
 hackathonSchema.pre(/^find/, async function (next) {

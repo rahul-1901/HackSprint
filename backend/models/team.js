@@ -11,7 +11,14 @@ const teamSchema = new mongoose.Schema({
     ref: "users",
     required: true
   },
-
+  leaderName : {
+    type : String,
+    required : true
+  },
+  leaderEmail : {
+    type : String,
+    required : true
+  },
   members: [
     {
       type: mongoose.Schema.Types.ObjectId,
