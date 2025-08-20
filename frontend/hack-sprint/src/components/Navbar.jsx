@@ -66,11 +66,22 @@
       setIsOpen(false)
     }
 
+<<<<<<< HEAD
     // Get current active item based on location
     const getActiveItem = () => {
       const currentItem = navItems.find(item => item.pageLink === location.pathname)
       return currentItem ? currentItem.name : 'Home'
     }
+=======
+  const navItems = [
+    { name: 'Home', pageLink: '/', icon: Home },
+    { name: 'Hackathons', pageLink: '/hackathons', icon: Trophy },
+    { name: 'Practice', pageLink: '/quest', icon: Terminal },
+    // { name: 'About', pageLink: '/about', icon: BookOpen },
+    // { name: 'Leaderboard', pageLink: '/leaderboard', icon: Trophy },
+    { name: isLoggedIn ? 'Dashboard' : 'Account', pageLink: isLoggedIn ? '/dashboard' : '/account/login', icon: User }
+  ]
+>>>>>>> d521cb9138856a4c865f367534cb9ee4eea0fe74
 
     return (
       <>
