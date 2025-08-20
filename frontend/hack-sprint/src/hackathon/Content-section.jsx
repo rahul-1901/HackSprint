@@ -35,14 +35,14 @@ export const ContentSection = ({ activeSection, hackathon }) => {
           <div className="space-y-8">
             {/* description */}
             <div className="prose prose-lg max-w-none">
-              <p className="text-lg text-text-primary leading-relaxed">
+              <p className="text-lg text-white font-bold leading-relaxed">
                 {hackathon.description}
               </p>
             </div>
 
             {/* timeline */}
             <SectionCard>
-              <h4 className="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2  border-green-100">
+              <h4 className="text-xl font-bold text-white mb-4 flex items-center gap-2  border-green-100">
                 <Clock className="w-5 h-5 text-green-400" />
                 Event Timeline
               </h4>
@@ -50,10 +50,10 @@ export const ContentSection = ({ activeSection, hackathon }) => {
                 <div className="flex items-start gap-4">
                   <div className="w-3 h-3 bg-green-400 rounded-full mt-2 shadow-lg shadow-green-400/50"></div>
                   <div>
-                    <div className="font-medium text-foreground">
+                    <div className="font-bold text-white">
                       Registration & Start
                     </div>
-                    <div className="text-text-secondary">
+                    <div className="text-white font-bold">
                       {formatDateTime(hackathon.startDate)}
                     </div>
                   </div>
@@ -61,10 +61,10 @@ export const ContentSection = ({ activeSection, hackathon }) => {
                 <div className="flex items-start gap-4">
                   <div className="w-3 h-3 bg-green-500 rounded-full mt-2 shadow-lg shadow-green-500/50"></div>
                   <div>
-                    <div className="font-medium text-foreground">
+                    <div className="font-bold text-white">
                       Submission Deadline
                     </div>
-                    <div className="text-text-secondary">
+                    <div className="text-white font-bold">
                       {formatDateTime(hackathon.endDate)}
                     </div>
                   </div>
@@ -75,17 +75,17 @@ export const ContentSection = ({ activeSection, hackathon }) => {
             {/* key info cards */}
             <div className="grid md:grid-cols-2 gap-6">
               <SectionCard className="bg-gradient-to-br from-green-500/10 to-green-400/5 border-green-100">
-                <h4 className="font-bold text-blue-400 mb-3 flex items-center gap-2">
+                <h4 className="font-bold text-white mb-3 flex items-center gap-2">
                   <Code className="w-5 h-5 text-green-400" />
                   Difficulty Level
                 </h4>
-                <Badge className="bg-green-500/20 text-green-400 border-green-100">
+                <Badge className="bg-green-500/20 text-white font-bold border-green-100">
                   {hackathon.difficulty}
                 </Badge>
               </SectionCard>
 
               <SectionCard className="bg-gradient-to-br from-green-500/10 to-green-400/5 border-green-100">
-                <h4 className="font-bold text-blue-400 mb-3 flex items-center gap-2">
+                <h4 className="font-bold text-white mb-3 flex items-center gap-2">
                   <Users className="w-5 h-5 text-green-400" />
                   Categories
                 </h4>
@@ -93,7 +93,7 @@ export const ContentSection = ({ activeSection, hackathon }) => {
                   {hackathon.category?.map((cat, i) => (
                     <Badge
                       key={i}
-                      className="bg-green-500/20 text-green-400 border-green-100"
+                      className="bg-green-500/20 text-white font-bold border-green-100"
                     >
                       {cat}
                     </Badge>
@@ -104,14 +104,14 @@ export const ContentSection = ({ activeSection, hackathon }) => {
 
             {/* tech stack */}
             <SectionCard>
-              <h4 className="text-xl font-bold text-blue-400 mb-4">
+              <h4 className="text-xl font-bold text-white mb-4">
                 Recommended Tech Stack
               </h4>
               <div className="flex flex-wrap gap-3">
                 {hackathon.techStackUsed?.map((tech, i) => (
                   <span
                     key={i}
-                    className="bg-surface text-text-primary border border-green-500 px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-500/10 transition-colors duration-200"
+                    className="bg-surface text-white font-bold border border-green-500 px-3 py-2 rounded-lg text-sm hover:bg-green-500/10 transition-colors duration-200"
                   >
                     {tech}
                   </span>
@@ -125,11 +125,11 @@ export const ContentSection = ({ activeSection, hackathon }) => {
         return (
           <div className="space-y-6">
             <div className="prose prose-lg max-w-none">
-              <h3 className="text-2xl font-bold text-foreground mb-4">
+              <h3 className="text-2xl font-bold text-white mb-4">
                 Event Themes
               </h3>
               <div className="bg-gradient-to-r from-green-500/10 to-green-400/10 border border-green-500 rounded-xl p-6">
-                <p className="text-lg text-blue-400 text-bold whitespace-pre-line">
+                <p className="text-lg text-white font-bold whitespace-pre-line">
                   {hackathon.themes || "No themes information provided."}
                 </p>
               </div>
@@ -140,11 +140,11 @@ export const ContentSection = ({ activeSection, hackathon }) => {
       case "prizes":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl font-bold text-white mb-4">
               Prize Distribution
             </h3>
             <div className="bg-gradient-to-br from-green-500/10 to-green-400/10 border border-green-500 rounded-xl p-6">
-              <div className="text-lg text-blue-400 whitespace-pre-line">
+              <div className="text-lg text-white font-bold whitespace-pre-line">
                 {hackathon.prizes || "No prize information provided."}
               </div>
             </div>
@@ -154,11 +154,11 @@ export const ContentSection = ({ activeSection, hackathon }) => {
       case "submission-guide":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl font-bold text-white mb-4">
               How to Submit
             </h3>
             <SectionCard>
-              <div className="text-blue-400 whitespace-pre-line leading-relaxed">
+              <div className="text-white font-bold whitespace-pre-line leading-relaxed">
                 {hackathon.submissionGuide || "No submission guide provided."}
               </div>
             </SectionCard>
@@ -168,11 +168,11 @@ export const ContentSection = ({ activeSection, hackathon }) => {
       case "judging":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl font-bold text-white mb-4">
               Judging Criteria
             </h3>
             <SectionCard>
-              <div className="text-blue-400 leading-relaxed">
+              <div className="text-white font-bold leading-relaxed">
                 {hackathon.judging || "No judging criteria provided."}
               </div>
             </SectionCard>
@@ -182,11 +182,11 @@ export const ContentSection = ({ activeSection, hackathon }) => {
       case "rules":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl font-bold text-white mb-4">
               Rules & Guidelines
             </h3>
             <SectionCard>
-              <div className="text-blue-400 whitespace-pre-line leading-relaxed">
+              <div className="text-white font-bold whitespace-pre-line leading-relaxed">
                 {hackathon.rules || "No rules provided."}
               </div>
             </SectionCard>
@@ -198,7 +198,7 @@ export const ContentSection = ({ activeSection, hackathon }) => {
 
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl font-bold text-white mb-4">
               Frequently Asked Questions
             </h3>
             <div className="space-y-4">
@@ -210,9 +210,9 @@ export const ContentSection = ({ activeSection, hackathon }) => {
                     <div key={idx} className="border border-green-500 rounded-lg bg-[#0b0e1c] overflow-hidden">
                       <button
                         onClick={() => toggleFAQ(idx)}
-                        className="w-full p-4 text-left hover:bg-green-500/5 transition-colors duration-200 flex items-center justify-between group"
+                        className="cursor-pointer w-full p-4 text-left hover:bg-green-500/5 transition-colors duration-200 flex items-center justify-between group"
                       >
-                        <p className="font-semibold text-lg text-blue-400 pr-4">
+                        <p className="font-bold text-lg text-white pr-4">
                           {faq.question}
                         </p>
                         <div className="flex-shrink-0 text-green-400 group-hover:text-green-300 transition-colors duration-200">
@@ -226,7 +226,7 @@ export const ContentSection = ({ activeSection, hackathon }) => {
                       
                       {isExpanded && faq.answer && (
                         <div className="px-4 pb-4 border-t border-green-500/30">
-                          <p className="text-white leading-relaxed pt-3">
+                          <p className="text-white font-bold leading-relaxed pt-3">
                             {faq.answer}
                           </p>
                         </div>
@@ -235,7 +235,7 @@ export const ContentSection = ({ activeSection, hackathon }) => {
                   );
                 })
               ) : (
-                <p className="text-text-secondary">No FAQs provided.</p>
+                <p className="text-white font-bold">No FAQs provided.</p>
               )}
             </div>
           </div>
@@ -244,11 +244,11 @@ export const ContentSection = ({ activeSection, hackathon }) => {
       case "about":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl font-bold text-white mb-4">
               About This Event
             </h3>
             <SectionCard className="bg-gradient-to-br from-surface/50 to-green-500/5 border-green-500">
-              <div className="text-blue-400 whitespace-pre-line leading-relaxed">
+              <div className="text-white font-bold whitespace-pre-line leading-relaxed">
                 {hackathon.about || "No about information provided."}
               </div>
             </SectionCard>
@@ -258,18 +258,18 @@ export const ContentSection = ({ activeSection, hackathon }) => {
       case "discussion":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-blue-400 mb-4">
+            <h3 className="text-2xl font-bold text-white mb-4">
               Community Discussion
             </h3>
             <div className="bg-surface/50 backdrop-blur-sm border border-green-500 rounded-xl p-8 text-center">
-              <div className="text-text-secondary mb-4">
+              <div className="text-white font-bold mb-4">
                 <Users className="w-16 h-16 mx-auto mb-4 text-green-400/50" />
                 <p className="text-lg">
                   Join the conversation with fellow participants!
                 </p>
                 <p className="text-sm mt-2">Discussion feature coming soon...</p>
               </div>
-              <Button className="border border-green-500 text-green-400 hover:bg-green-500/10">
+              <Button className="cursor-pointer border border-green-500 text-white font-bold hover:bg-green-500/10">
                 Join Discord Community
               </Button>
             </div>
@@ -279,7 +279,7 @@ export const ContentSection = ({ activeSection, hackathon }) => {
       default:
         return (
           <div className="text-center py-12">
-            <p className="text-text-secondary">Section not found.</p>
+            <p className="text-white font-bold">Section not found.</p>
           </div>
         );
     }
