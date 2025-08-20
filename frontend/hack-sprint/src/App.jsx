@@ -14,7 +14,7 @@ import NotFoundPage from './pages/NotFound';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ActiveHackathons from './pages/ActiveHackathons';
 import ExpiredHackathons from './pages/ExpiredHackathons';
-import Dashboard from './pages/dashboard.jsx';
+import Dashboard from './pages/Dashboard.jsx';
 import Signup from './pages/Signup.jsx';
 import Verification from './components/Verification.jsx';
 import ResetPassword from './components/ResetPassword.jsx';
