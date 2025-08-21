@@ -50,7 +50,7 @@ export const HeroSection = ({
 
   const handleRegister = () => {
     if(isVerified) {
-      navigate("/hackathon/RegistrationForm");
+      navigate(`/hackathon/RegistrationForm/${hackathonId}`);
     } else {
       navigate("/account/login");
     }
