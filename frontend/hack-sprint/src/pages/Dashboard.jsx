@@ -1,345 +1,413 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify'
+import React, { useEffect, useState } from "react";
+import { getDashboard } from "../backendApis/api";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { Eye, CheckCircle, MessageSquare, Star, Coins } from "lucide-react";
 
-const Dashboard = () => {
+// Floating Particles (Background)
+const FloatingParticles = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    {[...Array(20)].map((_, i) => (
+      <div
+        key={i}
+        className="absolute w-1 h-1 bg-green-400 rounded-full opacity-30 animate-pulse"
+        style={{
+          left: `${Math.random() * 100}%`,
+          top: `${Math.random() * 100}%`,
+          animationDelay: `${Math.random() * 5}s`,
+          animationDuration: `${3 + Math.random() * 4}s`,
+        }}
+      />
+    ))}
+  </div>
+);
 
-  const [data, setData] = useState({
-    nickname: 'User_Name', // Dummy data
-    github_id: 'example_id.github', // Dummy data
-    avatar_url: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png', // Dummy data (GitHub logo)
-    submissions: [
-      {
-        title: 'Hackathon of Code',
-        problem_statement: 'Problem Statement of Hackathon',
-        submitted_at: new Date().toString(),
-      },
-      {
-        title: 'Hackathon 1',
-        problem_statement: 'Build an AI assistant.',
-        submitted_at: new Date().toString(),
-      },
-      {
-        title: 'Hackathon 2',
-        problem_statement: 'Create a weather app.',
-        submitted_at: new Date().toString(),
-      },
-    ],
-  });
+// Grid Background
+const GridBackground = () => (
+  <div className="absolute inset-0 opacity-10">
+    <div
+      className="absolute inset-0"
+      style={{
+        backgroundImage: `
+          linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px)
+        `,
+        backgroundSize: "50px 50px",
+      }}
+    />
+  </div>
+);
 
+const UserDashboard = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [coins, setCoins] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [showReward, setShowReward] = useState(false);
   const navigate = useNavigate();
 
+  // Daily Coin + Streak System
+  useEffect(() => {
+    const today = new Date().toDateString();
+    const lastVisit = localStorage.getItem("lastVisit");
+    const storedCoins = parseInt(localStorage.getItem("coins") || "0", 10);
+    const storedStreak = parseInt(localStorage.getItem("streak") || "0", 10);
+
+    let newCoins = storedCoins;
+    let newStreak = storedStreak;
+    let rewardEarned = 0;
+
+    if (lastVisit !== today) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (lastVisit === yesterday.toDateString()) {
+        newStreak = storedStreak + 1; // continued streak
+      } else {
+        newStreak = 1; // reset streak
+      }
+
+      rewardEarned = 10 + Math.floor(newStreak / 5) * 5; // 10 coins + bonus every 5 days
+      newCoins += rewardEarned;
+
+      localStorage.setItem("coins", newCoins.toString());
+      localStorage.setItem("streak", newStreak.toString());
+      localStorage.setItem("lastVisit", today);
+
+      setShowReward(true);
+    }
+
+    setCoins(newCoins);
+    setStreak(newStreak);
+  }, []);
+
+  // Fetch Dashboard Data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getDashboard();
+        setData(res.data.userData);
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
-    toast.success("Logout successfull...", { autoClose: 1000 })
+    toast.success("Logout successfull...", { autoClose: 1000 });
     setTimeout(() => {
-      navigate('/');
-    }, 1700)
+      navigate("/");
+    }, 1700);
   };
 
+  // If still loading
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-green-400 text-xl">
+        Loading Dashboard...
+      </div>
+    );
+  }
+
+  // If no data
+  if (!data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-red-400 text-xl">
+        Failed to load dashboard ❌
+      </div>
+    );
+  }
+
   return (
-    <div
-      style={{
-        padding: '2rem',
-        paddingTop: '6rem',
+    <div className="relative min-h-screen bg-gray-900 text-white overflow-hidden">
+      <GridBackground />
+      <FloatingParticles />
 
-        minHeight: '100vh',
-        backgroundColor: '#0a0e17',
-        color: 'white',
-        fontFamily: "'Courier New', Courier, monospace", // General monospace font
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+      <div className="relative z-10 max-w-7xl mx-auto p-6 flex flex-col md:flex-row gap-6">
+        {/* LEFT COLUMN */}
+        <div className="w-full md:w-1/4 space-y-6">
+          {/* Profile Card */}
+<div className="bg-white/5 border border-green-500/20 rounded-xl p-6 flex flex-col items-center hover:border-green-400 transition-all text-center">
+  <div className="relative">
+    <img
+      src={
+        data.avatar_url ||
+        "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png"
+      }
+      alt="Avatar"
+      className="w-24 h-24 rounded-full border-2 border-green-500/50"
+    />
+  </div>
 
-      }}
-    >
-      {/* Header (as seen in the image) - Ideally a separate component */}
-      {/* <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          backgroundColor: '#1a1d29',
-          padding: '1rem 2rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          borderBottom: '2px solid #00ff9f',
-          zIndex: 10,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img
-            src="https://hacksprint.com/logo.png" // Placeholder, replace with actual logo if available
-            alt="HACKSPRINT Logo"
-            style={{ width: '40px', marginRight: '10px' }}
-          />
-          <span
-            style={{
-              fontSize: '1.5rem',
-              fontWeight: 'bold',
-              color: 'white',
-              fontFamily: "'Press Start 2P', cursive", // Keeping pixelated for HACKSPRINT title
-            }}
-          >
-            HACKSPRINT
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '2rem', fontSize: '1.1rem' }}>
-          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>
-            HOME PAGE
-          </a>
-          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>
-            ABOUT US
-          </a>
-          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>
-            QUESTS
-          </a>
-          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>
-            DASHBOARD
-          </a>
-        </div>
-        <div
-          style={{
-            width: '30px',
-            height: '30px',
-            borderRadius: '50%',
-            backgroundColor: '#cccccc',
-            border: '2px solid white',
-          }}
-        ></div>
-      </div> */}
+  <h2 className="mt-4 text-xl font-bold">{data.name || "Unnamed User"}</h2>
+  <p className="text-sm text-gray-400">{data.roll_no || "N/A"}</p>
+  <p className="text-sm text-green-400 mt-1">
+    Rank: #{data.rank || "N/A"}
+  </p>
 
-      <div
-        style={{
-          width: 'clamp(300px, 90%, 900px)',
-          marginTop: '2rem',
-        }}
-      >
-        {/* User Info Section */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start', // Align items to the start to properly position Nickname below avatar
-            backgroundColor: '#1d2233',
-            padding: '1.5rem 2.5rem',
-            borderRadius: '16px',
-            border: '2px solid #00ff9f',
-            marginBottom: '2rem',
-            boxShadow: '0px 0px 15px #00ff9f66',
-            position: 'relative',
-          }}
-        >
-          {/* Avatar and Nickname Container */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start', // Align contents to the start
-              marginRight: '2rem',
-            }}
-          >
-            <div
-              style={{
-                position: 'relative',
-                width: '120px', // Same size as image
-                height: '120px',
-                borderRadius: '12px',
-                border: '3px solid #00ff9f',
-                overflow: 'hidden', // Ensure image stays within bounds
-                marginBottom: '10px', // Space between avatar and "Nickname"
-              }}
-            >
-              <img
-                src={data.avatar_url} // Uses the dummy avatar_url
-                alt="avatar"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: '9px', // Slightly smaller border radius for inner image
-                }}
-              />
+  <button
+    onClick={handleLogout}
+    className="mt-3 px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40"
+  >
+    Logout
+  </button>
+</div>
 
 
+          {/* Coins + Streak */}
+          <div className="bg-white/5 border border-yellow-500/20 rounded-xl p-4 flex flex-col items-center">
+            <div className="flex items-center gap-2 text-yellow-400 font-bold">
+              <Coins /> <span>{coins} Coins</span>
             </div>
-            <span
-              style={{
-                fontSize: '1.2rem',
-                color: 'white',
-                fontWeight: 'bold',
-              }}
-            >
-              Nickname
-            </span>
+            <p className="text-sm text-gray-400 mt-1">🔥 Streak: {streak} days</p>
           </div>
 
-          <div style={{ flexGrow: 1 }}>
-            <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: 'white' }}>
-              {data.nickname} {/* Uses the dummy nickname */}
-            </h2>
-            <p style={{ display: 'flex', alignItems: 'center', fontSize: '1.2rem' }}>
-              <span style={{ marginRight: '8px' }}>
-                {/* GitHub Icon SVG */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  height="24"
-                  fill="currentColor"
-                >
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387 0.599 0.111 0.793-0.261 0.793-0.577v-2.234c-3.338 0.726-4.033-1.416-4.033-1.416-0.546-1.387-1.333-1.756-1.333-1.756-1.087-0.744 0.084-0.729 0.084-0.729 1.205 0.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.493 0.998 0.108-0.776 0.418-1.305 0.762-1.604-2.665-0.305-5.467-1.334-5.467-5.931 0-1.311 0.469-2.381 1.236-3.221-0.124-0.305-0.535-1.524 0.118-3.176 0 0 1.008-0.322 3.301 1.23 0.957-0.266 1.983-0.399 3.003-0.399 1.02 0 2.047 0.133 3.004 0.399 2.294-1.552 3.302-1.23 3.302-1.23 0.653 1.653 0.242 2.871 0.118 3.176 0.77 0.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921 0.43 0.372 0.823 1.102 0.823 2.222v3.293c0 0.319 0.192 0.694 0.801 0.576 4.765-1.589 8.196-6.085 8.196-11.389 0-6.627-5.373-12-12-12z"></path>
-                </svg>
-              </span>
-              {data.github_id} {/* Uses the dummy github_id */}
+          {/* Community Stats */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-4 space-y-3">
+            <h3 className="text-lg font-semibold text-green-400">Community Stats</h3>
+            <div className="flex items-center gap-3">
+              <Eye size={16} className="text-green-400" />
+              <span>Views: {data.stats?.views || 0}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle size={16} className="text-green-400" />
+              <span>Solutions: {data.stats?.solutions || 0}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <MessageSquare size={16} className="text-green-400" />
+              <span>Discussions: {data.stats?.discussions || 0}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Star size={16} className="text-green-400" />
+              <span>Reputation: {data.stats?.reputation || 0}</span>
+            </div>
+          </div>
+
+          {/* Languages */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-4">
+            <h3 className="text-lg font-semibold text-green-400">Languages</h3>
+            {Array.isArray(data.languages) &&
+              data.languages.map((lang, i) => (
+                <div key={i} className="flex justify-between mt-2">
+                  <span>{lang.name}</span>
+                  <span className="text-gray-400">
+                    {lang.solved} problems solved
+                  </span>
+                </div>
+              ))}
+          </div>
+
+          {/* Skills */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-4 space-y-3">
+            <h3 className="text-lg font-semibold text-green-400">Skills</h3>
+            {data.skills &&
+              Object.entries(data.skills).map(([level, items], idx) => (
+                <div key={idx}>
+                  <div className="text-sm font-bold mb-2">{level}</div>
+                  <div className="flex flex-wrap gap-2">
+                    {items.map((item, i) => (
+                      <span
+                        key={i}
+                        className="px-2 py-1 bg-green-500/10 border border-green-500/20 rounded-lg text-sm"
+                      >
+                        {item.name} x{item.count}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN */}
+        <div className="flex-1 space-y-6">
+
+        {/* Submissions Heatmap */}
+<div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+  <h3 className="text-lg font-semibold text-green-400">
+    Submissions in the Last Year
+  </h3>
+
+  {(() => {
+    const today = new Date();
+    const days = [];
+    for (let i = 364; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+      days.push(d.toISOString().split("T")[0]);
+    }
+
+    // 📊 Count submissions per day
+    const submissionCount = {};
+    if (Array.isArray(data.submissions)) {
+      data.submissions.forEach((s) => {
+        const dateKey = new Date(s.submitted_at).toISOString().split("T")[0];
+        submissionCount[dateKey] = (submissionCount[dateKey] || 0) + 1;
+      });
+    }
+
+    // 🎨 Color intensity
+    const getLevel = (count) => {
+      if (!count) return "bg-green-900/20"; // empty
+      if (count === 1) return "bg-green-400";
+      if (count === 2) return "bg-green-500";
+      if (count === 3) return "bg-green-600";
+      return "bg-green-700";
+    };
+
+    // 📅 Group into weeks (columns of 7 days)
+    const weeks = [];
+    let week = [];
+    days.forEach((day, idx) => {
+      week.push(day);
+      if (week.length === 7 || idx === days.length - 1) {
+        weeks.push(week);
+        week = [];
+      }
+    });
+
+    // 📅 Month Labels
+    const monthLabels = [];
+    let prevMonth = "";
+    weeks.forEach((week, wIdx) => {
+      const month = new Date(week[0]).toLocaleString("default", { month: "short" });
+      if (month !== prevMonth) {
+        monthLabels.push({ idx: wIdx, month });
+        prevMonth = month;
+      }
+    });
+
+    return (
+      <>
+        {/* Heatmap */}
+        <div className="relative mt-6">
+          <div className="flex gap-[4px]">
+            {weeks.map((week, wIdx) => (
+              <div key={wIdx} className="flex flex-col gap-[4px]">
+                {week.map((day, dIdx) => (
+                  <div
+                    key={dIdx}
+                    className={`w-3 h-3 rounded-sm ${getLevel(submissionCount[day])}`}
+                    title={`${day}: ${submissionCount[day] || 0} submissions`}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Month Labels */}
+          <div className="flex absolute -bottom-6 left-0 w-full text-xs text-gray-400">
+            {monthLabels.map((m, i) => (
+              <div
+                key={i}
+                className="absolute"
+                style={{ left: `${(m.idx / weeks.length) * 100}%` }}
+              >
+                {m.month}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-1 text-xs text-gray-400 mt-10">
+          <span>Less</span>
+          <div className="w-3 h-3 rounded-sm bg-green-900/20" />
+          <div className="w-3 h-3 rounded-sm bg-green-400" />
+          <div className="w-3 h-3 rounded-sm bg-green-500" />
+          <div className="w-3 h-3 rounded-sm bg-green-600" />
+          <div className="w-3 h-3 rounded-sm bg-green-700" />
+          <span>More</span>
+        </div>
+      </>
+    );
+  })()}
+</div>
+
+
+          {/* Connected Accounts */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+            <h3 className="text-lg font-semibold text-green-400">
+              Connected Accounts
+            </h3>
+            <div className="flex justify-between mt-2">
+              <span>GitHub</span>
+              <span className="text-gray-400">{data.github_id || "Not Connected"}</span>
+            </div>
+            <div className="flex justify-between mt-2">
+              <span>Stack Overflow</span>
+              <span className="text-gray-400">{data.stack_id || "Not Connected"}</span>
+            </div>
+          </div>
+          
+          {/* Participated in Hackathons */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+            <h3 className="text-lg font-semibold text-green-400">
+              Participated in Hackathons
+            </h3>
+            <ul className="mt-4 space-y-3">
+              {Array.isArray(data.submissions) && data.submissions.length > 0 ? (
+                data.submissions.map((hack, idx) => (
+                  <li
+                    key={idx}
+                    className="flex justify-between items-center text-gray-300"
+                  >
+                    <span>{hack.title}</span>
+                    <a
+                      href={hack.repo_url || "#"}
+                      className="text-green-400 underline hover:text-green-300"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View Repo
+                    </a>
+                  </li>
+                ))
+              ) : (
+                <p className="text-gray-400">📦 No hackathon submissions yet.</p>
+              )}
+            </ul>
+          </div>
+          
+
+          {/* Education */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+            <h3 className="text-lg font-semibold text-green-400">Education</h3>
+            <p className="text-gray-400">
+              {data.education || "No data available."}{" "}
+              <a href="#" className="text-green-400 underline">
+                Update now
+              </a>
             </p>
           </div>
-          <button
-            onClick={handleLogout}
-            style={{
-              marginLeft: 'auto',
-              padding: '0.8rem 1.8rem',
-              backgroundColor: '#ff3c3c',
-              border: '2px solid #e02929',
-              borderRadius: '8px',
-              color: 'white',
-              fontWeight: 'bold',
-              fontSize: '1.1rem',
-              cursor: 'pointer',
-              transition: 'background 0.3s ease, transform 0.1s ease',
-              boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.4)',
-            }}
-            onMouseOver={(e) => {
-              e.target.style.backgroundColor = '#e02929';
-              e.target.style.transform = 'translateY(-2px)';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.backgroundColor = '#ff3c3c';
-              e.target.style.transform = 'translateY(0)';
-            }}
-          >
-            Logout
-          </button>
-        </div>
-
-
-        {/* Submitted Hackathons Section */}
-        <div
-          style={{
-            backgroundColor: '#1d2233',
-            borderRadius: '16px',
-            padding: '1.5rem',
-            border: '2px solid #00ff9f',
-            boxShadow: '0px 0px 15px #00ff9f66',
-          }}
-        >
-          <h3
-            className='ZaptronFont text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-800 tracking-widest z-10 text-center relative text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl'
-          >
-            SUBMITTED HACKATHONS
-            {/* Inner div for blur/glow effect */}
-
-          </h3>
-
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              color: 'white',
-            }}
-          >
-            <thead>
-              <tr>
-                <th
-                  style={{
-                    padding: '15px',
-                    backgroundColor: '#111820',
-                    color: '#00ff9f',
-                    textAlign: 'left',
-                    border: '1px solid #00ff9f',
-                  }}
-                >
-                  Hackathon
-                </th>
-                <th
-                  style={{
-                    padding: '15px',
-                    backgroundColor: '#111820',
-                    color: '#00ff9f',
-                    textAlign: 'left',
-                    border: '1px solid #00ff9f',
-                  }}
-                >
-                  Problem Statement
-                </th>
-                <th
-                  style={{
-                    padding: '15px',
-                    backgroundColor: '#111820',
-                    color: '#00ff9f',
-                    textAlign: 'left',
-                    border: '1px solid #00ff9f',
-                  }}
-                >
-                  Time of Submission
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.submissions.map((entry, idx) => (
-                <tr
-                  key={idx}
-                  style={{
-                    backgroundColor: idx % 2 === 0 ? '#2a3042' : '#1d2233',
-                  }}
-                >
-                  <td
-                    style={{
-                      padding: '12px',
-                      border: '1px solid #333',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <span
-
-                      style={{
-                        width: '10px',
-                        height: '10px',
-                        borderRadius: '50%',
-                        backgroundColor: '#00ff9f',
-                        marginRight: '10px',
-                        flexShrink: 0,
-                      }}
-                    ></span>
-                    {entry.title}
-                  </td>
-                  <td
-                    style={{
-                      padding: '12px',
-                      border: '1px solid #333',
-                    }}
-                  >
-                    {entry.problem_statement}
-                  </td>
-                  <td
-                    style={{
-                      padding: '12px',
-                      border: '1px solid #333',
-                    }}
-                  >
-                    {new Date(entry.submitted_at).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
+
+      
+
+      {/* Reward Popup */}
+      {showReward && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white text-black p-6 rounded-2xl shadow-lg text-center w-80">
+            <h2 className="text-xl font-bold mb-2">🎉 Daily Reward!</h2>
+            <p className="mb-2">You earned <span className="text-yellow-600 font-bold">+10 coins</span> today.</p>
+            <p className="text-sm text-gray-600 mb-4">🔥 Current Streak: {streak} days</p>
+            <button
+              onClick={() => setShowReward(false)}
+              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+            >
+              Awesome!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Dashboard;
+export default UserDashboard;

@@ -1,19 +1,5 @@
 import mongoose from "mongoose";
 
-// const userSchema = new mongoose.Schema({
-//     name: {
-//         type: String,
-//         required: true
-//     }, 
-//     email: {
-//         type: String,
-//         required: true
-//     },
-//     submissions: {
-//         type: Array
-//     }
-// }, { timestamps: true })
-
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -21,7 +7,6 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-
     password: {
       type: String,
       // required: true,
@@ -36,6 +21,12 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+    },
+
+    role: {
+      type: String,
+      enum: ["participant", "organizer"],
+      default: "participant",
     },
 
     lastLogin: {
@@ -59,18 +50,65 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    isGitHubloggedIn:{
-      type : Boolean
+    isGitHubloggedIn: {
+      type: Boolean,
+      default: false
     },
-    isGoogleLoggedIn:{
-      type : Boolean
+    isGoogleLoggedIn: {
+      type: Boolean,
+      default: false
     },
+    gitHubLink: {
+      type: String
+    },
+    gitHubAccessToken: {
+      type: String,
+      default: ""
+      // required: true
+    },
+    streaks: {
+      type: Number,
+      default: 0
+    },
+    points: {
+      type: Number,
+      default: 0
+    },
+    devQuestionsCorrectlyAnswered: {
+      type: Number,
+      default: 0
+    },
+    devQuestionsIncorrectlyAnswered: {
+      type: Number,
+      default: 0
+    },
+    contactNumber: {
+      type: String,
+      // required: true,
+      validate: {
+        validator: function (v) {
+          return /^\+?[0-9]{10,15}$/.test(v);
+        },
+        message: props => `${props.value} is not a valid phone number!`
+      }
+    },
+    registeredHackathons: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "hackathons" }
+    ],
+    submittedHackathons: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "hackathons" }
+    ],
     verificationTokenExpiresAt: Date,
     // Submissions
   },
   { timestamps: true }
 );
 
+userSchema.virtual("submissions", {
+  ref: "submissions",
+  localField: "_id",
+  foreignField: "participant",
+});
 const UserModel = mongoose.model("users", userSchema)
 
 export default UserModel
