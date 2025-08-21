@@ -33,7 +33,7 @@ const registeredParticipantsSchema = new mongoose.Schema({
     type: String
   },
   yearsOfExperience: {
-    type: Number
+    type: String
   },
   workEmailAddress:{
     type : String,
