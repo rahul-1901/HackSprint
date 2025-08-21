@@ -54,6 +54,7 @@ const Navbar = () => {
 
   const navItems = [
     { name: 'Home', pageLink: '/', icon: Home },
+    { name: 'Leaderboard', pageLink: '/leaderboard', icon: Trophy },
     { name: 'Hackathons', pageLink: '/hackathons', icon: Trophy },
     { name: 'Practice', pageLink: '/quest', icon: Terminal },
     // { name: 'About', pageLink: '/about', icon: BookOpen },
