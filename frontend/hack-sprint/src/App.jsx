@@ -41,7 +41,7 @@ function App() {
   return (
     <>
       <Router>
-        {/* <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} /> */}
+        <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} />
         <Loader />
         <HideRoute>
           <Navbar />
