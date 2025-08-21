@@ -68,7 +68,7 @@ function App() {
           <Route path="/account/verify-email" element={<Verification />} caseSensitive></Route>
           <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive></Route>
           <Route path="/hackathon/:id" element={<HackathonDetails />} />
-          <Route path="/hackathon/RegistrationForm" element={<RegistrationForm />} />
+          <Route path="/hackathon/RegistrationForm/:id" element={<RegistrationForm />} />
           <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />} />} caseSensitive />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
