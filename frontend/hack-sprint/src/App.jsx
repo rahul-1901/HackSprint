@@ -26,6 +26,8 @@ import HackathonDetails from './pages/Hackathon.jsx';
 import { RegistrationForm } from './hackathon/RegistrationForm.jsx';
 import Leaderboard from './pages/LeaderBoard.jsx';
 import TeamDetails from './pages/TeamDetails.jsx'; // Import the new component
+import VerifyEmail from './components/verifyEmail.jsx';
+import ForgotPassword from './components/forgotPassword.jsx';
 
 function App() {
 
@@ -78,8 +80,6 @@ function App() {
           <Route path="/hackathon/:hackathonId/team/:teamId" element={<AuthenticateRoute element={<TeamDetails />} />} />
 
           <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />} />} caseSensitive />
-          <Route path="/leaderboard" element={<Leaderboard />} caseSensitive />
-          {/* Catch-all route for undefined paths */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
 
