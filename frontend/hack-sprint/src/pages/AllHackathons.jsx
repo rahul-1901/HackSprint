@@ -455,7 +455,7 @@ const Hackathons = () => {
                 <span className="text-green-400 font-mono">{getCurrentHackathons().length}</span> {activeTab}
               </div>
               <button className="text-green-400 hover:text-green-300 transition-colors">
-                <ExternalLink size={20} />
+                {/* <ExternalLink size={20} /> */}
               </button>
             </div>
           </div>

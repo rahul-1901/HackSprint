@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import {
-    SiHtml5, SiGithub, SiPython, SiNodedotjs,
-    SiJavascript, SiMysql, SiTensorflow, SiReact, SiCss3
-} from 'react-icons/si';
-import './Allcss.css'
 
 const Questions = () => {
     const [quizStarted, setQuizStarted] = useState(false);
@@ -16,7 +11,13 @@ const Questions = () => {
     const [isCorrect, setIsCorrect] = useState(false);
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [questions, setQuestions] = useState([]);
-    const [userAnswers, setUserAnswers] = useState([]); // Track user answers
+    const [userAnswers, setUserAnswers] = useState([]);
+    const [quizResetTimer, setQuizResetTimer] = useState(300); // 5 minutes in seconds
+    const [isLoading, setIsLoading] = useState(true);
+    const [quizId, setQuizId] = useState(null);
+
+    // const userId = localStorage.getItem("userId"); 
+    const userId = localStorage.getItem("userId");
 
     // Local Storage keys
     const STORAGE_KEYS = {
@@ -24,17 +25,64 @@ const Questions = () => {
         TIME_LEFT: 'devquest_time_left',
         USER_ANSWERS: 'devquest_user_answers',
         QUIZ_STARTED: 'devquest_quiz_started',
-        QUIZ_COMPLETED: 'devquest_quiz_completed'
+        QUIZ_COMPLETED: 'devquest_quiz_completed',
+        QUIZ_START_TIME: 'devquest_quiz_start_time',
+        RESET_TIMER: 'devquest_reset_timer'
     };
 
-    // Load progress from localStorage on component mount
+    // Check if 5 minutes have passed since quiz start
+    const checkQuizExpiry = () => {
+        const startTime = localStorage.getItem(STORAGE_KEYS.QUIZ_START_TIME);
+        if (startTime) {
+            const currentTime = Date.now();
+            const elapsedTime = Math.floor((currentTime - parseInt(startTime)) / 1000);
+            return elapsedTime >= 300; // 5 minutes
+        }
+        return false;
+    };
+
+    // Clear all localStorage data
+    const clearProgress = () => {
+        try {
+            Object.values(STORAGE_KEYS).forEach(key => {
+                localStorage.removeItem(key);
+            });
+        } catch (error) {
+            console.error('Error clearing progress from localStorage:', error);
+        }
+    };
+
+    // Reset quiz state
+    const resetQuizState = () => {
+        setQuizStarted(false);
+        setCurrentQuestionIndex(0);
+        setTimeLeft(20);
+        setSelectedAnswer(null);
+        setShowExplanation(false);
+        setExplanationTimer(0);
+        setIsCorrect(false);
+        setQuizCompleted(false);
+        setUserAnswers([]);
+        setQuizResetTimer(300);
+        clearProgress();
+    };
+
+    // Load progress from localStorage
     const loadProgress = () => {
         try {
+            // First check if quiz has expired
+            if (checkQuizExpiry()) {
+                resetQuizState();
+                return;
+            }
+
             const savedIndex = localStorage.getItem(STORAGE_KEYS.CURRENT_INDEX);
             const savedTimeLeft = localStorage.getItem(STORAGE_KEYS.TIME_LEFT);
             const savedAnswers = localStorage.getItem(STORAGE_KEYS.USER_ANSWERS);
             const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
             const savedQuizCompleted = localStorage.getItem(STORAGE_KEYS.QUIZ_COMPLETED);
+            const savedResetTimer = localStorage.getItem(STORAGE_KEYS.RESET_TIMER);
+            const startTime = localStorage.getItem(STORAGE_KEYS.QUIZ_START_TIME);
 
             if (savedIndex !== null) {
                 setCurrentQuestionIndex(parseInt(savedIndex, 10));
@@ -51,6 +99,16 @@ const Questions = () => {
             if (savedQuizCompleted !== null) {
                 setQuizCompleted(JSON.parse(savedQuizCompleted));
             }
+
+            // Calculate remaining reset timer
+            if (startTime && savedResetTimer) {
+                const currentTime = Date.now();
+                const elapsedTime = Math.floor((currentTime - parseInt(startTime)) / 1000);
+                const remainingTime = Math.max(0, 300 - elapsedTime);
+                setQuizResetTimer(remainingTime);
+            } else if (savedResetTimer !== null) {
+                setQuizResetTimer(parseInt(savedResetTimer, 10));
+            }
         } catch (error) {
             console.error('Error loading progress from localStorage:', error);
         }
@@ -64,61 +122,92 @@ const Questions = () => {
             localStorage.setItem(STORAGE_KEYS.USER_ANSWERS, JSON.stringify(userAnswers));
             localStorage.setItem(STORAGE_KEYS.QUIZ_STARTED, JSON.stringify(quizStarted));
             localStorage.setItem(STORAGE_KEYS.QUIZ_COMPLETED, JSON.stringify(quizCompleted));
+            localStorage.setItem(STORAGE_KEYS.RESET_TIMER, quizResetTimer.toString());
+
+            // Save start time if not already saved
+            if (!localStorage.getItem(STORAGE_KEYS.QUIZ_START_TIME)) {
+                localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
+            }
         } catch (error) {
             console.error('Error saving progress to localStorage:', error);
         }
     };
 
-    // Clear progress from localStorage
-    const clearProgress = () => {
+    // Fetch questions from API
+    const fetchQuestions = async () => {
         try {
-            Object.values(STORAGE_KEYS).forEach(key => {
-                localStorage.removeItem(key);
-            });
-        } catch (error) {
-            console.error('Error clearing progress from localStorage:', error);
+            setIsLoading(true);
+            const response = await axios.get('http://localhost:3000/api/dailyquiz/today');
+
+            // Handle the new JSON structure
+            const fetchedData = response.data.dailyQuiz.questions; // Access the 'data' array from response
+            const quizId = response.data.dailyQuiz._id;
+
+            const formattedQuestions = fetchedData.map((item) => ({
+                id: item._id,
+                question: item.question,
+                options: item.options,
+                correctAnswer: item.correctAnswer,
+                explanation: item.explanation,
+                points: item.points || 10 // Default to 10 points if not provided
+            }));
+
+            setQuestions(formattedQuestions);
+            setQuizId(quizId); // save quizId in state
+            setIsLoading(false);
+
+            // Load progress after questions are loaded
+            loadProgress();
+
+            // If no saved state, start quiz with default values
+            const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
+            if (savedQuizStarted === null && !checkQuizExpiry()) {
+                setQuizStarted(true);
+                setTimeLeft(20);
+                localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
+            }
+        } catch (err) {
+            console.error("Error fetching questions:", err);
+            setIsLoading(false);
         }
     };
 
     useEffect(() => {
-        const fetchQuestions = async () => {
-            try {
-                const response = await axios.get('http://localhost:3000/api/devquest');
-                const fetchedData = response.data["Questions&Answer"];
-
-                const formattedQuestions = fetchedData.map((item) => ({
-                    id: item.id,
-                    question: item.question,
-                    options: item.options,
-                    correctAnswer: item.correctAnswer,
-                    explanation: item.explanation
-                }));
-
-                setQuestions(formattedQuestions);
-
-                // Load progress after questions are loaded
-                loadProgress();
-
-                // If no saved state, start quiz with default values
-                const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
-                if (savedQuizStarted === null) {
-                    setQuizStarted(true);
-                    setTimeLeft(20);
-                }
-            } catch (err) {
-                console.error("Error fetching questions:", err);
-            }
-        };
-
         fetchQuestions();
     }, []);
 
+    // Auto-reset timer (5 minutes)
+    useEffect(() => {
+        if (quizStarted && quizResetTimer > 0) {
+            const timer = setTimeout(() => {
+                setQuizResetTimer(quizResetTimer - 1);
+            }, 1000);
+            return () => clearTimeout(timer);
+        } else if (quizResetTimer === 0 && quizStarted) {
+            // Auto refresh page to get new questions from backend
+            window.location.reload();
+        }
+    }, [quizResetTimer, quizStarted]);
+
+    // Auto-refresh when quiz is completed and timer reaches 0
+    useEffect(() => {
+        if (quizCompleted && quizResetTimer > 0) {
+            const timer = setTimeout(() => {
+                setQuizResetTimer(quizResetTimer - 1);
+            }, 1000);
+            return () => clearTimeout(timer);
+        } else if (quizCompleted && quizResetTimer === 0) {
+            // Auto refresh page to get new questions from backend
+            window.location.reload();
+        }
+    }, [quizResetTimer, quizCompleted]);
+
     // Save progress whenever state changes
     useEffect(() => {
-        if (questions.length > 0) {
+        if (questions.length > 0 && quizStarted) {
             saveProgress();
         }
-    }, [currentQuestionIndex, timeLeft, userAnswers, quizStarted, quizCompleted, questions.length]);
+    }, [currentQuestionIndex, timeLeft, userAnswers, quizStarted, quizCompleted, quizResetTimer, questions.length]);
 
     // Timer for questions (20 seconds)
     useEffect(() => {
@@ -128,7 +217,6 @@ const Questions = () => {
             }, 1000);
             return () => clearTimeout(timer);
         } else if (timeLeft === 0 && !showExplanation) {
-            // Time's up, move to next question
             handleTimeUp();
         }
     }, [timeLeft, quizStarted, showExplanation, quizCompleted]);
@@ -146,7 +234,6 @@ const Questions = () => {
     }, [explanationTimer, showExplanation]);
 
     const handleTimeUp = () => {
-        // Save unanswered question as null
         const newAnswers = [...userAnswers];
         newAnswers[currentQuestionIndex] = null;
         setUserAnswers(newAnswers);
@@ -160,14 +247,13 @@ const Questions = () => {
         }
     };
 
-    const handleAnswerClick = (answerIndex) => {
+    const handleAnswerClick = async (answerIndex) => {
         if (selectedAnswer !== null || showExplanation) return;
 
         setSelectedAnswer(answerIndex);
         const correct = answerIndex === questions[currentQuestionIndex].correctAnswer;
         setIsCorrect(correct);
 
-        // Save user's answer
         const newAnswers = [...userAnswers];
         newAnswers[currentQuestionIndex] = {
             selectedAnswer: answerIndex,
@@ -176,9 +262,26 @@ const Questions = () => {
         };
         setUserAnswers(newAnswers);
 
-        // Show explanation immediately
+        // --- API CALL ---
+        const questionId = questions[currentQuestionIndex].id;
+        const payload = { questionId, userId };
+
+
+        try {
+            if (correct) {
+                await axios.post("http://localhost:3000/api/user/correctanswer", payload);
+                console.log("✅ Correct answer logged");
+            } else {
+                await axios.post("http://localhost:3000/api/user/incorrectanswer", payload);
+                console.log("❌ Incorrect answer logged");
+            }
+        } catch (err) {
+            console.error("Error posting answer:", err);
+        }
+        // ----------------
+
         setShowExplanation(true);
-        setExplanationTimer(correct ? 5 : 10); // 5 sec for correct, 10 sec for wrong
+        setExplanationTimer(correct ? 5 : 10);
     };
 
     const moveToNextQuestion = () => {
@@ -198,8 +301,26 @@ const Questions = () => {
         moveToNextQuestion();
     };
 
+    const handleFinishQuiz = async () => {
+
+        // const score = userAnswers.filter(ans => ans?.isCorrect).length;
+
+        const payload = { userId, quizId };
+
+        try {
+            await axios.post("http://localhost:3000/api/user/finishquiz", payload);
+            console.log("✅ Quiz completion logged");
+        } catch (err) {
+            console.error("❌ Error logging quiz finish:", err);
+        }
+
+        // navigate after logging quiz finish
+        // navigate("/results", { state: { userAnswers, questions, score } });
+    };
+
+
     const startQuiz = () => {
-        clearProgress(); // Clear any existing progress
+        clearProgress();
         setQuizStarted(true);
         setCurrentQuestionIndex(0);
         setTimeLeft(20);
@@ -208,18 +329,13 @@ const Questions = () => {
         setExplanationTimer(0);
         setQuizCompleted(false);
         setUserAnswers([]);
+        setQuizResetTimer(300);
+        localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
     };
 
     const resetQuiz = () => {
-        clearProgress(); // Clear saved progress
-        setQuizStarted(false);
-        setCurrentQuestionIndex(0);
-        setTimeLeft(20);
-        setSelectedAnswer(null);
-        setShowExplanation(false);
-        setExplanationTimer(0);
-        setQuizCompleted(false);
-        setUserAnswers([]);
+        resetQuizState();
+        fetchQuestions();
     };
 
     const getQuizStats = () => {
@@ -233,13 +349,46 @@ const Questions = () => {
         };
     };
 
-    // Show loading screen if questions haven't loaded yet
-    if (!quizStarted || questions.length === 0) {
+    // Format time for display
+    const formatTime = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
+    // Show loading screen
+    if (isLoading || questions.length === 0) {
         return (
             <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400 mx-auto mb-4"></div>
                     <p className="text-xl">Loading Quiz...</p>
+                    <p className="text-sm text-gray-400 mt-2">Fetching latest questions...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show start screen
+    if (!quizStarted) {
+        return (
+            <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-8 relative overflow-hidden">
+                <div className="absolute inset-0 overflow-hidden">
+                    <div className="w-96 h-96 rounded-full opacity-10 bg-gradient-to-br from-green-500 to-green-600 absolute top-10 left-10 animate-pulse"></div>
+                    <div className="w-64 h-64 rounded-full opacity-10 bg-gradient-to-br from-green-400 to-green-500 absolute bottom-20 right-15 animate-pulse"></div>
+                </div>
+
+                <div className="text-center max-w-2xl relative z-10">
+                    <h1 className="text-4xl md:text-6xl font-bold mb-8 text-green-400">DevQuest Challenge</h1>
+                    <p className="text-xl text-gray-300 mb-8">Test your development knowledge with our interactive quiz!</p>
+                    <p className="text-lg text-yellow-400 mb-8">⚡ New questions every 5 minutes!</p>
+
+                    <button
+                        onClick={startQuiz}
+                        className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl text-xl cursor-pointer transition-all duration-300 transform hover:scale-105 shadow-xl border border-green-400/30"
+                    >
+                        Start Quest
+                    </button>
                 </div>
             </div>
         );
@@ -249,7 +398,6 @@ const Questions = () => {
         const stats = getQuizStats();
         return (
             <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-8 relative overflow-hidden">
-                {/* Animated Background Elements */}
                 <div className="absolute inset-0 overflow-hidden">
                     <div className="celebration-bg-1 absolute w-96 h-96 rounded-full opacity-10 animate-float-slow"></div>
                     <div className="celebration-bg-2 absolute w-64 h-64 rounded-full opacity-10 animate-float-slow-delayed"></div>
@@ -265,7 +413,7 @@ const Questions = () => {
 
                     <h1 className="text-4xl md:text-6xl font-bold mb-8 text-green-400 animate-pulse-slow">Quest Completed!</h1>
 
-                    <div className="mb-8 p-6 bg-gray-800 rounded-2xl border border-green-500/30 shadow-lg animate-fade-in-up" style={{ animationDelay: '0.2s', opacity: 0 }}>
+                    <div className="mb-8 p-6 bg-gray-800 rounded-2xl border border-green-500/30 shadow-lg animate-fade-in-up">
                         <p className="text-xl md:text-2xl mb-4 text-white">Quiz Statistics</p>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                             <div className="bg-gray-700/50 p-3 rounded-lg">
@@ -288,145 +436,36 @@ const Questions = () => {
                         <p className="text-lg text-gray-300 mt-4">
                             Great job on finishing the DevQuest challenge!
                         </p>
+
+                        {/* Auto-reset countdown */}
+                        <div className="mt-6 p-4 bg-blue-800/30 rounded-lg border border-blue-500/30">
+                            <p className="text-blue-400 font-semibold">🔄 Page will refresh in: {formatTime(quizResetTimer)}</p>
+                            <p className="text-sm text-gray-400 mt-1">New questions will be loaded automatically</p>
+                        </div>
                     </div>
-
-                    <button
-                        onClick={resetQuiz}
-                        className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl text-xl cursor-pointer transition-all duration-300 transform hover:scale-105 animate-bounce-in shadow-xl border border-green-400/30"
-                        style={{ animationDelay: '0.7s', opacity: 0 }}
-                    >
-                        Take Quest Again
-                    </button>
                 </div>
-
-                <style jsx>{`
-                    .celebration-bg-1 {
-                        background: linear-gradient(45deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.1));
-                        top: 10%;
-                        left: 10%;
-                    }
-                    
-                    .celebration-bg-2 {
-                        background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(34, 197, 94, 0.1));
-                        top: 20%;
-                        right: 15%;
-                    }
-                    
-                    .celebration-bg-3 {
-                        background: linear-gradient(225deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.1));
-                        bottom: 20%;
-                        left: 20%;
-                    }
-
-                    @keyframes pulseSlow {
-                        0%, 100% {
-                            transform: scale(1);
-                        }
-                        50% {
-                            transform: scale(1.05);
-                        }
-                    }
-
-                    @keyframes floatSlow {
-                        0%, 100% {
-                            transform: translateY(0px) rotate(0deg);
-                        }
-                        50% {
-                            transform: translateY(-20px) rotate(5deg);
-                        }
-                    }
-
-                    @keyframes floatSlowDelayed {
-                        0%, 100% {
-                            transform: translateY(0px) rotate(0deg);
-                        }
-                        50% {
-                            transform: translateY(-15px) rotate(-3deg);
-                        }
-                    }
-
-                    @keyframes floatReverse {
-                        0%, 100% {
-                            transform: translateY(-10px) rotate(0deg);
-                        }
-                        50% {
-                            transform: translateY(10px) rotate(2deg);
-                        }
-                    }
-
-                    @keyframes celebrationBadge {
-                        0% {
-                            transform: scale(0) rotate(0deg);
-                        }
-                        50% {
-                            transform: scale(1.2) rotate(180deg);
-                        }
-                        100% {
-                            transform: scale(1) rotate(360deg);
-                        }
-                    }
-
-                    @keyframes bounceCelebration {
-                        0%, 20%, 50%, 80%, 100% {
-                            transform: translateY(0);
-                        }
-                        40% {
-                            transform: translateY(-10px);
-                        }
-                        60% {
-                            transform: translateY(-5px);
-                        }
-                    }
-
-                    .animate-pulse-slow {
-                        animation: pulseSlow 2s ease-in-out infinite;
-                    }
-
-                    .animate-float-slow {
-                        animation: floatSlow 4s ease-in-out infinite;
-                    }
-
-                    .animate-float-slow-delayed {
-                        animation: floatSlowDelayed 5s ease-in-out infinite;
-                    }
-
-                    .animate-float-reverse {
-                        animation: floatReverse 3.5s ease-in-out infinite;
-                    }
-
-                    .animate-celebration-badge {
-                        animation: celebrationBadge 1s ease-out forwards;
-                    }
-
-                    .animate-bounce-celebration {
-                        animation: bounceCelebration 2s ease-in-out infinite;
-                    }
-                `}</style>
             </div>
         );
     }
 
     const currentQuestion = questions[currentQuestionIndex];
     const hasAnsweredCurrent = userAnswers[currentQuestionIndex] !== undefined;
-    const canShowNext = selectedAnswer !== null;
 
     return (
         <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6 lg:p-8 relative overflow-hidden flex flex-col items-center pt-8">
-            {/* Enhanced Animated Background */}
+            {/* Background elements */}
             <div className="absolute inset-0">
                 <div className="bg-grid absolute inset-0"></div>
                 <div className="floating-orb-1 absolute w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-full opacity-10 animate-float-1"></div>
                 <div className="floating-orb-2 absolute w-24 h-24 sm:w-36 sm:h-36 lg:w-48 lg:h-48 rounded-full opacity-10 animate-float-2"></div>
                 <div className="floating-orb-3 absolute w-16 h-16 sm:w-24 sm:h-24 lg:w-32 lg:h-32 rounded-full opacity-15 animate-float-3"></div>
                 <div className="floating-orb-4 absolute w-12 h-12 sm:w-18 sm:h-18 lg:w-24 lg:h-24 rounded-full opacity-20 animate-float-4"></div>
-
-                {/* Animated Lines */}
                 <div className="animated-line-1 absolute h-px bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-30"></div>
                 <div className="animated-line-2 absolute w-px bg-gradient-to-b from-transparent via-green-500 to-transparent opacity-30"></div>
             </div>
 
             <div className="max-w-2xl w-full relative z-10">
-                {/* Enhanced Header */}
+                {/* Header with auto-reset timer */}
                 <div className="text-center mb-4 sm:mb-6 animate-fade-in-down">
                     <div className="mb-3 sm:mb-4 relative">
                         {hasAnsweredCurrent && (
@@ -434,6 +473,11 @@ const Questions = () => {
                                 ✓ Previously answered
                             </div>
                         )}
+
+                        {/* Auto-reset countdown display */}
+                        <div className="mt-2 p-2 bg-blue-800/30 rounded-lg border border-blue-500/30 inline-block">
+                            <p className="text-sm text-blue-400">🔄 Page refreshes in: {formatTime(quizResetTimer)}</p>
+                        </div>
                     </div>
 
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0 mb-4 bg-gray-800/50 backdrop-blur-sm rounded-2xl p-3 sm:p-4 border border-gray-700/50 shadow-xl">
@@ -450,7 +494,7 @@ const Questions = () => {
                         </div>
                     </div>
 
-                    {/* Enhanced Progress Bar */}
+                    {/* Progress Bar */}
                     <div className="relative w-full bg-gray-800 rounded-full h-2 sm:h-3 mb-4 animate-fade-in border border-gray-700/50 shadow-inner">
                         <div className="absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-full opacity-50"></div>
                         <div
@@ -462,7 +506,7 @@ const Questions = () => {
                     </div>
                 </div>
 
-                {/* Enhanced Question Container */}
+                {/* Question Container */}
                 <div className="relative bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 animate-question-enter border border-gray-700/50 shadow-2xl">
                     <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-green-400/5 rounded-2xl"></div>
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-green-400 rounded-t-2xl"></div>
@@ -476,7 +520,7 @@ const Questions = () => {
                             <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse ml-2 sm:ml-3 flex-shrink-0"></div>
                         </div>
 
-                        {/* Enhanced Options */}
+                        {/* Options */}
                         <div className="grid grid-cols-1 gap-3 sm:gap-4 mb-4 sm:mb-6">
                             {currentQuestion.options.map((option, index) => (
                                 <button
@@ -510,16 +554,25 @@ const Questions = () => {
 
                         {/* Next Button */}
                         <div className="flex justify-center mb-4">
-                            <button
-                                onClick={handleNextButton}
-                                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 animate-fade-in border border-green-400/30 shadow-lg"
-                            >
-                                {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Finish Quiz'} →
-                            </button>
+                            {currentQuestionIndex === questions.length - 1 ? (
+                                <button
+                                    onClick={handleFinishQuiz}
+                                    className="finish-btn"
+                                >
+                                    Finish Quiz
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleNextButton}
+                                    className="next-btn"
+                                >
+                                    Next Question
+                                </button>
+                            )}
+
                         </div>
 
-
-                        {/* Enhanced Explanation */}
+                        {/* Explanation */}
                         {showExplanation && (
                             <div className={`relative p-4 sm:p-5 lg:p-6 rounded-xl mb-4 animate-explanation-enter border ${isCorrect ? 'bg-green-800/80 border-green-500/50 shadow-green-500/20' : 'bg-red-800/80 border-red-500/50 shadow-red-500/20'} shadow-xl backdrop-blur-sm`}>
                                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-xl"></div>
@@ -599,6 +652,24 @@ const Questions = () => {
                         bottom: 0;
                         right: 25%;
                         animation: lineMove2 10s ease-in-out infinite;
+                    }
+
+                    .celebration-bg-1 {
+                        background: linear-gradient(45deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.1));
+                        top: 10%;
+                        left: 10%;
+                    }
+                    
+                    .celebration-bg-2 {
+                        background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(34, 197, 94, 0.1));
+                        top: 20%;
+                        right: 15%;
+                    }
+                    
+                    .celebration-bg-3 {
+                        background: linear-gradient(225deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.1));
+                        bottom: 20%;
+                        left: 20%;
                     }
 
                     @keyframes gridMove {
@@ -815,6 +886,66 @@ const Questions = () => {
                         }
                     }
 
+                    @keyframes pulseSlow {
+                        0%, 100% {
+                            transform: scale(1);
+                        }
+                        50% {
+                            transform: scale(1.05);
+                        }
+                    }
+
+                    @keyframes floatSlow {
+                        0%, 100% {
+                            transform: translateY(0px) rotate(0deg);
+                        }
+                        50% {
+                            transform: translateY(-20px) rotate(5deg);
+                        }
+                    }
+
+                    @keyframes floatSlowDelayed {
+                        0%, 100% {
+                            transform: translateY(0px) rotate(0deg);
+                        }
+                        50% {
+                            transform: translateY(-15px) rotate(-3deg);
+                        }
+                    }
+
+                    @keyframes floatReverse {
+                        0%, 100% {
+                            transform: translateY(-10px) rotate(0deg);
+                        }
+                        50% {
+                            transform: translateY(10px) rotate(2deg);
+                        }
+                    }
+
+                    @keyframes celebrationBadge {
+                        0% {
+                            transform: scale(0) rotate(0deg);
+                        }
+                        50% {
+                            transform: scale(1.2) rotate(180deg);
+                        }
+                        100% {
+                            transform: scale(1) rotate(360deg);
+                        }
+                    }
+
+                    @keyframes bounceCelebration {
+                        0%, 20%, 50%, 80%, 100% {
+                            transform: translateY(0);
+                        }
+                        40% {
+                            transform: translateY(-10px);
+                        }
+                        60% {
+                            transform: translateY(-5px);
+                        }
+                    }
+
                     .animate-float-1 {
                         animation: float1 4s ease-in-out infinite;
                     }
@@ -882,6 +1013,30 @@ const Questions = () => {
 
                     .animate-bounce-in {
                         animation: bounceIn 0.6s ease-out forwards;
+                    }
+
+                    .animate-pulse-slow {
+                        animation: pulseSlow 2s ease-in-out infinite;
+                    }
+
+                    .animate-float-slow {
+                        animation: floatSlow 4s ease-in-out infinite;
+                    }
+
+                    .animate-float-slow-delayed {
+                        animation: floatSlowDelayed 5s ease-in-out infinite;
+                    }
+
+                    .animate-float-reverse {
+                        animation: floatReverse 3.5s ease-in-out infinite;
+                    }
+
+                    .animate-celebration-badge {
+                        animation: celebrationBadge 1s ease-out forwards;
+                    }
+
+                    .animate-bounce-celebration {
+                        animation: bounceCelebration 2s ease-in-out infinite;
                     }
 
                     /* Mobile-specific adjustments */
