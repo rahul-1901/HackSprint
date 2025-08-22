@@ -17,12 +17,7 @@ const Questions = () => {
     const [quizId, setQuizId] = useState(null);
 
     // const userId = localStorage.getItem("userId"); 
-<<<<<<< HEAD
-    // const userId = localStorage.getItem("userId");
-    const userId = "6894c86d5bf1851c1fa605c6";
-=======
     const userId = localStorage.getItem("userId");
->>>>>>> 54cb8fc8d36f4ad89cec6b3728d47b79eb25d2b7
 
     // Local Storage keys
     const STORAGE_KEYS = {
@@ -309,11 +304,6 @@ const Questions = () => {
     const handleFinishQuiz = async () => {
 
         // const score = userAnswers.filter(ans => ans?.isCorrect).length;
-<<<<<<< HEAD
-        console.log(quizId);
-=======
-
->>>>>>> 54cb8fc8d36f4ad89cec6b3728d47b79eb25d2b7
         const payload = { userId, quizId };
 
         try {
