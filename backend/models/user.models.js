@@ -2,11 +2,11 @@ import mongoose, { Mongoose } from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    image : {
-      type : String
+    image: {
+      type: String
     },
-    userName : {
-      type : String,
+    userName: {
+      type: String,
     },
     email: {
       type: String,
@@ -113,6 +113,21 @@ const userSchema = new mongoose.Schema(
     ],
     attemptedDevQuestions: [
       { type: mongoose.Schema.Types.ObjectId, ref: "dailyQuiz" }
+    ],
+    institute: {
+      type: String
+    },
+    passOutYear: {
+      type: String
+    },
+    department: {
+      type: String
+    },
+    connectedApps: [
+      {
+        appName: { type: String, required: true },
+        appURL: { type: String, required: true }
+      }
     ],
     verificationTokenExpiresAt: Date,
     // Submissions

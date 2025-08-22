@@ -459,3 +459,64 @@ export const devQuestionsAnsweredData = async(req,res)=>{
         res.status(500).json({ message: error.message });
   }
 }
+
+export const updatingEducation = async (req, res) => {
+  try {
+    const { userId,institute, passOutYear, department } = req.body;
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          "institute": institute,
+          "passOutYear": passOutYear,
+          "department": department,
+        },
+      },
+      { new: true, runValidators: true } // return updated doc & validate
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "Education details updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const updatingConnectedApps = async (req, res) => {
+  try {
+    const { userId, AppName, AppURL } = req.body;
+
+    if (!userId || !AppName || !AppURL) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          connectedApps: { appName: AppName, appURL: AppURL }
+        }
+      },
+      { new: true } // return updated doc
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "Connected app added successfully",
+      connectedApps: updatedUser.connectedApps
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
