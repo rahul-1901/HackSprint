@@ -19,6 +19,10 @@ const devquestSchema = new mongoose.Schema({
     },
     explanation: {
         type: String
+    },
+    points : {
+        type : Number,
+        default : 10
     }
 })
 

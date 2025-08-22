@@ -29,6 +29,15 @@ const registeredParticipantsSchema = new mongoose.Schema({
     type : String,
     // required : true
   },
+  college:{
+    type : String,
+  },
+  gender : {
+    type : String,
+  },
+  currentYearOfStudy : {
+    type : String
+  },
   currentLocation: {
     type: String
   },
