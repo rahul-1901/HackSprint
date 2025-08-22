@@ -80,7 +80,6 @@ export const isregistered = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
-
 export const registerTeam = async (req, res) => {
   try {
     const { hackathonId } = req.params;
@@ -201,4 +200,3 @@ export const registerTeam = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-

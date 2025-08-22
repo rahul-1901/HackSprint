@@ -38,8 +38,11 @@ const registeredParticipantsSchema = new mongoose.Schema({
   currentYearOfStudy : {
     type : String
   },
-  currentLocation: {
+  city: {
     type: String
+  },
+  state:{
+    type : String
   },
   yearsOfExperience: {
     type: String
