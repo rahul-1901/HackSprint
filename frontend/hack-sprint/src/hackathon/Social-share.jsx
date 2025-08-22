@@ -20,100 +20,54 @@ export const SocialShare = () => {
   };
 
   const shareUrls = {
-    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-      shareText
-    )}&url=${encodeURIComponent(currentUrl)}`,
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-      currentUrl
-    )}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-      currentUrl
-    )}`,
+    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(currentUrl)}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`,
   };
+  
+  const SocialButton = ({ children, onClick, className, hoverColorClass }) => (
+    <Button
+      variant="ghost"
+      size="icon"
+      className={`w-12 h-12 rounded-full bg-gray-900/50 border border-green-500/20 group transition-all duration-300 hover:scale-110 ${hoverColorClass} ${className}`}
+      onClick={onClick}
+    >
+        {children}
+    </Button>
+  );
 
   return (
-    <aside className="w-20 bg-surface/30 backdrop-blur-sm border-l border-green-500 min-h-screen sticky top-16">
-      <div className="p-4 flex flex-col items-center space-y-6 pt-8">
-        {/* Share header */}
+    <aside className="w-24 min-h-[calc(100vh-88px)] sticky top-[88px]">
+        <div className="h-full p-4 flex flex-col items-center gap-6 pt-8 bg-gray-900/50 backdrop-blur-md border-l border-green-500/20">
+        
         <div className="text-center">
-          <Share2 className="w-6 h-6 text-hero-primary mx-auto mb-2" />
-          <span className="text-xs text-text-secondary font-medium">Share</span>
+          <Share2 className="w-6 h-6 text-green-400 mx-auto mb-1" />
+          <span className="text-xs text-gray-400 font-medium">Share</span>
         </div>
 
-        {/* Social share buttons */}
-        <div className="flex flex-col space-y-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-12 h-12 p-0 rounded-full bg-blue-500/10 hover:bg-blue-500/20 border border-green-500 group"
-            onClick={() => window.open(shareUrls.twitter, "_blank")}
-          >
-            <Twitter className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform duration-200" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-12 h-12 p-0 rounded-full bg-blue-600/10 hover:bg-blue-600/20 border border-green-500 group"
-            onClick={() => window.open(shareUrls.facebook, "_blank")}
-          >
-            <Facebook className="w-5 h-5 text-blue-500 group-hover:scale-110 transition-transform duration-200" />
-          </Button>
-
-          {/* LinkedIn */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-12 h-12 p-0 rounded-full bg-blue-700/10 hover:bg-blue-700/20 border border-green-500 group"
-            onClick={() => window.open(shareUrls.linkedin, "_blank")}
-          >
-            <Linkedin className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform duration-200" />
-          </Button>
-
-          {/* Copy link */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-12 h-12 p-0 rounded-full bg-hero-primary/10 hover:bg-hero-primary/20 border border-green-500 group"
-            onClick={handleCopyLink}
-          >
-            <Link2
-              className={`w-5 h-5 text-hero-primary group-hover:scale-110 transition-all duration-200 ${
-                copied ? "rotate-12" : ""
-              }`}
-            />
-          </Button>
+        <div className="flex flex-col gap-4">
+            <SocialButton hoverColorClass="hover:bg-[#1DA1F2]/20 hover:shadow-[0_0_15px_rgba(29,161,242,0.5)]" onClick={() => window.open(shareUrls.twitter, "_blank")}>
+              <Twitter className="w-5 h-5 text-[#1DA1F2]" />
+            </SocialButton>
+            <SocialButton hoverColorClass="hover:bg-[#1877F2]/20 hover:shadow-[0_0_15px_rgba(24,119,242,0.5)]" onClick={() => window.open(shareUrls.facebook, "_blank")}>
+              <Facebook className="w-5 h-5 text-[#1877F2]" />
+            </SocialButton>
+            <SocialButton hoverColorClass="hover:bg-[#0A66C2]/20 hover:shadow-[0_0_15px_rgba(10,102,194,0.5)]" onClick={() => window.open(shareUrls.linkedin, "_blank")}>
+              <Linkedin className="w-5 h-5 text-[#0A66C2]" />
+            </SocialButton>
+            <SocialButton hoverColorClass="hover:bg-green-500/20 hover:shadow-[0_0_15px_rgba(34,197,94,0.5)]" onClick={handleCopyLink}>
+              <Link2 className={`w-5 h-5 text-green-400 transition-transform duration-300 ${ copied ? "rotate-12 scale-125" : ""}`} />
+            </SocialButton>
         </div>
 
-        {/* Copy feedback */}
-        {copied && (
-          <div className="text-xs text-hero-primary font-medium animate-fade-in">
-            Copied!
-          </div>
-        )}
+        {copied && <div className="text-xs text-green-400 font-medium animate-pulse">Copied!</div>}
 
-        {/* Divider */}
-        <div className="w-8 h-px bg-green-500" />
+        <div className="w-8 h-px bg-green-500/20" />
 
-        {/* Like */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-12 h-12 p-0 rounded-full bg-red-500/10 hover:bg-red-500/20 border border-green-500 group"
-          onClick={() => setLiked(!liked)}
-        >
-          <Heart
-            className={`w-5 h-5 group-hover:scale-110 transition-all duration-200 ${
-              liked ? "text-red-500 fill-red-500" : "text-red-400"
-            }`}
-          />
-        </Button>
-
-        {/* Scroll indicator */}
-        <div className="mt-auto mb-4">
-          <div className="w-1 h-16 bg-green-500 rounded-full relative overflow-hidden">
-            <div className="w-full h-4 bg-hero-primary rounded-full animate-pulse"></div>
-          </div>
+        <div className="flex flex-col items-center gap-2">
+            <SocialButton hoverColorClass="hover:bg-red-500/20 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)]" onClick={() => setLiked(!liked)}>
+              <Heart className={`w-5 h-5 transition-all duration-200 ${ liked ? "text-red-500 fill-current" : "text-red-400/80"}`} />
+            </SocialButton>
         </div>
       </div>
     </aside>
