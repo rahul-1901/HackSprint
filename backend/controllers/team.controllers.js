@@ -1,7 +1,9 @@
+
 import TeamModel from "../models/team.js";
 import UserModel from "../models/user.models.js";
 import RegisteredParticipantsModel from "../models/registeredParticipants.js"
 import hackathonModel from "../models/hackathon.models.js"
+
 
 
 const generateCode = (length = 8) => {
@@ -16,7 +18,9 @@ const generateCode = (length = 8) => {
 // Create team with unique secret code
 export const createTeam = async (req, res) => {
     try {
+
         const { name, leader, leaderName, leaderEmail, hackathon, contactNumber, city, state, workEmailAddress, yearsOfExperience } = req.body;
+
 
         // Generate unique secret code
         let code;
@@ -24,16 +28,6 @@ export const createTeam = async (req, res) => {
         while (exists) {
             code = generateCode(8);
             exists = await TeamModel.findOne({ secretCode: code });
-        }
-        const alreadyRegisteredLeader = await RegisteredParticipantsModel.findOne({
-            user: leader,
-            hackathon: hackathon,
-        });
-        if (alreadyRegisteredLeader) {
-            return res.status(400).json({
-                success: false,
-                message: "Leader already registered for this hackathon",
-            });
         }
 
         const existingTeam = await TeamModel.findOne({
@@ -45,7 +39,17 @@ export const createTeam = async (req, res) => {
                 .status(400)
                 .json({ success: false, message: "Team name already taken" });
         }
-
+        
+        const alreadyRegisteredLeader = await RegisteredParticipantsModel.findOne({
+            user: leader,
+            hackathon: hackathon,
+        });
+        if (alreadyRegisteredLeader) {
+            return res.status(400).json({
+                success: false,
+                message: "Leader already registered for this hackathon",
+            });
+        }
 
 
         const team = await TeamModel.create({
@@ -66,6 +70,7 @@ export const createTeam = async (req, res) => {
             $addToSet: { registeredParticipants: leader },
             $inc: { numParticipants: 1 },
         });
+
         await RegisteredParticipantsModel.create({
             user : leader,
             hackathon: hackathon,
@@ -83,7 +88,6 @@ export const createTeam = async (req, res) => {
             message: "Team created successfully",
             team
         });
-
     }catch (error) {
         res.status(500).json({ message: error.message });
     }

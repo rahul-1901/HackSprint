@@ -29,11 +29,23 @@ const registeredParticipantsSchema = new mongoose.Schema({
     type : String,
     // required : true
   },
-  currentLocation: {
+  college:{
+    type : String,
+  },
+  gender : {
+    type : String,
+  },
+  currentYearOfStudy : {
+    type : String
+  },
+  city: {
     type: String
   },
+  state:{
+    type : String
+  },
   yearsOfExperience: {
-    type: Number
+    type: String
   },
   workEmailAddress:{
     type : String,

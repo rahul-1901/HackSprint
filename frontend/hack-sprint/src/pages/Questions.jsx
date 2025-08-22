@@ -304,7 +304,6 @@ const Questions = () => {
     const handleFinishQuiz = async () => {
 
         // const score = userAnswers.filter(ans => ans?.isCorrect).length;
-
         const payload = { userId, quizId };
 
         try {

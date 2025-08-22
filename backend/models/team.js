@@ -25,16 +25,19 @@ const teamSchema = new mongoose.Schema({
       ref: "users"
     }
   ],
-  secretCode: {
-    type: String,
+  secretCode:{
+    type : String
   },
-  secretLink: {
-    type: String,
+  secretLink:{
+    type : String
   },
-  pendingMembers: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
-  },
+  pendingMembers : [
+    {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "users"
+    }
+  ],
+
   hackathon: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "hackathons",
