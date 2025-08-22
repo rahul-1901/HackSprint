@@ -34,44 +34,45 @@ function App() {
   };
 
   return (
-    <Router>
-      {/* If you use RouteHandler to set auth state, re-enable it */}
-      {/* <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} /> */}
+    <>
+      <Router>
+        <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} />
+        <Loader />
+        <HideRoute>
+          <Navbar />
+        </HideRoute>
+        <ToastContainer />
+        <Routes>
 
-      <Loader />
+          <Route path="/" element={<Home />} caseSensitive />
+          <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
+          <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
+          <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
+          <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
+          <Route path="/quest" element={<Quest />} caseSensitive />
+          <Route path="/about" element={<About />} caseSensitive />
+          <Route path="/hackathons" element={<AllHackathons />} caseSensitive />
+          <Route path="/admin" element={<Admin />} caseSensitive />
+          <Route path="/questions" element={<Questions />} caseSensitive />
+          {/* <Route path="/hackathon" element={<Hackathons />} caseSensitive /> */}
+          <Route path="/admin" element={<Admin />} caseSensitive />
+          <Route path="/questions" element={<Questions />} caseSensitive />
+          {/* <Route path="/login" element={<GoogleAuthWrapper />} caseSensitive /> */}
+          <Route path="/account/login" element={<Login />} caseSensitive></Route>
+          <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
+          <Route path="/account/verify-email" element={<Verification />} caseSensitive></Route>
+          <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive></Route>
+          <Route path="/hackathon/:id" element={<HackathonDetails />} />
+          <Route path="/hackathon/RegistrationForm/:id" element={<RegistrationForm />} />
+          <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />} />} caseSensitive />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
 
-      {/* Navbar visible on all normal routes */}
-      <HideRoute>
-        <Navbar />
-      </HideRoute>
-
-      <Routes>
-        <Route path="/" element={<Home />} caseSensitive />
-        <Route path="/hackathons" element={<AllHackathons />} caseSensitive />
-        <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive />
-        <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive />
-        <Route path="/quest" element={<Quest />} caseSensitive />
-        <Route path="/about" element={<About />} caseSensitive />
-        <Route path="/admin" element={<Admin />} caseSensitive />
-        <Route path="/questions" element={<Questions />} caseSensitive />
-        <Route path="/account/login" element={<Login />} caseSensitive />
-        <Route path="/account/verify-email" element={<Verification />} caseSensitive />
-        <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive />
-        <Route path="/hackathon/:id" element={<HackathonDetails />} />
-        <Route path="/hackathon/RegistrationForm/:id" element={<RegistrationForm />} />
-
-        {/* NEW: Leaderboard route */}
-        <Route path="/leaderboard" element={<Leaderboard />} caseSensitive />
-
-        <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />} />} caseSensitive />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-
-      {/* Footer visible on all normal routes */}
-      <HideRoute>
-        <Footer />
-      </HideRoute>
-    </Router>
+        <HideRoute>
+          <Footer />
+        </HideRoute>
+      </Router>
+    </>
   );
 }
 

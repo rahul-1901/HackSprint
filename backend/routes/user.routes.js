@@ -25,5 +25,5 @@ userRoutes.put("/save-gitHubLink" ,saveGitHubLink)
 userRoutes.get("/submission/github-status", verifyAuth, checkAndUpdateGitHubStatus);
 userRoutes.post("/correctanswer" , increaseStreak);
 userRoutes.post("/incorrectanswer" , resetStreak);
-userRoutes.post("/devQuestionsCorrectlyAnswered" , devQuestionsAnsweredData );
+userRoutes.post("/finishquiz" , devQuestionsAnsweredData );
 export default userRoutes;

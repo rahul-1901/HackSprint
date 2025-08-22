@@ -6,7 +6,6 @@ import axios from "axios";
 
 const FormRow = ({ label, required, children }) => (
   <div className="mb-6">
-    {/* CHANGE: Made label text white */}
     <label className="block text-sm font-medium text-white mb-2">
       {label}
       {required && <span className="text-red-500 ml-1">*</span>}
@@ -27,20 +26,12 @@ export const RegistrationForm = ({ onBack, onSubmit = () => {} }) => {
   const [individualForm, setIndividualForm] = useState({
     fullName: "",
     email: "",
-    location: "",
+    city: "",
+    state: "",
     contactNumber: "",
     experience: "",
-    usedElk: "",
-    genAiTech: {
-      aiSearch: false,
-      rag: false,
-      kibana: false,
-      agents: false,
-      none: false,
-    },
-    elkUsage: "",
     workEmail: "",
-    agreeTerms: false,
+    gender: "",
   });
 
   const [teamForm, setTeamForm] = useState({
@@ -49,17 +40,7 @@ export const RegistrationForm = ({ onBack, onSubmit = () => {} }) => {
     teamLeadEmail: "",
     members: "",
     experience: "",
-    usedElk: "",
-    genAiTech: {
-      aiSearch: false,
-      rag: false,
-      kibana: false,
-      agents: false,
-      none: false,
-    },
-    elkUsage: "",
     workEmail: "",
-    agreeTerms: false,
   });
 
   useEffect(() => {
@@ -91,114 +72,86 @@ export const RegistrationForm = ({ onBack, onSubmit = () => {} }) => {
   }, []);
 
   const handleIndividualChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (type === "checkbox" && name in individualForm.genAiTech) {
-      setIndividualForm((prev) => ({
-        ...prev,
-        genAiTech: { ...prev.genAiTech, [name]: checked },
-      }));
-    } else {
-      setIndividualForm((prev) => ({
-        ...prev,
-        [name]: type === "checkbox" ? checked : value,
-      }));
-    }
+    const { name, value } = e.target;
+    setIndividualForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleTeamChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (type === "checkbox" && name in teamForm.genAiTech) {
-      setTeamForm((prev) => ({
-        ...prev,
-        genAiTech: { ...prev.genAiTech, [name]: checked },
-      }));
-    } else {
-      setTeamForm((prev) => ({
-        ...prev,
-        [name]: type === "checkbox" ? checked : value,
-      }));
-    }
+    const { name, value } = e.target;
+    setTeamForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleIndividualSubmit = async (e) => {
     e.preventDefault();
-  if (!individualForm.agreeTerms) {
-    console.error("User must agree to the Terms and Services.");
-    return;
-  }
-  try {
-    // Replace with actual userId and hackathonId
-    const userId = userData?._id;
-    const payload = {
-      userId,
-      name: individualForm.fullName,
-      contactNumber: individualForm.contactNumber,
-      email: individualForm.email,
-      currentLocation: individualForm.location,
-      yearsOfExperience: individualForm.experience,
-      workEmailAddress: individualForm.workEmail,
-      // Add other fields as needed
-    };
-    const res = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}/api/register/${hackathonId}`,
-      payload
-    );
-    onSubmit(individualForm); // or handle success
-  } catch (err) {
-    console.error("Registration error:", err);
-  }
+    try {
+      const userId = userData?._id;
+      const payload = {
+        userId,
+        name: individualForm.fullName,
+        contactNumber: individualForm.contactNumber,
+        email: individualForm.email,
+        city: individualForm.city,
+        state: individualForm.state,
+        yearsOfExperience: individualForm.experience,
+        workEmailAddress: individualForm.workEmail,
+        gender: individualForm.gender,
+      };
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/register/${hackathonId}`,
+        payload
+      );
+      onSubmit(individualForm);
+    } catch (err) {
+      console.error("Registration error:", err);
+    }
   };
 
   const handleTeamSubmit = async (e) => {
-  e.preventDefault();
-  if (!teamForm.agreeTerms) {
-    console.error("User must agree to the Terms and Services.");
-    return;
-  }
-  try {
-    // Replace with actual leaderId and hackathonId
-    const leaderId = userData?._id;
-    const payload = {
-      teamName: teamForm.teamName,
-      leaderId,
-      workEmailAddress: teamForm.workEmail,
-      yearsOfExperience: teamForm.experience,
-      leadEmail: teamForm.teamLeadEmail,
-      leadName: teamForm.teamLead,
-      teamMembers: teamForm.members, // comma separated
-      // Add other fields as needed
-    };
-    const res = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}/api/register/${hackathonId}/team`,
-      payload
-    );
-    onSubmit(teamForm); // or handle success
-  } catch (err) {
-    console.error("Team registration error:", err);
-  }
-};
+    e.preventDefault();
+    try {
+      const leaderId = userData?._id;
+      const payload = {
+        teamName: teamForm.teamName,
+        leaderId,
+        workEmailAddress: teamForm.workEmail,
+        yearsOfExperience: teamForm.experience,
+        leadEmail: teamForm.teamLeadEmail,
+        leadName: teamForm.teamLead,
+        teamMembers: teamForm.members,
+      };
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/register/${hackathonId}/team`,
+        payload
+      );
+      onSubmit(teamForm);
+    } catch (err) {
+      console.error("Team registration error:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#101622] p-4 md:p-8 flex items-center justify-center">
       <div className="w-full max-w-5xl mx-auto bg-surface/60 backdrop-blur-sm border border-green-500 rounded-xl p-6 md:p-8 shadow-2xl">
         <div className="flex justify-between items-center mb-6 border-b border-green-500/20 pb-4">
           <div>
-            {/* CHANGE: Made heading text white */}
             <h1 className="text-2xl font-bold text-white">Forge the Future</h1>
-            {/* CHANGE: Made subtitle text white */}
             <p className="text-sm text-white">ENDS ON: SEP 07, 2025, 11:59 PM IST (ASIA/KOLKATA)</p>
           </div>
         </div>
 
         <div className="flex gap-6 mb-8">
-          {/* CHANGE: Made active button text white */}
           <Button
             className={`px-6 py-2 font-bold rounded ${formType === "individual" ? "bg-green-500 text-white" : " cursor-pointer bg-surface text-green-500 border border-green-500"}`}
             onClick={() => setFormType("individual")}
           >
             Individual Registration
           </Button>
-          {/* CHANGE: Made active button text white */}
           <Button
             className={`px-6 py-2 font-bold rounded ${formType === "team" ? "bg-green-500 text-white" : "cursor-pointer bg-surface text-green-500 border border-green-500"}`}
             onClick={() => setFormType("team")}
@@ -209,22 +162,48 @@ export const RegistrationForm = ({ onBack, onSubmit = () => {} }) => {
 
         {formType === "individual" && (
           <form onSubmit={handleIndividualSubmit}>
-            {/* CHANGE: Made section heading white */}
             <h3 className="text-lg font-semibold text-white mb-4 border-b border-green-500/20 pb-2">INDIVIDUAL REGISTRATION</h3>
             <FormRow label="Full Name" required>
-              <input type="text" name="fullName" value={individualForm.fullName} onChange={handleIndividualChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required />
+              <input 
+                type="text" 
+                name="fullName" 
+                value={individualForm.fullName} 
+                onChange={handleIndividualChange} 
+                className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white read-only:opacity-70 read-only:cursor-not-allowed" 
+                required 
+                readOnly={userData?.name ? true : false}
+              />
             </FormRow>
             <FormRow label="Email" required>
-              <input type="email" name="email" value={individualForm.email} onChange={handleIndividualChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required />
+              <input 
+                type="email" 
+                name="email" 
+                value={individualForm.email} 
+                onChange={handleIndividualChange} 
+                className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white read-only:opacity-70 read-only:cursor-not-allowed" 
+                required 
+                readOnly={userData?.email ? true : false}
+              />
             </FormRow>
             <div className="grid md:grid-cols-2 gap-6">
-              <FormRow label="Current Location" required>
-                <input type="text" name="location" value={individualForm.location} onChange={handleIndividualChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required />
+              <FormRow label="City" required>
+                <input type="text" name="city" value={individualForm.city} onChange={handleIndividualChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required />
               </FormRow>
-              <FormRow label="Contact Number" required>
-                <input type="tel" name="contactNumber" value={individualForm.contactNumber} onChange={handleIndividualChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required />
+              <FormRow label="State" required>
+                <input type="text" name="state" value={individualForm.state} onChange={handleIndividualChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required />
               </FormRow>
             </div>
+            <FormRow label="Gender" required>
+              <select name="gender" value={individualForm.gender} onChange={handleIndividualChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required>
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </FormRow>
+            <FormRow label="Contact Number" required>
+              <input type="tel" name="contactNumber" value={individualForm.contactNumber} onChange={handleIndividualChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required />
+            </FormRow>
             <FormRow label="Years of Work Experience" required>
               <select name="experience" value={individualForm.experience} onChange={handleIndividualChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required>
                 <option value="">Select Number of Years</option>
@@ -234,39 +213,10 @@ export const RegistrationForm = ({ onBack, onSubmit = () => {} }) => {
                 <option value="5+">5+ Years</option>
               </select>
             </FormRow>
-            <FormRow label="Have you worked with the ELK Stack before?" required>
-              <select name="usedElk" value={individualForm.usedElk} onChange={handleIndividualChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required>
-                <option value="">Please make a selection</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-            </FormRow>
-            <FormRow label="What GenAI technologies are you working on?" required>
-              {/* CHANGE: Made checkbox labels white */}
-              <div className="space-y-2 text-white">
-                {Object.keys(individualForm.genAiTech).map(tech => (
-                  <label key={tech} className="flex items-center gap-2">
-                    <input type="checkbox" name={tech} checked={individualForm.genAiTech[tech]} onChange={handleIndividualChange} className="h-4 w-4 rounded bg-[#0b0e1c] border-green-500 text-green-500" />
-                    <span>{tech === 'aiSearch' ? 'AI or Semantic search' : tech.charAt(0).toUpperCase() + tech.slice(1)}</span>
-                  </label>
-                ))}
-              </div>
-            </FormRow>
-            <FormRow label="What have you used the ELK Stack for in the past?">
-              <textarea name="elkUsage" value={individualForm.elkUsage} onChange={handleIndividualChange} rows="3" className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" />
-            </FormRow>
             <FormRow label="Please help us with your work email address (Optional)">
               <input type="email" name="workEmail" value={individualForm.workEmail} onChange={handleIndividualChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" />
             </FormRow>
-            <FormRow label="">
-              {/* CHANGE: Made checkbox label white */}
-              <label className="flex items-center gap-2 text-white">
-                <input type="checkbox" name="agreeTerms" checked={individualForm.agreeTerms} onChange={handleIndividualChange} className="h-4 w-4 rounded bg-[#0b0e1c] border-green-500 text-green-500" />
-                <span>I agree to the Terms and Services</span>
-              </label>
-            </FormRow>
             <div className="mt-8 text-center pointer-cursor ">
-              {/* CHANGE: Made submit button text white */}
               <Button type="submit" className="cursor-pointer bg-green-500 text-white font-bold px-8 py-3 hover:bg-green-400">
                 SUBMIT INDIVIDUAL
               </Button>
@@ -276,16 +226,31 @@ export const RegistrationForm = ({ onBack, onSubmit = () => {} }) => {
 
         {formType === "team" && (
           <form onSubmit={handleTeamSubmit}>
-            {/* CHANGE: Made section heading white */}
             <h3 className="text-lg font-semibold text-white mb-4 border-b border-green-500/20 pb-2">TEAM REGISTRATION</h3>
             <FormRow label="Team Name" required>
               <input type="text" name="teamName" value={teamForm.teamName} onChange={handleTeamChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required />
             </FormRow>
             <FormRow label="Team Lead Name" required>
-              <input type="text" name="teamLead" value={teamForm.teamLead} onChange={handleTeamChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required />
+              <input 
+                type="text" 
+                name="teamLead" 
+                value={teamForm.teamLead} 
+                onChange={handleTeamChange} 
+                className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white read-only:opacity-70 read-only:cursor-not-allowed" 
+                required 
+                readOnly={userData?.name ? true : false}
+              />
             </FormRow>
             <FormRow label="Team Lead Email" required>
-              <input type="email" name="teamLeadEmail" value={teamForm.teamLeadEmail} onChange={handleTeamChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required />
+              <input 
+                type="email" 
+                name="teamLeadEmail" 
+                value={teamForm.teamLeadEmail} 
+                onChange={handleTeamChange} 
+                className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white read-only:opacity-70 read-only:cursor-not-allowed" 
+                required 
+                readOnly={userData?.email ? true : false}
+              />
             </FormRow>
             <FormRow label="Team Members (comma separated names & emails)" required>
               <input type="text" name="members" value={teamForm.members} onChange={handleTeamChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required />
@@ -299,39 +264,10 @@ export const RegistrationForm = ({ onBack, onSubmit = () => {} }) => {
                 <option value="5+">5+ Years</option>
               </select>
             </FormRow>
-            <FormRow label="Have you worked with the ELK Stack before?" required>
-              <select name="usedElk" value={teamForm.usedElk} onChange={handleTeamChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" required>
-                <option value="">Please make a selection</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-            </FormRow>
-            <FormRow label="What GenAI technologies are you working on?" required>
-              {/* CHANGE: Made checkbox labels white */}
-              <div className="space-y-2 text-white">
-                {Object.keys(teamForm.genAiTech).map(tech => (
-                  <label key={tech} className="flex items-center gap-2">
-                    <input type="checkbox" name={tech} checked={teamForm.genAiTech[tech]} onChange={handleTeamChange} className="h-4 w-4 rounded bg-[#0b0e1c] border-green-500 text-green-500" />
-                    <span>{tech === 'aiSearch' ? 'AI or Semantic search' : tech.charAt(0).toUpperCase() + tech.slice(1)}</span>
-                  </label>
-                ))}
-              </div>
-            </FormRow>
-            <FormRow label="What have you used the ELK Stack for in the past?">
-              <textarea name="elkUsage" value={teamForm.elkUsage} onChange={handleTeamChange} rows="3" className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" />
-            </FormRow>
             <FormRow label="Please help us with your work email address (Optional)">
               <input type="email" name="workEmail" value={teamForm.workEmail} onChange={handleTeamChange} className="w-full bg-[#0b0e1c] border border-green-500 rounded-md p-2 text-white" />
             </FormRow>
-            <FormRow label="">
-              {/* CHANGE: Made checkbox label white */}
-              <label className="flex items-center gap-2 text-white">
-                <input type="checkbox" name="agreeTerms" checked={teamForm.agreeTerms} onChange={handleTeamChange} className="h-4 w-4 rounded bg-[#0b0e1c] border-green-500 text-green-500" />
-                <span>I agree to the Terms and Services</span>
-              </label>
-            </FormRow>
             <div className="mt-8 text-center">
-              {/* CHANGE: Made submit button text white */}
               <Button type="submit pointer-cursor " className="cursor-pointer bg-green-500 text-white font-bold px-8 py-3 hover:bg-green-400">
                 SUBMIT TEAM
               </Button>

@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 const dailyQuizSchema = new mongoose.Schema({
+  Title : {
+    type : String,
+    default : "ABC TOPIC"
+  },
   date: {
     type: Date,
     required: true,
