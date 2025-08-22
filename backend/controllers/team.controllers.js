@@ -1,10 +1,9 @@
-import mongoose from "mongoose"
-import express from 'express'
-import UserModel from "../models/user.models.js"
-import hackathonModel from "../models/hackathon.models.js"
-import TeamModel from "../models/team.js"
+
+import TeamModel from "../models/team.js";
+import UserModel from "../models/user.models.js";
 import RegisteredParticipantsModel from "../models/registeredParticipants.js"
-import { all } from "axios"
+import hackathonModel from "../models/hackathon.models.js"
+
 
 
 const generateCode = (length = 8) => {
@@ -19,7 +18,9 @@ const generateCode = (length = 8) => {
 // Create team with unique secret code
 export const createTeam = async (req, res) => {
     try {
-        const { name, leader, leaderName, leaderEmail, hackathon } = req.body;
+
+        const { name, leader, leaderName, leaderEmail, hackathon, contactNumber, city, state, workEmailAddress, yearsOfExperience } = req.body;
+
 
         // Generate unique secret code
         let code;
@@ -28,17 +29,6 @@ export const createTeam = async (req, res) => {
             code = generateCode(8);
             exists = await TeamModel.findOne({ secretCode: code });
         }
-
-        const team = await TeamModel.create({
-            name,
-            leader,
-            leaderName,
-            leaderEmail,
-            hackathon,
-            members,
-            secretCode: code,
-            secretLink: `${process.env.BASE_URL}/join/${code}` // optional link
-        });
 
         const existingTeam = await TeamModel.findOne({
             name,
@@ -60,6 +50,19 @@ export const createTeam = async (req, res) => {
                 message: "Leader already registered for this hackathon",
             });
         }
+
+
+        const team = await TeamModel.create({
+            name,
+            leader,
+            leaderName,
+            leaderEmail,
+            hackathon,
+            members: [],
+            secretCode: code,
+            secretLink:`${process.env.BASE_URL}/join/${code}` // optional link
+        });
+
         await UserModel.findByIdAndUpdate(leader, {
             $addToSet: { registeredHackathons: hackathon },
         });
@@ -67,13 +70,132 @@ export const createTeam = async (req, res) => {
             $addToSet: { registeredParticipants: leader },
             $inc: { numParticipants: 1 },
         });
+
+        await RegisteredParticipantsModel.create({
+            user : leader,
+            hackathon: hackathon,
+            team: team._id || null,
+            name: leaderName,
+            contactNumber,
+            yearsOfExperience,
+            workEmailAddress,
+            city,
+            state,
+            
+        })
         res.status(201).json({
+            secretCode: code,
             message: "Team created successfully",
             team
         });
-
-    } catch (error) {
+    }catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
+export const joinTeam = async (req, res) => {
+  try{
+   const { userId, code } = req.body;
+   if(!userId || !code){
+    res.status(400).json({message: "code is required!"});
+   }
+
+   const team = await TeamModel.findOne({ secretCode: code });
+   if (!team) return res.status(404).json({ message: "Team not found" });
+
+   if (team.pendingMembers.includes(userId) || team.members.includes(userId)) {
+     return res.status(400).json({ message: "Already requested or member" });
+    }
+    team.pendingMembers.push(userId);
+    await team.save();
+
+    res.json({ message: "Request sent to leader for approval" });
+  } catch(error){
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+export const handleRequests = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { userId, action } = req.body; // action = "accept" | "reject"
+
+    const team = await TeamModel.findById(teamId);
+    if (!team) return res.status(404).json({ message: "Team not found" });
+
+    // remove from pending
+    team.pendingMembers = team.pendingMembers.filter(
+      (id) => id.toString() !== userId.toString()
+    );
+
+    if (action === "accept") {
+      team.members.push(userId);
+      await UserModel.findByIdAndUpdate(userId, { team: team._id });
+
+      const hackathonId = team.hackathon;
+       const alreadyRegisteredMember = await RegisteredParticipantsModel.findOne({
+            user: userId,
+            hackathon: hackathonId,
+        });
+        if (alreadyRegisteredMember) {
+            return res.status(400).json({
+                success: false,
+                message: "Member already registered for this hackathon",
+            });
+        }
+        await UserModel.findByIdAndUpdate(userId, {
+            $addToSet: { registeredHackathons: hackathonId },
+        });
+        await hackathonModel.findByIdAndUpdate(hackathonId, {
+            $addToSet: { registeredParticipants: userId },
+            $inc: { numParticipants: 1 },
+        });
+    }
+
+    await team.save();
+
+    res.json({ message: `User ${action}ed successfully` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const searchTeamByCode = async (req, res) => {
+    try {
+        const { code } = req.params;
+         const team = await TeamModel.findOne({ code }).populate("leader", "name email");
+
+    if (!team) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    return res.status(200).json({
+      message: "Team found successfully",
+      team: {
+        id: team._id,
+        name: team.name,
+        // code: team.code,
+        leader: team.leader,
+        membersCount: team.members.length,
+        pendingRequestsCount: team.pendingMembers.length
+      }
+    });
+    } catch (error) {
+        res.status(500).json({message: "something went wrong while searching the team!"});
+    }
+}
+
+export const getPendingRequests = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+
+    const team = await TeamModel.findById(teamId).populate("pendingMembers", "name email");
+    if (!team) return res.status(404).json({ message: "Team not found" });
+
+    res.json(team.pendingMembers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
@@ -29,6 +29,11 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    team: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Team",
+      default: null
+    },
     role: {
       type: String,
       enum: ["participant", "organizer", "admin"],

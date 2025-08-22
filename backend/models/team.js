@@ -37,6 +37,7 @@ const teamSchema = new mongoose.Schema({
       ref : "users"
     }
   ],
+
   hackathon: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "hackathons",
