@@ -4,6 +4,7 @@ import { Badge } from "./Badge";
 import { Calendar, Users, Trophy, Clock, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../backendApis/api";
+import LoginForm from "./LoginForm"; // Adjust the import path as needed
 
 export const HeroSection = ({
   title,
@@ -20,6 +21,7 @@ export const HeroSection = ({
   const [userData, setUserData] = useState(null);
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,8 +44,18 @@ export const HeroSection = ({
     if (isVerified) {
       navigate(`/hackathon/RegistrationForm/${hackathonId}`);
     } else {
-      navigate("/account/login");
+      // Show the login modal instead of redirecting
+      setShowLoginModal(true);
     }
+  };
+
+  const handleLoginSuccess = (data) => {
+    // Close the modal and update the verification status
+    setShowLoginModal(false);
+    setIsVerified(true);
+    setUserData(data);
+    // Optionally show a success message or auto-redirect to registration
+    // navigate(`/hackathon/RegistrationForm/${hackathonId}`);
   };
 
   const formatDateRange = (start, end) => {
@@ -88,67 +100,93 @@ export const HeroSection = ({
   const fallbackImage = `https://via.placeholder.com/1200x400/0a0f18/22c55e?text=${encodeURIComponent(title)}`;
 
   return (
-    <div className="border-b border-green-500/20">
-      <div className="w-full h-48 md:h-64 bg-gray-900">
-        <img
-          src={imageError ? fallbackImage : imageUrl}
-          alt="Hackathon Banner"
-          className="w-full h-full object-cover"
-          onError={() => setImageError(true)}
-        />
+    <>
+      <div className="border-b border-green-500/20">
+        <div className="w-full h-48 md:h-64 bg-gray-900">
+          <img
+            src={imageError ? fallbackImage : imageUrl}
+            alt="Hackathon Banner"
+            className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
+          />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
+          <div className="flex flex-wrap items-center gap-4 mb-4">
+            <Badge
+              className={`${
+                isActive
+                  ? "bg-green-400/10 text-green-300 border-green-400/20"
+                  : "bg-gray-800 text-gray-400 border-gray-700"
+              } px-3 py-1 text-sm font-medium border`}
+            >
+              {isActive ? "Active" : "Ended"}
+            </Badge>
+            <div className="flex items-center gap-2 text-gray-300 text-sm">
+              <Calendar className="w-4 h-4 text-green-400" />
+              <span>{formatDateRange(startDate, endDate)}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div className="flex-1">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 leading-tight tracking-tight">
+                {title}
+              </h1>
+              <p className="text-lg text-gray-400 leading-relaxed">{subTitle}</p>
+            </div>
+            <div className="flex-shrink-0 w-full lg:w-auto text-center lg:text-left">
+              {isActive &&
+                (loading ? (
+                  <Button disabled size="lg" className="bg-gray-500/50 text-white font-bold w-auto">
+                    Loading...
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleRegister}
+                    className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+                  >
+                    <span className="flex items-center gap-2">
+                      Register Now
+                      <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                  </Button>
+                ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+            <StatCard value={participantCount.toLocaleString()} label="Participants" icon={Users} />
+            <StatCard value={`$${prizeMoney?.toLocaleString()}`} label="Prize Pool" icon={Trophy} />
+            <StatCard value={isActive ? `${getDaysRemaining()} Days` : "Ended"} label="Time Left" icon={Clock} />
+          </div>
+        </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
-        <div className="flex flex-wrap items-center gap-4 mb-4">
-          <Badge
-            className={`${
-              isActive
-                ? "bg-green-400/10 text-green-300 border-green-400/20"
-                : "bg-gray-800 text-gray-400 border-gray-700"
-            } px-3 py-1 text-sm font-medium border`}
-          >
-            {isActive ? "Active" : "Ended"}
-          </Badge>
-          <div className="flex items-center gap-2 text-gray-300 text-sm">
-            <Calendar className="w-4 h-4 text-green-400" />
-            <span>{formatDateRange(startDate, endDate)}</span>
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setShowLoginModal(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative z-10 max-w-md w-full mx-4">
+            {/* Login Form */}
+            <LoginForm
+              onLoginSuccess={handleLoginSuccess}
+              showTitle={true}
+              showSignupLink={true}
+              showForgotPassword={true}
+              showGoogleLogin={true}
+              redirectTo="#" // Prevent navigation since we handle it in onLoginSuccess
+              containerClassName="bg-gray-900/95 backdrop-blur-sm border border-green-500/20 text-white shadow-[0_0_25px_#5fff6050] p-6 sm:p-10 rounded-xl w-full"
+            />
           </div>
         </div>
-
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-          <div className="flex-1">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 leading-tight tracking-tight">
-              {title}
-            </h1>
-            <p className="text-lg text-gray-400 leading-relaxed">{subTitle}</p>
-          </div>
-          {/* Centered button on mobile, adjusted padding */}
-          <div className="flex-shrink-0 w-full lg:w-auto text-center lg:text-left">
-            {isActive &&
-              (loading ? (
-                <Button disabled size="lg" className="bg-gray-500/50 text-white font-bold w-auto">
-                  Loading...
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleRegister}
-                  className=" cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
-                >
-                  <span className="flex items-center gap-2">
-                    Register Now
-                    <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                </Button>
-              ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-          <StatCard value={participantCount.toLocaleString()} label="Participants" icon={Users} />
-          <StatCard value={`$${prizeMoney?.toLocaleString()}`} label="Prize Pool" icon={Trophy} />
-          <StatCard value={isActive ? `${getDaysRemaining()} Days` : "Ended"} label="Time Left" icon={Clock} />
-        </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
