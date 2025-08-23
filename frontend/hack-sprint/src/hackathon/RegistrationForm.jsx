@@ -4,7 +4,7 @@ import { Button } from "./Button";
 import { getDashboard } from "../backendApis/api";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { ChevronRight, User, Users, Plus, Link as LinkIcon } from "lucide-react";
+import { ChevronRight, User, Users, Plus, Link as LinkIcon, Copy, Check } from "lucide-react";
 
 // Consistent grid background from other pages
 const GridBackground = () => (
@@ -41,6 +41,61 @@ const inputStyles = `${baseInputStyles} read-only:opacity-60 read-only:cursor-no
 // Custom styles for select dropdowns to provide a themed appearance and correct cursor behavior
 const selectStyles = `${baseInputStyles} cursor-pointer appearance-none bg-no-repeat bg-right pr-8 bg-[url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="%2322c55e" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 8l4 4 4-4"/></svg>')] [&:invalid]:text-gray-500`;
 
+// Modal to display team code and link after creation
+const TeamInfoModal = ({ details, onClose }) => {
+    const [copiedCode, setCopiedCode] = useState(false);
+    const [copiedLink, setCopiedLink] = useState(false);
+
+    const handleCopy = (text, type) => {
+        navigator.clipboard.writeText(text);
+        if (type === 'code') {
+            setCopiedCode(true);
+            setTimeout(() => setCopiedCode(false), 2000);
+        } else {
+            setCopiedLink(true);
+            setTimeout(() => setCopiedLink(false), 2000);
+        }
+        toast.success("Copied to clipboard!");
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="relative z-10 w-full max-w-md mx-auto bg-gray-900 border border-green-500/30 rounded-xl p-8 shadow-2xl shadow-green-500/20 text-center">
+                <h2 className="text-2xl font-bold text-white mb-3">Team Created Successfully!</h2>
+                <p className="text-gray-400 mb-6">Share the following code or link with your teammates to have them join.</p>
+                
+                <div className="space-y-4 mb-8">
+                    <div>
+                        <label className="text-sm font-medium text-gray-300 block mb-2">Invite Code</label>
+                        <div className="flex items-center gap-2">
+                            <p className="flex-1 text-lg font-mono tracking-widest bg-gray-800/60 border border-green-500/20 rounded-md p-2.5 text-green-300">{details.code}</p>
+                            <Button onClick={() => handleCopy(details.code, 'code')} className="p-2.5 bg-gray-700 hover:bg-gray-600 transition">
+                                {copiedCode ? <Check size={20} className="text-green-400" /> : <Copy size={20} />}
+                            </Button>
+                        </div>
+                    </div>
+                     <div>
+                        <label className="text-sm font-medium text-gray-300 block mb-2">Invite Link</label>
+                        <div className="flex items-center gap-2">
+                            <p className="flex-1 text-sm truncate bg-gray-800/60 border border-green-500/20 rounded-md p-2.5 text-green-300">{details.link}</p>
+                            <Button onClick={() => handleCopy(details.link, 'link')} className="p-2.5 bg-gray-700 hover:bg-gray-600 transition">
+                                {copiedLink ? <Check size={20} className="text-green-400" /> : <Copy size={20} />}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                <Button onClick={onClose} className="group w-full bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 transform hover:scale-105 px-8 py-3 text-base">
+                    <span className="flex items-center justify-center gap-2">
+                        Proceed to Team Page
+                        <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                </Button>
+            </div>
+        </div>
+    );
+};
+
 export const RegistrationForm = ({ onSubmit = () => {} }) => {
   const { id: hackathonId } = useParams();
   const navigate = useNavigate();
@@ -48,6 +103,10 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
   const [loading, setLoading] = useState(true);
   const [formType, setFormType] = useState("individual");
   const [teamOption, setTeamOption] = useState("create"); // 'create' or 'join'
+  
+  // State for the team info modal
+  const [showTeamInfo, setShowTeamInfo] = useState(false);
+  const [teamDetails, setTeamDetails] = useState({ code: '', link: '', id: '' });
 
   const [individualForm, setIndividualForm] = useState({
     fullName: "",
@@ -132,16 +191,12 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
         url = `${import.meta.env.VITE_API_BASE_URL}/api/register/${hackathonId}`;
         const response = await axios.post(url, payload);
         
-        if (response.data.success) {
-          toast.success(response.data.message || "Registration successful!");
-          onSubmit(individualForm);
-          navigate(`/hackathon/${hackathonId}`);
-        } else {
-          toast.error(response.data.message || "Registration failed");
-        }
+        // Assuming success on non-error response, as backend might not send `success` key
+        toast.success(response.data.message || "Registration successful!");
+        onSubmit(individualForm);
+        navigate(`/hackathon/${hackathonId}`);
         
       } else if (type === "team-create") {
-        // Fixed payload to match backend controller expectations exactly
         payload = {
           name: teamForm.teamName,
           leader: userData?._id,
@@ -155,23 +210,26 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
           state: teamForm.state,
           gender: teamForm.gender,
         };
-        // Pass hackathonId in payload instead of URL
         url = `${import.meta.env.VITE_API_BASE_URL}/api/team/create`;
         
         const response = await axios.post(url, payload);
         
-        if (response.data.success) {
-          toast.success(response.data.message || "Team created successfully!");
-          onSubmit(teamForm);
-          
-          // Navigate to team details page with the actual team ID
-          navigate(`/hackathon/${hackathonId}/team/${response.data.teamId}`);
+        // On success, show modal with team info instead of navigating directly
+        if (response.data && response.data.team) {
+            toast.success(response.data.message || "Team created successfully!");
+            onSubmit(teamForm);
+            
+            setTeamDetails({
+                code: response.data.secretCode,
+                link: response.data.team.secretLink,
+                id: response.data.team._id
+            });
+            setShowTeamInfo(true); // Show the modal
         } else {
-          toast.error(response.data.message || "Team creation failed");
+             toast.error(response.data.message || "Team creation failed");
         }
         
       } else if (type === "team-join") {
-        // Extract code from link if provided and no code is given
         let code = joinTeamForm.code;
         if (!code && joinTeamForm.link) {
           const linkMatch = joinTeamForm.link.match(/\/join\/([^\/\?]+)/);
@@ -182,21 +240,17 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
         
         payload = {
           userId: userData?._id,
-          code: code  // Fixed: backend expects 'code', not 'joinCode'
+          code: code
         };
-        // Pass hackathonId in payload instead of URL
         url = `${import.meta.env.VITE_API_BASE_URL}/api/team/join`;
         payload.hackathon = hackathonId;
         
         const response = await axios.post(url, payload);
         
-        if (response.data.success) {
-          toast.success(response.data.message || "Join request sent successfully!");
-          onSubmit(joinTeamForm);
-          navigate(`/hackathon/${hackathonId}`);
-        } else {
-          toast.error(response.data.message || "Failed to send join request");
-        }
+        // Assuming success on non-error response
+        toast.success(response.data.message || "Join request sent successfully!");
+        onSubmit(joinTeamForm);
+        navigate(`/hackathon/${hackathonId}`);
       }
       
     } catch (err) {
@@ -211,6 +265,15 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
   return (
     <div className="min-h-screen bg-gray-900 p-4 md:p-8 flex items-center justify-center relative">
       <GridBackground />
+      {showTeamInfo && (
+          <TeamInfoModal
+              details={teamDetails}
+              onClose={() => {
+                  setShowTeamInfo(false);
+                  navigate(`/hackathon/${hackathonId}/team/${teamDetails.id}`);
+              }}
+          />
+      )}
       <div className="relative z-10 w-full max-w-4xl mx-auto bg-gray-900/80 backdrop-blur-md border border-green-500/20 rounded-xl p-6 md:p-10 shadow-2xl shadow-green-500/10">
         
         <div className="text-center mb-8 border-b border-green-500/20 pb-6">
