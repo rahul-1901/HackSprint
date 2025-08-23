@@ -520,3 +520,23 @@ export const updatingConnectedApps = async (req, res) => {
   }
 };
 
+export const displayLeaderBoard = async (req, res) => {
+  try {
+    // Fetch all users and sort them by points in descending order
+    const users = await UserModel.find()
+      .sort({ points: -1 })   // -1 => descending
+      .select("name email points") // Only return necessary fields
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ message: "No users found" });
+    }
+
+    return res.status(200).json({
+      message: "Leaderboard fetched successfully",
+      leaderboard: users
+    });
+  } catch (error) {
+    console.error("Error fetching leaderboard:", error);
+    res.status(500).json({ message: "Something went wrong while fetching leaderboard!" });
+  }
+};
