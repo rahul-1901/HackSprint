@@ -36,7 +36,8 @@ const Navbar = () => {
 
   const navItems = [
     { name: 'Hackathons', pageLink: '/hackathons', icon: Trophy },
-    { name: 'Practice', pageLink: '/quest', icon: Terminal }
+    { name: 'Practice', pageLink: '/quest', icon: Terminal },
+    { name: 'Leaderboard', pageLink: '/leaderboard', icon: Terminal }
   ]
 
   const handleNavigate = (link) => {
