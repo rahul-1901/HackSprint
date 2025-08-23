@@ -271,7 +271,7 @@ const Quest = () => {
                 HackSprint · DevQuests
               </motion.p>
               <motion.h1
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-700 tracking-tight leading-none"
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-7xl text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-700 tracking-tight leading-none"
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
@@ -681,7 +681,7 @@ const Quest = () => {
                         animate="visible"
                         whileHover={{
                           x: 5,
-                          opacity: 1, // brighten fully on hover
+                          opacity: isLoggedIn ? 1 : 1 - idx * 0.35, // opacity on hover
                           backgroundColor: "rgba(55, 65, 81, 0.5)",
                           boxShadow: "0 8px 25px rgba(0, 0, 0, 0.4)",
                         }}
