@@ -1,16 +1,39 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Trophy, Crown, Medal, User } from "lucide-react";
+"use client";
 
-const dummyData = Array.from({ length: 15 }).map((_, i) => ({
-  rank: i + 1,
-  username: `User_${i + 1}`,
-  points: Math.floor(Math.random() * 500) + 100,
-  time: `${Math.floor(Math.random() * 30) + 1} min`
-}));
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Trophy, Crown, User } from "lucide-react";
+import axios from "axios";
 
 const Leaderboard = () => {
   const [filter, setFilter] = useState("All Time");
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+  const fetchLeaderboard = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/user/leaderBoard");
+      console.log("Leaderboard data:", res.data);
+      setLeaderboard(res.data.leaderboard || []);
+    } catch (err) {
+      console.error("Error fetching leaderboard:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchLeaderboard();
+}, []);
+
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-cyan-400 text-xl">
+        Loading Leaderboard...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 text-white px-4 py-10">
@@ -37,7 +60,7 @@ const Leaderboard = () => {
           Compete with the best minds and claim your throne
         </motion.p>
 
-        {/* Filter Tabs */}
+        {/* Filter Tabs (Static for now) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -69,39 +92,47 @@ const Leaderboard = () => {
       >
         {/* Top 3 Podium */}
         <div className="grid grid-cols-3 gap-12 mb-12 max-w-5xl mx-auto">
-          {dummyData.slice(0, 3).map((user, idx) => {
+          {leaderboard.slice(0, 3).map((user, idx) => {
             const positions = [1, 0, 2]; // Second place, First place, Third place
             const actualIdx = positions[idx];
-            const actualUser = dummyData[actualIdx];
+            const actualUser = leaderboard[actualIdx];
+
+            if (!actualUser) return null;
+
             return (
               <motion.div
-                key={actualUser.rank}
+                key={actualUser._id}
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 + idx * 0.1 }}
                 className={`relative text-center ${
-                  actualUser.rank === 1 ? 'order-2 scale-110' : actualUser.rank === 2 ? 'order-1' : 'order-3'
+                  actualIdx === 0 ? "order-2 scale-110" : actualIdx === 1 ? "order-1" : "order-3"
                 }`}
               >
                 <div className="relative bg-gradient-to-br from-slate-400/15 to-slate-600/15 border border-slate-400/20 rounded-2xl p-6 backdrop-blur-md hover:bg-gradient-to-br hover:from-slate-300/20 hover:to-slate-500/20 hover:border-slate-300/30 hover:scale-105 hover:shadow-2xl hover:shadow-slate-400/20 transition-all duration-500 group">
-                  {actualUser.rank === 1 && (
+                  {actualIdx === 0 && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <div className="bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full p-2 shadow-lg shadow-yellow-400/30 group-hover:shadow-yellow-400/50 transition-all duration-300">
+                      <div className="bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full p-2 shadow-lg shadow-yellow-400/30">
                         <Crown className="text-white" size={20} />
                       </div>
                     </div>
                   )}
                   <div className="relative z-10">
-                    <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg ${
-                      actualUser.rank === 1 ? 'bg-gradient-to-br from-yellow-400 to-amber-500 shadow-yellow-400/30' :
-                      actualUser.rank === 2 ? 'bg-gradient-to-br from-slate-400 to-slate-500 shadow-slate-400/30' :
-                      'bg-gradient-to-br from-orange-400 to-orange-500 shadow-orange-400/30'
-                    } transition-transform duration-300`}>
-                      <span className="text-white font-black text-xl">{actualUser.rank}</span>
+                    <div
+                      className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg ${
+                        actualIdx === 0
+                          ? "bg-gradient-to-br from-yellow-400 to-amber-500 shadow-yellow-400/30"
+                          : actualIdx === 1
+                          ? "bg-gradient-to-br from-slate-400 to-slate-500 shadow-slate-400/30"
+                          : "bg-gradient-to-br from-orange-400 to-orange-500 shadow-orange-400/30"
+                      }`}
+                    >
+                      <span className="text-white font-black text-xl">{actualUser.rank || actualIdx + 1}</span>
                     </div>
-                    <h3 className="font-bold text-lg mb-2 group-hover:text-slate-200 transition-colors duration-300">{actualUser.username}</h3>
-                    <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent group-hover:from-cyan-300 group-hover:to-emerald-300 transition-all duration-300">{actualUser.points}</p>
-                    <p className="text-slate-400 text-sm group-hover:text-slate-300 transition-colors duration-300">{actualUser.time}</p>
+                    <h3 className="font-bold text-lg mb-2">{actualUser.name}</h3>
+                    <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+                      {actualUser.points}
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -117,7 +148,7 @@ const Leaderboard = () => {
             </h2>
             <p className="text-center text-slate-400 mt-2 font-medium">Elite performers worldwide</p>
           </div>
-          
+
           <div className="overflow-hidden">
             <table className="w-full">
               <thead>
@@ -125,63 +156,44 @@ const Leaderboard = () => {
                   <th className="py-6 px-8 text-left">Position</th>
                   <th className="py-6 px-8 text-left">Competitor</th>
                   <th className="py-6 px-8 text-left">Performance</th>
-                  <th className="py-6 px-8 text-left">Duration</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/20">
-                {dummyData.slice(3).map((user, idx) => (
+                {leaderboard.slice(3).map((user, idx) => (
                   <motion.tr
-                    key={user.rank}
+                    key={user._id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.8 + idx * 0.05 }}
                     className={`group transition-all duration-500 cursor-pointer ${
-                      idx % 2 === 0 
-                        ? 'bg-slate-800/10 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10 hover:border-l-4 hover:border-l-cyan-400' 
-                        : 'bg-slate-700/5 hover:bg-gradient-to-r hover:from-emerald-500/10 hover:to-teal-500/10 hover:border-l-4 hover:border-l-emerald-400'
+                      idx % 2 === 0
+                        ? "bg-slate-800/10 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10 hover:border-l-4 hover:border-l-cyan-400"
+                        : "bg-slate-700/5 hover:bg-gradient-to-r hover:from-emerald-500/10 hover:to-teal-500/10 hover:border-l-4 hover:border-l-emerald-400"
                     } hover:shadow-lg hover:shadow-slate-900/30 hover:translate-x-2`}
                   >
                     {/* Rank */}
                     <td className="py-6 px-8">
-                      <div className="flex items-center">
-                        <div className="relative">
-                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-600/80 to-slate-700/80 flex items-center justify-center font-black text-white group-hover:from-cyan-500 group-hover:to-blue-600 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg">
-                            {user.rank}
-                          </div>
-                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-400/0 to-blue-600/0 group-hover:from-cyan-400/20 group-hover:to-blue-600/20 transition-all duration-500"></div>
-                        </div>
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-600/80 to-slate-700/80 flex items-center justify-center font-black text-white shadow-lg">
+                        {idx + 4}
                       </div>
                     </td>
 
                     {/* Username */}
                     <td className="py-6 px-8">
-                      <div className="flex items-center gap-5 group-hover:translate-x-3 transition-transform duration-500">
-                        <div className="relative">
-                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center group-hover:scale-110 group-hover:from-cyan-500 group-hover:to-blue-600 transition-all duration-500 shadow-lg">
-                            <User className="text-white" size={24} />
-                          </div>
-                          <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-cyan-400/0 to-blue-600/0 group-hover:from-cyan-400/30 group-hover:to-blue-600/30 blur group-hover:blur-md transition-all duration-500"></div>
+                      <div className="flex items-center gap-5">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center shadow-lg">
+                          <User className="text-white" size={24} />
                         </div>
                         <div>
-                          <span className="font-bold text-xl group-hover:text-cyan-300 transition-colors duration-500">{user.username}</span>
-                          <div className="text-slate-400 text-sm font-medium group-hover:text-slate-300 transition-colors duration-500">Elite Competitor</div>
+                          <span className="font-bold text-xl">{user.name}</span>
+                          <div className="text-slate-400 text-sm font-medium">{user.email}</div>
                         </div>
                       </div>
                     </td>
 
                     {/* Points */}
                     <td className="py-6 px-8">
-                      <div className="font-black text-2xl text-emerald-400 group-hover:text-emerald-300 group-hover:scale-105 transition-all duration-500">
-                        {user.points}
-                        <span className="text-slate-400 text-base font-medium ml-2 group-hover:text-slate-300">points</span>
-                      </div>
-                    </td>
-
-                    {/* Time */}
-                    <td className="py-6 px-8">
-                      <div className="font-bold text-lg text-slate-300 group-hover:text-white group-hover:scale-105 transition-all duration-500">
-                        {user.time}
-                      </div>
+                      <div className="font-black text-2xl text-emerald-400">{user.points} pts</div>
                     </td>
                   </motion.tr>
                 ))}

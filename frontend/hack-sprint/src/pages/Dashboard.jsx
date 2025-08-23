@@ -270,39 +270,39 @@ const [educationData, setEducationData] = useState({
   </h3>
 
   <CalendarHeatmap
-  startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
-  endDate={new Date()}
-  values={
-    Array.isArray(data.submissions) && data.submissions.length > 0
-      ? data.submissions.map((s) => ({
-          date: new Date(s.submitted_at).toISOString().split("T")[0],
-          count: 1,
-        }))
-      : // Prefilled demo values
-        [
-          { date: "2024-08-15", count: 2 },
-          { date: "2024-09-10", count: 3 },
-          { date: "2024-11-05", count: 1 },
-          { date: "2025-01-20", count: 4 },
-          { date: "2025-02-10", count: 2 },
-          { date: "2025-03-05", count: 3 },
-        ]
-  }
-  classForValue={(value) => {
-    if (!value) return "color-empty";
-    if (value.count === 1) return "color-scale-1";
-    if (value.count === 2) return "color-scale-2";
-    if (value.count === 3) return "color-scale-3";
-    return "color-scale-4";
-  }}
-  tooltipDataAttrs={(value) => {
-    if (!value || !value.date) return null;
-    return {
-      "data-tip": `${value.date}: ${value.count || 0} submissions`,
-    };
-  }}
-  showWeekdayLabels={true}
-/>
+    startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
+    endDate={new Date()}
+    values={
+      Array.isArray(data.submissions) && data.submissions.length > 0
+        ? data.submissions.map((s) => ({
+            date: new Date(s.submitted_at).toISOString().split("T")[0],
+            count: 1,
+          }))
+        : // Prefilled demo values
+          [
+            { date: "2024-08-15", count: 2 },
+            { date: "2024-09-10", count: 3 },
+            { date: "2024-11-05", count: 1 },
+            { date: "2025-01-20", count: 4 },
+            { date: "2025-02-10", count: 2 },
+            { date: "2025-03-05", count: 3 },
+          ]
+    }
+    classForValue={(value) => {
+      if (!value) return "color-empty";
+      if (value.count === 1) return "color-scale-1";
+      if (value.count === 2) return "color-scale-2";
+      if (value.count === 3) return "color-scale-3";
+      return "color-scale-4";
+    }}
+    tooltipDataAttrs={(value) => {
+      if (!value || !value.date) return null;
+      return {
+        "data-tip": `${value.date}: ${value.count || 0} submissions`,
+      };
+    }}
+    showWeekdayLabels={true}
+  />
 
   {/* Legend */}
   <div className="flex items-center gap-1 text-xs text-gray-400 mt-4">
@@ -314,7 +314,27 @@ const [educationData, setEducationData] = useState({
     <div className="w-3 h-3 rounded-sm bg-green-700" />
     <span>More</span>
   </div>
+
+  {/* Custom Heatmap Colors */}
+  <style>{`
+    .react-calendar-heatmap .color-empty {
+      fill: #064e3b; /* dark green for empty days */
+    }
+    .react-calendar-heatmap .color-scale-1 {
+      fill: #10b981; /* light green */
+    }
+    .react-calendar-heatmap .color-scale-2 {
+      fill: #059669; /* medium green */
+    }
+    .react-calendar-heatmap .color-scale-3 {
+      fill: #047857; /* dark green */
+    }
+    .react-calendar-heatmap .color-scale-4 {
+      fill: #065f46; /* deepest green */
+    }
+  `}</style>
 </div>
+
 
 
        {/* Connected Apps */}
