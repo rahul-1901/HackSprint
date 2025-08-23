@@ -24,6 +24,7 @@ import AllHackathons from './pages/AllHackathons.jsx'
 import { ToastContainer } from 'react-toastify';
 import HackathonDetails from './pages/Hackathon.jsx';
 import { RegistrationForm } from './hackathon/RegistrationForm.jsx';
+import Leaderboard from './pages/LeaderBoard.jsx';
 function App() {
 
 
@@ -41,7 +42,7 @@ function App() {
   return (
     <>
       <Router>
-        {/* <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} /> */}
+        <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} />
         <Loader />
         <HideRoute>
           <Navbar />
@@ -70,6 +71,8 @@ function App() {
           <Route path="/hackathon/:id" element={<HackathonDetails />} />
           <Route path="/hackathon/RegistrationForm/:id" element={<RegistrationForm />} />
           <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />} />} caseSensitive />
+          <Route path="/leaderboard" element={<Leaderboard />} caseSensitive />
+          {/* Catch-all route for undefined paths */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
 

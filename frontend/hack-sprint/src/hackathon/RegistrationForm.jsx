@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "./Button";
 import { getDashboard } from "../backendApis/api";
 import axios from "axios";
+import { toast } from "react-toastify";
 import { ChevronRight, User, Users, Plus, Link as LinkIcon } from "lucide-react";
 
 // Consistent grid background from other pages
@@ -40,7 +41,6 @@ const inputStyles = `${baseInputStyles} read-only:opacity-60 read-only:cursor-no
 // Custom styles for select dropdowns to provide a themed appearance and correct cursor behavior
 const selectStyles = `${baseInputStyles} cursor-pointer appearance-none bg-no-repeat bg-right pr-8 bg-[url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="%2322c55e" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 8l4 4 4-4"/></svg>')] [&:invalid]:text-gray-500`;
 
-
 export const RegistrationForm = ({ onSubmit = () => {} }) => {
   const { id: hackathonId } = useParams();
   const navigate = useNavigate();
@@ -64,6 +64,7 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
     teamName: "",
     teamLead: "",
     teamLeadEmail: "",
+    contactNumber: "",
     experience: "",
     workEmail: "",
     city: "",
@@ -129,52 +130,79 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
           gender: individualForm.gender,
         };
         url = `${import.meta.env.VITE_API_BASE_URL}/api/register/${hackathonId}`;
-        await axios.post(url, payload);
-        onSubmit(individualForm);
-        navigate(`/hackathon/${hackathonId}`);
+        const response = await axios.post(url, payload);
+        
+        if (response.data.success) {
+          toast.success(response.data.message || "Registration successful!");
+          onSubmit(individualForm);
+          navigate(`/hackathon/${hackathonId}`);
+        } else {
+          toast.error(response.data.message || "Registration failed");
+        }
+        
       } else if (type === "team-create") {
+        // Fixed payload to match backend controller expectations exactly
         payload = {
-          teamName: teamForm.teamName,
-          leaderId: userData?._id,
+          name: teamForm.teamName,
+          leader: userData?._id,
+          leaderName: teamForm.teamLead,
+          leaderEmail: teamForm.teamLeadEmail,
+          hackathon: hackathonId,
+          contactNumber: teamForm.contactNumber,
           workEmailAddress: teamForm.workEmail,
           yearsOfExperience: teamForm.experience,
-          leadEmail: teamForm.teamLeadEmail,
-          leadName: teamForm.teamLead,
           city: teamForm.city,
           state: teamForm.state,
           gender: teamForm.gender,
         };
-        url = `${import.meta.env.VITE_API_BASE_URL}/api/register/${hackathonId}/team`;
+        // Pass hackathonId in payload instead of URL
+        url = `${import.meta.env.VITE_API_BASE_URL}/api/team/create`;
         
-        // For now, we'll simulate the API call and use a dummy team ID
-        // In real implementation, replace this with actual API call
-        // const response = await axios.post(url, payload);
-        console.log("Team Creation Payload:", payload);
+        const response = await axios.post(url, payload);
         
-        // Simulate successful team creation with a dummy team ID
-        // In real implementation, get this from response.data.teamId
-        const teamId = "team_12345";
-        
-        onSubmit(teamForm);
-        
-        // Navigate to team details page
-        navigate(`/hackathon/${hackathonId}/team/${teamId}`);
+        if (response.data.success) {
+          toast.success(response.data.message || "Team created successfully!");
+          onSubmit(teamForm);
+          
+          // Navigate to team details page with the actual team ID
+          navigate(`/hackathon/${hackathonId}/team/${response.data.teamId}`);
+        } else {
+          toast.error(response.data.message || "Team creation failed");
+        }
         
       } else if (type === "team-join") {
+        // Extract code from link if provided and no code is given
+        let code = joinTeamForm.code;
+        if (!code && joinTeamForm.link) {
+          const linkMatch = joinTeamForm.link.match(/\/join\/([^\/\?]+)/);
+          if (linkMatch) {
+            code = linkMatch[1];
+          }
+        }
+        
         payload = {
-            userId: userData?._id,
-            joinCode: joinTeamForm.code,
-            joinLink: joinTeamForm.link
+          userId: userData?._id,
+          code: code  // Fixed: backend expects 'code', not 'joinCode'
         };
-        // NOTE: You might need a different endpoint for joining a team
-        url = `${import.meta.env.VITE_API_BASE_URL}/api/join/${hackathonId}/team`;
-        await axios.post(url, payload);
-        onSubmit(joinTeamForm);
-        navigate(`/hackathon/${hackathonId}`);
+        // Pass hackathonId in payload instead of URL
+        url = `${import.meta.env.VITE_API_BASE_URL}/api/team/join`;
+        payload.hackathon = hackathonId;
+        
+        const response = await axios.post(url, payload);
+        
+        if (response.data.success) {
+          toast.success(response.data.message || "Join request sent successfully!");
+          onSubmit(joinTeamForm);
+          navigate(`/hackathon/${hackathonId}`);
+        } else {
+          toast.error(response.data.message || "Failed to send join request");
+        }
       }
       
     } catch (err) {
       console.error(`${type} registration error:`, err);
+      const errorMessage = err.response?.data?.message || err.message || "An error occurred";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -284,6 +312,9 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
                         <FormRow label="Team Lead Email" required>
                             <input type="email" name="teamLeadEmail" value={teamForm.teamLeadEmail} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required readOnly={!!userData?.email} />
                         </FormRow>
+                        <FormRow label="Contact Number" required>
+                            <input type="tel" name="contactNumber" value={teamForm.contactNumber} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required />
+                        </FormRow>
                          <FormRow label="Gender" required>
                             <select name="gender" value={teamForm.gender} onChange={(e) => handleChange(e, setTeamForm)} className={selectStyles} required>
                                 <option value="" disabled>Select Gender</option>
@@ -326,7 +357,14 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
                 <form onSubmit={(e) => handleSubmit(e, "team-join")}>
                     <div className="max-w-md mx-auto">
                         <FormRow label="Team Invite Code">
-                            <input type="text" name="code" placeholder="Enter team code" value={joinTeamForm.code} onChange={(e) => handleChange(e, setJoinTeamForm)} className={inputStyles} />
+                            <input 
+                                type="text" 
+                                name="code" 
+                                placeholder="Enter team code (e.g., ABC123XY)" 
+                                value={joinTeamForm.code} 
+                                onChange={(e) => handleChange(e, setJoinTeamForm)} 
+                                className={inputStyles} 
+                            />
                         </FormRow>
                         <p className="text-center text-gray-400 my-4">OR</p>
                         <FormRow label="Team Invite Link">
@@ -334,7 +372,11 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
                         </FormRow>
                     </div>
                      <div className="mt-8 text-center">
-                        <Button type="submit" className="group w-full md:w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-8 py-3 text-base" disabled={loading}>
+                        <Button 
+                            type="submit" 
+                            className="group w-full md:w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-8 py-3 text-base" 
+                            disabled={loading || (!joinTeamForm.code && !joinTeamForm.link)}
+                        >
                             <span className="flex items-center justify-center gap-2">
                             {loading ? "Joining..." : "Join Team & Register"}
                             {!loading && <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />}
