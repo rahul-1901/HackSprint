@@ -6,8 +6,9 @@ const teamRoutes = express.Router();
 teamRoutes.post("/create", createTeam);
 teamRoutes.post("/join", joinTeam);
 teamRoutes.post("/pendingRequests", getPendingRequests);
-teamRoutes.post("/handleRequest", handleRequests);
-teamRoutes.get("/search/:secretCode", searchTeamByCode)
 
+teamRoutes.post("/handleRequest", handleRequests);
+
+teamRoutes.get("/search/:secretCode", searchTeamByCode)
 
 export default teamRoutes;
