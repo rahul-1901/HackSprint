@@ -207,7 +207,7 @@ export const searchTeamByCode = async (req, res) => {
 
 export const getPendingRequests = async (req, res) => {
   try {
-    const { leaderId } = req.body;
+    const { leaderId } = req.params;
 
     const leaderRegistration = await RegisteredParticipantsModel.findOne({
       user: leaderId,
@@ -220,6 +220,7 @@ export const getPendingRequests = async (req, res) => {
     const teamId = leaderRegistration.team;
 
     // 2. Find team by teamId
+    const team = await TeamModel.findById(teamId).populate("pendingMembers");
     if (!team) return res.status(404).json({ message: "Team not found" });
 
     res.json(team.pendingMembers);
