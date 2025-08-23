@@ -207,7 +207,7 @@ export const searchTeamByCode = async (req, res) => {
 
 export const getPendingRequests = async (req, res) => {
   try {
-    const { leaderId } = req.body;
+    const { leaderId } = req.params;
 
     const leaderRegistration = await RegisteredParticipantsModel.findOne({
       user: leaderId,
