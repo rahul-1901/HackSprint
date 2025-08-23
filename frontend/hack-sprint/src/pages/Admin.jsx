@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Plus, Code, Trophy, Calendar, DollarSign, Users, BookOpen, Settings, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { Plus, Code, Trophy, Calendar, DollarSign, Users, BookOpen, Settings, CheckCircle, AlertCircle, Info, Star, FileText, Target, Award } from 'lucide-react';
 
 const Admin = () => {
     const [activeTab, setActiveTab] = useState('devquest');
     const [devQuestForm, setDevQuestForm] = useState({
-        id: '',
+        points: '',
         question: '',
         options: ['', '', '', ''],
         correctAnswer: 0,
@@ -17,13 +17,28 @@ const Admin = () => {
         startDate: '',
         endDate: '',
         refMaterial: '',
+        // status: false,
         difficulty: 'Intermediate',
         category: [],
         prizeMoney: '',
-        techStackUsed: []
+        techStackUsed: [],
+        overview: '',
+        themes: [],
+        FAQs: [],
+        teams: [],
+        aboutUs: '',
+        projectSubmission: [],
+        TandCforHackathon: [],
+        evaluationCriteria: [],
+        registeredParticipants: []
     });
     const [customCategory, setCustomCategory] = useState('');
     const [customTechStack, setCustomTechStack] = useState('');
+    const [customTheme, setCustomTheme] = useState('');
+    const [newFAQ, setNewFAQ] = useState({ question: '', answer: '' });
+    const [newEvalCriteria, setNewEvalCriteria] = useState('');
+    const [newTheme, setnewTheme] = useState('');
+    const [newTandC, setNewTandC] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const difficultyOptions = ['Expert', 'Advanced', 'Intermediate', 'Beginner'];
@@ -33,6 +48,7 @@ const Admin = () => {
         'TensorFlow', 'OpenAI', 'FastAPI', 'Solidity', 'Web3.js',
         'IPFS', 'Arduino', 'PostgreSQL', 'Other'
     ];
+    // const themeOptions = ['Innovation', 'Sustainability', 'Healthcare', 'Education', 'FinTech', 'Gaming', 'Social Impact', 'Other'];
 
     const handleDevQuestSubmit = async (e) => {
         e.preventDefault();
@@ -46,7 +62,7 @@ const Admin = () => {
 
         // Reset form
         setDevQuestForm({
-            id: '',
+            points: '',
             question: '',
             options: ['', '', '', ''],
             correctAnswer: 0,
@@ -81,13 +97,28 @@ const Admin = () => {
             startDate: '',
             endDate: '',
             refMaterial: '',
+            // status: false,
             difficulty: 'Intermediate',
             category: [],
             prizeMoney: '',
-            techStackUsed: []
+            techStackUsed: [],
+            overview: '',
+            themes: [],
+            FAQs: [],
+            teams: [],
+            aboutUs: '',
+            projectSubmission: [],
+            TandCforHackathon: [],
+            evaluationCriteria: [],
+            registeredParticipants: []
         });
         setCustomCategory('');
         setCustomTechStack('');
+        setCustomTheme('');
+        setNewFAQ({ question: '', answer: '' });
+        setNewEvalCriteria('');
+        setnewTheme('');
+        setNewTandC('');
         setIsSubmitting(false);
     };
 
@@ -106,6 +137,7 @@ const Admin = () => {
                 setHackathonForm({ ...hackathonForm, [field]: newArray });
                 if (field === 'category') setCustomCategory('');
                 if (field === 'techStackUsed') setCustomTechStack('');
+                // if (field === 'themes') setCustomTheme('');
             } else {
                 const newArray = [...currentArray, 'Other'];
                 setHackathonForm({ ...hackathonForm, [field]: newArray });
@@ -125,6 +157,66 @@ const Admin = () => {
             const newArray = [...filteredArray, `Custom: ${customValue.trim()}`];
             setHackathonForm({ ...hackathonForm, [field]: newArray });
         }
+    };
+
+    const addFAQ = () => {
+        if (newFAQ.question.trim() && newFAQ.answer.trim()) {
+            setHackathonForm({
+                ...hackathonForm,
+                FAQs: [...hackathonForm.FAQs, { ...newFAQ }]
+            });
+            setNewFAQ({ question: '', answer: '' });
+        }
+    };
+
+    const removeFAQ = (index) => {
+        const newFAQs = hackathonForm.FAQs.filter((_, i) => i !== index);
+        setHackathonForm({ ...hackathonForm, FAQs: newFAQs });
+    };
+
+    const addEvalCriteria = () => {
+        if (newEvalCriteria.trim()) {
+            setHackathonForm({
+                ...hackathonForm,
+                evaluationCriteria: [...hackathonForm.evaluationCriteria, newEvalCriteria.trim()]
+            });
+            setNewEvalCriteria('');
+        }
+    };
+
+    const removeEvalCriteria = (index) => {
+        const newCriteria = hackathonForm.evaluationCriteria.filter((_, i) => i !== index);
+        setHackathonForm({ ...hackathonForm, evaluationCriteria: newCriteria });
+    };
+
+    const addTheme = () => {
+        if (newTheme.trim()) {
+            setHackathonForm({
+                ...hackathonForm,
+                themes: [...hackathonForm.themes, newTheme.trim()]
+            });
+            setnewTheme('');
+        }
+    };
+
+    const removeTheme = (index) => {
+        const theme = hackathonForm.themes.filter((_, i) => i !== index);
+        setHackathonForm({ ...hackathonForm, themes: theme });
+    };
+
+    const addTandC = () => {
+        if (newTandC.trim()) {
+            setHackathonForm({
+                ...hackathonForm,
+                TandCforHackathon: [...hackathonForm.TandCforHackathon, newTandC.trim()]
+            });
+            setNewTandC('');
+        }
+    };
+
+    const removeTandC = (index) => {
+        const newTandC = hackathonForm.TandCforHackathon.filter((_, i) => i !== index);
+        setHackathonForm({ ...hackathonForm, TandCforHackathon: newTandC });
     };
 
     const getDifficultyColor = (difficulty) => {
@@ -238,16 +330,17 @@ const Admin = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2">
                                     <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
-                                        <Info className="h-4 w-4 text-blue-400" />
-                                        <span>Question ID</span>
+                                        <Star className="h-4 w-4 text-yellow-400" />
+                                        <span>Question Points</span>
                                     </label>
                                     <input
                                         type="number"
                                         required
-                                        value={devQuestForm.id}
-                                        onChange={(e) => setDevQuestForm({ ...devQuestForm, id: e.target.value })}
+                                        value={devQuestForm.points}
+                                        onChange={(e) => setDevQuestForm({ ...devQuestForm, points: e.target.value })}
                                         className="w-full px-4 py-4 bg-gray-800/80 border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all duration-300 hover:border-gray-600"
-                                        placeholder="Enter unique question ID"
+                                        placeholder="Enter points for this question"
+                                        min="1"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -365,6 +458,7 @@ const Admin = () => {
                         </div>
 
                         <form onSubmit={handleHackathonSubmit} className="p-8 space-y-8">
+                            {/* Basic Information */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2">
                                     <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
@@ -410,7 +504,38 @@ const Admin = () => {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Overview */}
+                            <div className="space-y-2">
+                                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                                    <Info className="h-4 w-4 text-blue-400" />
+                                    <span>Overview</span>
+                                </label>
+                                <textarea
+                                    value={hackathonForm.overview}
+                                    onChange={(e) => setHackathonForm({ ...hackathonForm, overview: e.target.value })}
+                                    rows={3}
+                                    className="w-full px-4 py-4 bg-gray-800/80 border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all duration-300 resize-none hover:border-gray-600"
+                                    placeholder="Provide an overview of the hackathon..."
+                                />
+                            </div>
+
+                            {/* About Us */}
+                            <div className="space-y-2">
+                                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                                    <Users className="h-4 w-4 text-purple-400" />
+                                    <span>About Us</span>
+                                </label>
+                                <textarea
+                                    value={hackathonForm.aboutUs}
+                                    onChange={(e) => setHackathonForm({ ...hackathonForm, aboutUs: e.target.value })}
+                                    rows={3}
+                                    className="w-full px-4 py-4 bg-gray-800/80 border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all duration-300 resize-none hover:border-gray-600"
+                                    placeholder="Tell participants about your organization..."
+                                />
+                            </div>
+
+                            {/* Date, Difficulty, Prize, Status */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div className="space-y-2">
                                     <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
                                         <Calendar className="h-4 w-4 text-green-400" />
@@ -570,6 +695,192 @@ const Admin = () => {
                                                 placeholder="Enter custom tech stack..."
                                                 required
                                             />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Themes Section */}
+                            <div className="space-y-4">
+                                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                                    <Target className="h-4 w-4 text-blue-400" />
+                                    <span>Themes {getSelectedCount(hackathonForm.themes)}</span>
+                                </label>
+                                <div className="bg-gray-800/30 rounded-xl p-6 border border-gray-700/50 space-y-4">
+                                    <div className="flex gap-4">
+                                        <input
+                                            type="text"
+                                            value={newTheme}
+                                            onChange={(e) => setnewTheme(e.target.value)}
+                                            className="flex-1 px-4 py-3 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all duration-200"
+                                            placeholder="Enter evaluation criteria"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={addTheme}
+                                            className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center space-x-2"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                            <span>Add</span>
+                                        </button>
+                                    </div>
+                                    
+                                    {hackathonForm.themes.length > 0 && (
+                                        <div className="space-y-2 mt-4">
+                                            {hackathonForm.themes.map((theme, index) => (
+                                                <div key={index} className="p-3 bg-gray-900/50 rounded-lg border border-gray-600/50 flex justify-between items-center">
+                                                    <span className="text-gray-300 text-sm">{theme}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeTheme(index)}
+                                                        className="text-red-400 hover:text-red-300 text-sm"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* FAQs Section */}
+                            <div className="space-y-4">
+                                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                                    <AlertCircle className="h-4 w-4 text-yellow-400" />
+                                    <span>FAQs ({hackathonForm.FAQs.length})</span>
+                                </label>
+                                <div className="bg-gray-800/30 rounded-xl p-6 border border-gray-700/50 space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <input
+                                            type="text"
+                                            value={newFAQ.question}
+                                            onChange={(e) => setNewFAQ({ ...newFAQ, question: e.target.value })}
+                                            className="w-full px-4 py-3 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all duration-200"
+                                            placeholder="FAQ Question"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={newFAQ.answer}
+                                            onChange={(e) => setNewFAQ({ ...newFAQ, answer: e.target.value })}
+                                            className="w-full px-4 py-3 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all duration-200"
+                                            placeholder="FAQ Answer"
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={addFAQ}
+                                        className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center space-x-2"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        <span>Add FAQ</span>
+                                    </button>
+                                    
+                                    {hackathonForm.FAQs.length > 0 && (
+                                        <div className="space-y-3 mt-4">
+                                            {hackathonForm.FAQs.map((faq, index) => (
+                                                <div key={index} className="p-4 bg-gray-900/50 rounded-lg border border-gray-600/50 flex justify-between items-start">
+                                                    <div className="flex-1">
+                                                        <p className="text-white font-medium text-sm">{faq.question}</p>
+                                                        <p className="text-gray-300 text-xs mt-1">{faq.answer}</p>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeFAQ(index)}
+                                                        className="ml-3 text-red-400 hover:text-red-300 text-sm"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Evaluation Criteria Section */}
+                            <div className="space-y-4">
+                                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                                    <Award className="h-4 w-4 text-blue-400" />
+                                    <span>Evaluation Criteria ({hackathonForm.evaluationCriteria.length})</span>
+                                </label>
+                                <div className="bg-gray-800/30 rounded-xl p-6 border border-gray-700/50 space-y-4">
+                                    <div className="flex gap-4">
+                                        <input
+                                            type="text"
+                                            value={newEvalCriteria}
+                                            onChange={(e) => setNewEvalCriteria(e.target.value)}
+                                            className="flex-1 px-4 py-3 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all duration-200"
+                                            placeholder="Enter evaluation criteria"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={addEvalCriteria}
+                                            className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center space-x-2"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                            <span>Add</span>
+                                        </button>
+                                    </div>
+                                    
+                                    {hackathonForm.evaluationCriteria.length > 0 && (
+                                        <div className="space-y-2 mt-4">
+                                            {hackathonForm.evaluationCriteria.map((criteria, index) => (
+                                                <div key={index} className="p-3 bg-gray-900/50 rounded-lg border border-gray-600/50 flex justify-between items-center">
+                                                    <span className="text-gray-300 text-sm">{criteria}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeEvalCriteria(index)}
+                                                        className="text-red-400 hover:text-red-300 text-sm"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Terms and Conditions Section */}
+                            <div className="space-y-4">
+                                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                                    <FileText className="h-4 w-4 text-red-400" />
+                                    <span>Terms and Conditions ({hackathonForm.TandCforHackathon.length})</span>
+                                </label>
+                                <div className="bg-gray-800/30 rounded-xl p-6 border border-gray-700/50 space-y-4">
+                                    <div className="flex gap-4">
+                                        <input
+                                            type="text"
+                                            value={newTandC}
+                                            onChange={(e) => setNewTandC(e.target.value)}
+                                            className="flex-1 px-4 py-3 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all duration-200"
+                                            placeholder="Enter terms and conditions"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={addTandC}
+                                            className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center space-x-2"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                            <span>Add</span>
+                                        </button>
+                                    </div>
+                                    
+                                    {hackathonForm.TandCforHackathon.length > 0 && (
+                                        <div className="space-y-2 mt-4">
+                                            {hackathonForm.TandCforHackathon.map((term, index) => (
+                                                <div key={index} className="p-3 bg-gray-900/50 rounded-lg border border-gray-600/50 flex justify-between items-center">
+                                                    <span className="text-gray-300 text-sm">{term}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeTandC(index)}
+                                                        className="text-red-400 hover:text-red-300 text-sm"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
                                 </div>

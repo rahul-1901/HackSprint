@@ -24,6 +24,9 @@ import AllHackathons from './pages/AllHackathons.jsx'
 import { ToastContainer } from 'react-toastify';
 import HackathonDetails from './pages/Hackathon.jsx';
 import { RegistrationForm } from './hackathon/RegistrationForm.jsx';
+import Leaderboard from './pages/LeaderBoard.jsx';
+import TeamDetails from './pages/TeamDetails.jsx'; // Import the new component
+
 function App() {
 
 
@@ -64,12 +67,19 @@ function App() {
           <Route path="/questions" element={<Questions />} caseSensitive />
           {/* <Route path="/login" element={<GoogleAuthWrapper />} caseSensitive /> */}
           <Route path="/account/login" element={<Login />} caseSensitive></Route>
-          {/* <Route path="/account/signup" element={<Signup />} caseSensitive></Route> */}
+          <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
           <Route path="/account/verify-email" element={<Verification />} caseSensitive></Route>
           <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive></Route>
+          
+          {/* Hackathon and Team Routes */}
           <Route path="/hackathon/:id" element={<HackathonDetails />} />
           <Route path="/hackathon/RegistrationForm/:id" element={<RegistrationForm />} />
+          {/* ADDED ROUTE: This is the new route for the team management page */}
+          <Route path="/hackathon/:hackathonId/team/:teamId" element={<AuthenticateRoute element={<TeamDetails />} />} />
+
           <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />} />} caseSensitive />
+          <Route path="/leaderboard" element={<Leaderboard />} caseSensitive />
+          {/* Catch-all route for undefined paths */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
 

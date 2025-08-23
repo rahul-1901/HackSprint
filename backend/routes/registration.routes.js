@@ -1,6 +1,7 @@
 import express from "express";
 import RegisteredParticipantsModel from "../models/registeredParticipants.js";
-import { isregistered, registerParicipants, registerTeam } from "../controllers/registration.controllers.js";
+import { isregistered, registerParicipants , registerTeam} from "../controllers/registration.controllers.js";
+
 
 const router = express.Router();
 
