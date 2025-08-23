@@ -7,110 +7,110 @@ import hackathonModel from "../models/hackathon.models.js"
 
 
 const generateCode = (length = 8) => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let code = "";
-    for (let i = 0; i < length; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let code = "";
+  for (let i = 0; i < length; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
 };
 
 // Create team with unique secret code
 export const createTeam = async (req, res) => {
-    try {
+  try {
 
-        const { name, leader, leaderName, leaderEmail, hackathon, contactNumber, city, state, workEmailAddress, yearsOfExperience } = req.body;
-
-
-        // Generate unique secret code
-        let code;
-        let exists = true;
-        while (exists) {
-            code = generateCode(8);
-            exists = await TeamModel.findOne({ secretCode: code });
-        }
-
-        const existingTeam = await TeamModel.findOne({
-            name,
-            hackathon
-        });
-        if (existingTeam) {
-            return res
-                .status(400)
-                .json({ success: false, message: "Team name already taken" });
-        }
-        
-        const alreadyRegisteredLeader = await RegisteredParticipantsModel.findOne({
-            user: leader,
-            hackathon: hackathon,
-        });
-        if (alreadyRegisteredLeader) {
-            return res.status(400).json({
-                success: false,
-                message: "Leader already registered for this hackathon",
-            });
-        }
+    const { name, leader, leaderName, leaderEmail, hackathon, contactNumber, city, state, workEmailAddress, yearsOfExperience } = req.body;
 
 
-        const team = await TeamModel.create({
-            name,
-            leader,
-            leaderName,
-            leaderEmail,
-            hackathon,
-            members: [],
-            secretCode: code,
-            secretLink:`${process.env.BASE_URL}/join/${code}` // optional link
-        });
-
-        await UserModel.findByIdAndUpdate(leader, {
-            $addToSet: { registeredHackathons: hackathon },
-        });
-        await hackathonModel.findByIdAndUpdate(hackathon, {
-            $addToSet: { registeredParticipants: leader },
-            $inc: { numParticipants: 1 },
-        });
-
-        await RegisteredParticipantsModel.create({
-            user : leader,
-            hackathon: hackathon,
-            team: team._id || null,
-            name: leaderName,
-            contactNumber,
-            yearsOfExperience,
-            workEmailAddress,
-            city,
-            state,
-            
-        })
-        res.status(201).json({
-            secretCode: code,
-            message: "Team created successfully",
-            team
-        });
-    }catch (error) {
-        res.status(500).json({ message: error.message });
+    // Generate unique secret code
+    let code;
+    let exists = true;
+    while (exists) {
+      code = generateCode(8);
+      exists = await TeamModel.findOne({ secretCode: code });
     }
+
+    const existingTeam = await TeamModel.findOne({
+      name,
+      hackathon
+    });
+    if (existingTeam) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Team name already taken" });
+    }
+
+    const alreadyRegisteredLeader = await RegisteredParticipantsModel.findOne({
+      user: leader,
+      hackathon: hackathon,
+    });
+    if (alreadyRegisteredLeader) {
+      return res.status(400).json({
+        success: false,
+        message: "Leader already registered for this hackathon",
+      });
+    }
+
+
+    const team = await TeamModel.create({
+      name,
+      leader,
+      leaderName,
+      leaderEmail,
+      hackathon,
+      members: [],
+      secretCode: code,
+      secretLink: `${process.env.BASE_URL}/join/${code}` // optional link
+    });
+
+    await UserModel.findByIdAndUpdate(leader, {
+      $addToSet: { registeredHackathons: hackathon },
+    });
+    await hackathonModel.findByIdAndUpdate(hackathon, {
+      $addToSet: { registeredParticipants: leader },
+      $inc: { numParticipants: 1 },
+    });
+
+    await RegisteredParticipantsModel.create({
+      user: leader,
+      hackathon: hackathon,
+      team: team._id || null,
+      name: leaderName,
+      contactNumber,
+      yearsOfExperience,
+      workEmailAddress,
+      city,
+      state,
+
+    })
+    res.status(201).json({
+      secretCode: code,
+      message: "Team created successfully",
+      team
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 export const joinTeam = async (req, res) => {
-  try{
-   const { userId, code } = req.body;
-   if(!userId || !code){
-    res.status(400).json({message: "code is required!"});
-   }
+  try {
+    const { userId, code } = req.body;
+    if (!userId || !code) {
+      res.status(400).json({ message: "code is required!" });
+    }
 
-   const team = await TeamModel.findOne({ secretCode: code });
-   if (!team) return res.status(404).json({ message: "Team not found" });
+    const team = await TeamModel.findOne({ secretCode: code });
+    if (!team) return res.status(404).json({ message: "Team not found" });
 
-   if (team.pendingMembers.includes(userId) || team.members.includes(userId)) {
-     return res.status(400).json({ message: "Already requested or member" });
+    if (team.pendingMembers.includes(userId) || team.members.includes(userId)) {
+      return res.status(400).json({ message: "Already requested or member" });
     }
     team.pendingMembers.push(userId);
     await team.save();
 
     res.json({ message: "Request sent to leader for approval" });
-  } catch(error){
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
@@ -159,7 +159,29 @@ export const handleRequests = async (req, res) => {
           message: "Member already registered for this hackathon",
         });
       }
+      // create registered participant entry for accepted member
+      const userDoc = await UserModel.findById(userId);
+      if (!userDoc) {
+        return res.status(404).json({ message: "User not found" });
+      }
 
+      // create registered participant entry for accepted member
+      await RegisteredParticipantsModel.create({
+        user: userId,
+        hackathon: hackathonId,
+        team: team._id,
+        name: userDoc.name || "",
+        contactNumber: userDoc.contactNumber || "",
+        email: userDoc.email || "",
+        college: userDoc.college || "",
+        gender: userDoc.gender || "",
+        currentYearOfStudy: userDoc.currentYearOfStudy || "",
+        city: userDoc.city || "",
+        state: userDoc.state || "",
+        yearsOfExperience: userDoc.yearsOfExperience || "",
+        workEmailAddress: userDoc.workEmailAddress || "",
+      });
+      
       await UserModel.findByIdAndUpdate(userId, {
         $addToSet: { registeredHackathons: hackathonId },
       });
@@ -181,9 +203,9 @@ export const handleRequests = async (req, res) => {
 
 
 export const searchTeamByCode = async (req, res) => {
-    try {
-        const { code } = req.params;
-         const team = await TeamModel.findOne({ code }).populate("leader", "name email");
+  try {
+    const { code } = req.params;
+    const team = await TeamModel.findOne({ code }).populate("leader", "name email");
 
     if (!team) {
       return res.status(404).json({ message: "Team not found" });
@@ -200,9 +222,9 @@ export const searchTeamByCode = async (req, res) => {
         pendingRequestsCount: team.pendingMembers.length
       }
     });
-    } catch (error) {
-        res.status(500).json({message: "something went wrong while searching the team!"});
-    }
+  } catch (error) {
+    res.status(500).json({ message: "something went wrong while searching the team!" });
+  }
 }
 
 export const getPendingRequests = async (req, res) => {
