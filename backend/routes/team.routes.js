@@ -9,7 +9,6 @@ teamRoutes.post("/pendingRequests", getPendingRequests);
 
 teamRoutes.post("/handleRequest", handleRequests);
 
-teamRoutes.get("/search/:code", searchTeamByCode)
-
+teamRoutes.get("/search/:secretCode", searchTeamByCode)
 
 export default teamRoutes;
