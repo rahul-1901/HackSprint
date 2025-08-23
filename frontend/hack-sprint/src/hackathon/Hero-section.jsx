@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
 import { Calendar, Users, Trophy, Clock } from "lucide-react";
-import axios from 'axios'
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../backendApis/api";
 
@@ -15,7 +14,7 @@ export const HeroSection = ({
   participantCount,
   prizeMoney,
   onRegister,
-  imageUrl = "/assets/hackathon-banner.png",
+  imageUrl = "../assets/hackathon-banner.png",
   hackathonId = "hackathon_001"
 }) => {
   const [imageError, setImageError] = useState(false);
@@ -44,20 +43,17 @@ export const HeroSection = ({
   useEffect(() => {
     if (!loading) {
       if (!userData) {
-        // Not logged in
         navigate("/account/login");
       }
-      // Do NOT auto-redirect to RegistrationForm here!
-      // The registration form should only show when user clicks "Register Now"
     }
   }, [loading, userData, navigate]);
 
   const handleRegister = () => {
     if(isVerified) {
-    navigate("/hackathons/RegistrationForm")
-  } else {
-    navigate("/account/login");
-  }
+      navigate(`/hackathon/RegistrationForm/${hackathonId}`);
+    } else {
+      navigate("/account/login");
+    }
   }
 
   const formatDate = (date) =>
@@ -84,43 +80,29 @@ export const HeroSection = ({
   };
 
   const renderRegistrationButton = () => {
-    if (!isActive) return null; // Don't show button if hackathon is not active
+    if (!isActive) return null;
 
     if (loading) {
       return (
         <Button
           disabled
           size="lg"
-          className="bg-amber-400/50 text-black/50 font-semibold px-6 py-2.5 cursor-not-allowed"
+          className="cursor-pointer bg-gray-500/50 text-white font-bold px-6 py-2.5 cursor-not-allowed"
         >
           Loading...
         </Button>
       );
     }
-
-    // if (userData && isVerified) {
-    //   return (
-    //     <Badge className="bg-green-500/20 text-green-400 border-green-500/30 px-4 py-2 text-base font-medium w-fit border">
-    //       ✓ You're registered!
-    //     </Badge>
-    //   );
-    // }
-
-    // User is not logged in
-  
+    
+    return (
         <Button
           onClick={() => { handleRegister() }}
           size="lg"
-          className="bg-amber-400 text-black font-semibold px-6 py-2.5 rounded-md shadow-xl hover:bg-amber-300 hover:shadow-amber-200 transition-all duration-300 hover:scale-[1.02]"
+          className="cursor-pointer bg-green-500 text-white font-bold px-6 py-2.5 rounded-md shadow-lg shadow-green-500/20 hover:bg-green-600 transition-all duration-300 hover:scale-[1.02]"
         >
           Register Now
         </Button>
-      
-    
-
-  
-
-    return null;
+      );
   };
 
   const fallbackImage = "https://via.placeholder.com/1200x300/1a1a2e/ffffff?text=Hackathon+Banner";
@@ -136,11 +118,6 @@ export const HeroSection = ({
             onError={handleImageError}
             onLoad={handleImageLoad}
           />
-          {imageError && (
-            <div className="absolute top-2 right-2 bg-red-500/20 text-red-400 px-2 py-1 rounded text-xs">
-              Using fallback image
-            </div>
-          )}
         </div>
       </div>
       
@@ -156,19 +133,19 @@ export const HeroSection = ({
                 className={`${
                   isActive
                     ? "bg-hero-primary/20 text-hero-primary border-hero-primary/30 shadow-lg shadow-hero-primary/20"
-                    : "bg-surface text-text-secondary border-border-subtle"
-                } px-3 py-1 text-sm font-medium border border-green-500`}
+                    : "bg-surface text-text-secondary border-border-subtle cursor-pointer"
+                } px-3 py-1 text-sm border border-green-500`}
               >
-                {isActive ? "🔥 Active" : "⏰ Ended"}
+                {isActive ? "Active" : "Ended"}
               </Badge>
-              <div className="flex items-center gap-2 text-text-secondary text-sm">
+              <div className="flex items-center gap-2 text-white font-bold text-sm">
                 <Calendar className="w-4 h-4" />
                 <span>
                   {formatDate(startDate)} — {formatDate(endDate)}
                 </span>
               </div>
               {isActive && (
-                <div className="flex items-center gap-2 text-hero-secondary text-sm font-medium">
+                <div className="flex items-center gap-2 text-white font-bold text-sm">
                   <Clock className="w-4 h-4" />
                   <span>{getDaysRemaining()} days left</span>
                 </div>
@@ -177,26 +154,19 @@ export const HeroSection = ({
 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
               <div className="flex-1">
-                <h1 className="text-3xl md:text-4xl font-extrabold text-foreground mb-1 leading-tight">
+                <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-1 leading-tight">
                   {title}
                 </h1>
-                <p className="text-base md:text-lg text-text-secondary leading-relaxed">
+                <p className="text-base md:text-lg text-white font-bold leading-relaxed">
                   {subTitle}
                 </p>
               </div>
               
               <div className="flex-shrink-0">
-                <Button
-                  onClick={handleRegister}
-                  size="lg"
-                  className="bg-amber-400 text-black font-semibold px-6 py-2.5 rounded-md shadow-xl hover:bg-amber-300 hover:shadow-amber-200 transition-all duration-300 hover:scale-[1.02]"
-                >
-                  Register Now
-                </Button>
+                 {renderRegistrationButton()}
               </div>
             </div>
 
-            {/* stat strip */}
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-surface/60 backdrop-blur-sm border border-green-500 rounded-lg p-3 hover:bg-surface-hover transition-all duration-200">
                 <div className="flex items-center gap-2">
@@ -204,10 +174,10 @@ export const HeroSection = ({
                     <Users className="w-4 h-4 text-hero-primary" />
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-foreground">
+                    <div className="text-lg font-bold text-white">
                       {participantCount}
                     </div>
-                    <div className="text-xs text-text-secondary">Participants</div>
+                    <div className="text-xs text-white font-bold">Participants</div>
                   </div>
                 </div>
               </div>
@@ -218,10 +188,10 @@ export const HeroSection = ({
                     <Trophy className="w-4 h-4 text-hero-secondary" />
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-foreground">
+                    <div className="text-lg font-bold text-white">
                       ${prizeMoney?.toLocaleString()}
                     </div>
-                    <div className="text-xs text-text-secondary">Prize Pool</div>
+                    <div className="text-xs text-white font-bold">Prize Pool</div>
                   </div>
                 </div>
               </div>
@@ -232,10 +202,10 @@ export const HeroSection = ({
                     <Clock className="w-4 h-4 text-hero-primary" />
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-foreground">
+                    <div className="text-lg font-bold text-white">
                       {isActive ? `${getDaysRemaining()}d` : "Ended"}
                     </div>
-                    <div className="text-xs text-text-secondary">Time Left</div>
+                    <div className="text-xs text-white font-bold">Time Left</div>
                   </div>
                 </div>
               </div>
