@@ -49,8 +49,6 @@ export const UserDashboard = () => {
   const [coins, setCoins] = useState(0);
   const [streak, setStreak] = useState(0);
   const [showReward, setShowReward] = useState(false);
-  const [showEditProfile, setShowEditProfile] = useState(false);
-  const [editForm, setEditForm] = useState({ name: "", roll_no: "", education: "" });
   const navigate = useNavigate();
   const [editEducation, setEditEducation] = useState(false);
 const [educationData, setEducationData] = useState({
@@ -80,7 +78,7 @@ const [educationData, setEducationData] = useState({
         newStreak = 1; // reset streak
       }
 
-      rewardEarned = 10 + Math.floor(newStreak / 5) * 5;
+      rewardEarned = 10 + Math.floor(newStreak / 5) * 5; // 10 coins + bonus every 5 days
       newCoins += rewardEarned;
 
       localStorage.setItem("coins", newCoins.toString());
@@ -95,17 +93,12 @@ const [educationData, setEducationData] = useState({
   }, []);
   
 
-  // Fetch Dashboard
+  // Fetch Dashboard Data
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await getDashboard();
         setData(res.data.userData);
-        setEditForm({
-          name: res.data.userData?.name || "",
-          roll_no: res.data.userData?.roll_no || "",
-          education: res.data.userData?.education || "",
-        });
       } catch (err) {
         console.error("Dashboard fetch error:", err);
       } finally {
@@ -139,11 +132,12 @@ const [educationData, setEducationData] = useState({
 }, []);
 
 
-  const handleProfileUpdate = () => {
-    // connect this with backend API later
-    toast.success("Profile updated successfully!", { autoClose: 1500 });
-    setData((prev) => ({ ...prev, ...editForm }));
-    setShowEditProfile(false);
+  const handleLogout = () => {
+    localStorage.clear();
+    toast.success("Logout successfull...", { autoClose: 1000 });
+    setTimeout(() => {
+      navigate("/");
+    }, 1700);
   };
 
   // If still loading
@@ -173,28 +167,31 @@ const [educationData, setEducationData] = useState({
         {/* LEFT COLUMN */}
         <div className="w-full md:w-1/4 space-y-6">
           {/* Profile Card */}
-          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 flex flex-col items-center hover:border-green-400 transition-all text-center">
-            <div className="relative">
-              <img
-                src={
-                  data.avatar_url ||
-                  "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png"
-                }
-                alt="Avatar"
-                className="w-24 h-24 rounded-full border-2 border-green-500/50"
-              />
-            </div>
+<div className="bg-white/5 border border-green-500/20 rounded-xl p-6 flex flex-col items-center hover:border-green-400 transition-all text-center">
+  <div className="relative">
+    <img
+      src={
+        data.avatar_url ||
+        "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png"
+      }
+      alt="Avatar"
+      className="w-24 h-24 rounded-full border-2 border-green-500/50"
+    />
+  </div>
 
-            <h2 className="mt-4 text-xl font-bold">{data.name || "Unnamed User"}</h2>
-            <p className="text-sm text-gray-400">{data.roll_no || "N/A"}</p>
-            <p className="text-sm text-green-400 mt-1">Rank: #{data.rank || "N/A"}</p>
+  <h2 className="mt-4 text-xl font-bold">{data.name || "Unnamed User"}</h2>
+  <p className="text-sm text-gray-400">{data.roll_no || "N/A"}</p>
+  <p className="text-sm text-green-400 mt-1">
+    Rank: #{data.rank || "N/A"}
+  </p>
 
   <button
-    onClick={handleLogout}
-    className="mt-3 px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40"
-  >
-    Logout
-  </button>
+  onClick={handleLogout}
+  className="mt-3 px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
+>
+  Logout
+</button>
+
 </div>
 
 
@@ -234,7 +231,9 @@ const [educationData, setEducationData] = useState({
               data.languages.map((lang, i) => (
                 <div key={i} className="flex justify-between mt-2">
                   <span>{lang.name}</span>
-                  <span className="text-gray-400">{lang.solved} problems solved</span>
+                  <span className="text-gray-400">
+                    {lang.solved} problems solved
+                  </span>
                 </div>
               ))}
           </div>
@@ -263,7 +262,8 @@ const [educationData, setEducationData] = useState({
 
         {/* RIGHT COLUMN */}
         <div className="flex-1 space-y-6">
-          {/* Submissions Heatmap */}
+
+        {/* Submissions Heatmap */}
 <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
   <h3 className="text-lg font-semibold text-green-400 mb-3">
     Submissions in the Last Year
@@ -316,14 +316,49 @@ const [educationData, setEducationData] = useState({
   </div>
 </div>
 
-          {/* Connected Accounts */}
-          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
-            <h3 className="text-lg font-semibold text-green-400">
-              Connected Accounts
-            </h3>
-            <div className="flex justify-between mt-2">
-              <span>GitHub</span>
-              <span className="text-gray-400">{data.github_id || "Not Connected"}</span>
+
+       {/* Connected Apps */}
+<div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+  <h3 className="text-lg font-semibold text-green-400 mb-3">
+    Connected Apps
+  </h3>
+
+  {data.editAppsIndex === undefined ? (
+    <div>
+      {Array.isArray(data.connectedApps) && data.connectedApps.length > 0 ? (
+        <div className="space-y-3">
+          {data.connectedApps.map((app, idx) => (
+            <div
+              key={idx}
+              className="flex justify-between items-center p-3 bg-gray-800/40 border border-green-500/20 rounded-lg"
+            >
+              <span className="text-gray-200 font-medium">{app.name}</span>
+              <div className="flex gap-2">
+                <a
+                  href={app.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-lg text-green-300 hover:bg-green-600/40 transition cursor-pointer"
+                >
+                  Visit
+                </a>
+                <button
+                  onClick={() => setData({ ...data, editAppsIndex: idx, tempAppName: app.name, tempAppUrl: app.url })}
+                  className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-yellow-400 hover:bg-yellow-600/40 cursor-pointer"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => {
+                    const newApps = [...(data.connectedApps || [])];
+                    newApps.splice(idx, 1);
+                    setData({ ...data, connectedApps: newApps });
+                  }}
+                  className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -472,14 +507,123 @@ const [educationData, setEducationData] = useState({
               Delete
             </button>
           </div>
-          
+        </div>
+      );
+    })
+  ) : (
+    <p className="text-gray-400">No education data available.</p>
+  )}
+
+  {/* Add/Edit Form */}
+  {editEducation && (
+    <div className="space-y-3 mt-4">
+      <input
+        type="text"
+        placeholder="Institute"
+        value={educationData?.institute || ""}
+        onChange={(e) =>
+          setEducationData({ ...educationData, institute: e.target.value })
+        }
+        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+      />
+      <input
+        type="text"
+        placeholder="Timeline (e.g., 2024–2028)"
+        value={educationData?.timeline || ""}
+        onChange={(e) =>
+          setEducationData({ ...educationData, timeline: e.target.value })
+        }
+        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+      />
+      <input
+        type="text"
+        placeholder="Department / Branch (e.g., Computer Science)"
+        value={educationData?.department || ""}
+        onChange={(e) =>
+          setEducationData({ ...educationData, department: e.target.value })
+        }
+        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+      />
+      <input
+        type="text"
+        placeholder="CGPA/Percentage (e.g., 8.7/10)"
+        value={educationData?.grade || ""}
+        onChange={(e) =>
+          setEducationData({ ...educationData, grade: e.target.value })
+        }
+        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+      />
+      <input
+        type="text"
+        placeholder="Location (e.g., New York, USA)"
+        value={educationData?.location || ""}
+        onChange={(e) =>
+          setEducationData({ ...educationData, location: e.target.value })
+        }
+        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+      />
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => {
+            let updated = [...(data.education || [])];
+            if (typeof editIndex === "number") {
+              updated[editIndex] = educationData; // update existing
+            } else {
+              updated.push(educationData); // add new
+            }
+            setData({ ...data, education: updated });
+            setEducationData({});
+            setEditIndex(null);
+            setEditEducation(false);
+          }}
+          className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40"
+        >
+          Save
+        </button>
+        <button
+          onClick={() => {
+            setEditEducation(false);
+            setEducationData({});
+            setEditIndex(null);
+          }}
+          className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  )}
+
+  {/* Add New Education Button */}
+  {!editEducation && (
+    <div className="flex justify-end mt-4">
+      <button
+        onClick={() => setEditEducation(true)}
+        className="px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40"
+      >
+        + Add Education
+      </button>
+    </div>
+  )}
+</div>
+
+
+
+
+
           {/* Participated in Hackathons */}
           <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
-            <h3 className="text-lg font-semibold text-green-400">Participated in Hackathons</h3>
+            <h3 className="text-lg font-semibold text-green-400">
+              Participated in Hackathons
+            </h3>
             <ul className="mt-4 space-y-3">
               {Array.isArray(data.submissions) && data.submissions.length > 0 ? (
                 data.submissions.map((hack, idx) => (
-                  <li key={idx} className="flex justify-between items-center text-gray-300">
+                  <li
+                    key={idx}
+                    className="flex justify-between items-center text-gray-300"
+                  >
                     <span>{hack.title}</span>
                     <a
   href={hack.repo_url || "#"}
@@ -499,18 +643,7 @@ const [educationData, setEducationData] = useState({
           </div>
           
 
-          {/* Education */}
-          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
-            <h3 className="text-lg font-semibold text-green-400">Education</h3>
-            <p className="text-gray-400">
-              {data.education || "No data available."}{" "}
-              <a href="#" className="text-green-400 underline">
-                Update now
-              </a>
-            </p>
-          </div>
-        </div>
-      </div>
+
 
       
 
@@ -527,47 +660,6 @@ const [educationData, setEducationData] = useState({
             >
               Awesome!
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Profile Modal */}
-      {showEditProfile && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white text-black p-6 rounded-2xl shadow-lg w-96">
-            <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
-            <div className="space-y-3">
-              <input
-                type="text"
-                value={editForm.name}
-                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                placeholder="Full Name"
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="text"
-                value={editForm.roll_no}
-                onChange={(e) => setEditForm({ ...editForm, roll_no: e.target.value })}
-                placeholder="Roll Number"
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="text"
-                value={editForm.education}
-                onChange={(e) => setEditForm({ ...editForm, education: e.target.value })}
-                placeholder="Education"
-                className="w-full p-2 border rounded"
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setShowEditProfile(false)} className="px-4 py-2 bg-gray-300 rounded">
-                Cancel
-              </button>
-              <button onClick={handleProfileUpdate} className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-                Save
-              </button>
-            </div>
           </div>
         </div>
       )}
