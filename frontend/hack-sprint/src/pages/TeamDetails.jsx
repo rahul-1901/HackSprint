@@ -28,7 +28,7 @@ const GridBackground = () => (
 const TeamDetails = () => {
   const { hackathonId, teamId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation(); // Get location object to access navigation state
+  const location = useLocation();
 
   const [teamData, setTeamData] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -36,34 +36,33 @@ const TeamDetails = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [copiedItem, setCopiedItem] = useState(null);
 
-  // Function to get team details from localStorage
-  const getStoredTeamDetails = useCallback(() => {
-    const storedDetails = localStorage.getItem(`teamDetails_${teamId}`);
-    return storedDetails ? JSON.parse(storedDetails) : null;
+  // Gets just the secret code string from localStorage
+  const getStoredTeamCode = useCallback(() => {
+    return localStorage.getItem(`teamDetails_${teamId}`);
   }, [teamId]);
 
   const fetchTeamData = useCallback(async (user) => {
     if (!user) return;
 
-    const storedDetails = getStoredTeamDetails();
+    const secretCode = getStoredTeamCode();
     
     try {
-      // This is the primary method if invite code is available
-      if (storedDetails?.secretCode) {
-        const teamSearchResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/team/search/${storedDetails.secretCode}`);
+      if (secretCode) {
+        // Use the secretCode string directly in the API URL
+        const teamSearchResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/team/search/${secretCode}`);
         const basicTeamData = teamSearchResponse.data.team;
+        console.log("Fetched basic team data:", basicTeamData);
+        
         const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: user._id });
         
         const fullTeamData = {
             ...basicTeamData,
             leader: user,
-            members: [], // Assuming search doesn't return full member list
             pendingMembers: pendingResponse.data,
-            secretCode: storedDetails.secretCode,
-            secretLink: storedDetails.secretLink,
             maxMembers: 4, 
             createdAt: user.createdAt,
         };
+        console.log("Fetched full team data:", fullTeamData);
         setTeamData(fullTeamData);
       } else {
         // Fallback method if no invite code is found in storage
@@ -104,17 +103,12 @@ const TeamDetails = () => {
     } finally {
         setLoading(false);
     }
-  }, [teamId, hackathonId, getStoredTeamDetails]);
+  }, [teamId, hackathonId, getStoredTeamCode]);
 
   useEffect(() => {
-    // If data is passed via navigation, store it in localStorage.
+    // Store only the secret code string in localStorage
     if (location.state?.secretCode) {
-        const detailsToStore = {
-            teamName: location.state.teamName,
-            secretCode: location.state.secretCode,
-            secretLink: location.state.secretLink
-        };
-        localStorage.setItem(`teamDetails_${teamId}`, JSON.stringify(detailsToStore));
+        localStorage.setItem(`teamDetails_${teamId}`, location.state.secretCode);
     }
 
     const fetchInitialData = async () => {
