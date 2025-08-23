@@ -16,11 +16,11 @@ const submissionSchema = new mongoose.Schema({
     ref: "hackathons",
     required: true,
   },
-  problem: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "problemstatements",
-    // required: true,
-  },
+  // problem: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "problemstatements",
+  //   // required: true,
+  // },
   repoUrl: {
     type: String,
     required: true,
