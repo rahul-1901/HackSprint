@@ -16,7 +16,11 @@ const dailyQuizSchema = new mongoose.Schema({
       ref: "devquest",   // reference to your devquest collection
       required: true,
     }
-  ]
+  ],
+  attemptedBy : [{
+    type : mongoose.Schema.Types.ObjectId,
+    ref : "users"
+  }]
 }, { timestamps: true });
 
 const dailyQuizModel = mongoose.model("dailyQuiz", dailyQuizSchema);
