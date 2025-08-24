@@ -4,8 +4,8 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { getDashboard } from '../backendApis/api'; // To get current user
 import { 
-  Users, Crown, Mail, Phone, MapPin, Check, X, Copy,
-  User, Settings, Clock, Shield, Link as LinkIcon
+  Users, Crown, Mail, Check, X, Copy,
+  User, Clock, Shield, Link as LinkIcon
 } from 'lucide-react';
 import { Button } from '../components/Button';
 
@@ -38,10 +38,11 @@ const TeamDetails = () => {
   // Fetch team data from the backend
   const fetchTeamData = useCallback(async () => {
     try {
-      // NOTE: Assuming an endpoint like this exists to get team details.
-      // You may need to create this endpoint on your backend.
-      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/team/${teamId}`);
-      setTeamData(response.data);
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/team/search/${teamId}`);
+      console.log(response.data);
+
+      // ✅ Only set the `team` object, not the whole response
+      setTeamData(response.data.team);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error fetching team data.');
       console.error('Error fetching team data:', error);
@@ -51,7 +52,7 @@ const TeamDetails = () => {
   }, [teamId]);
 
   useEffect(() => {
-    // Fetch the logged-in user to check if they are the leader
+    // Fetch the logged-in user
     const fetchCurrentUser = async () => {
       try {
         const res = await getDashboard();
@@ -83,10 +84,9 @@ const TeamDetails = () => {
         action: action,
       };
       
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/handle`, payload);
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/handleRequest`, payload);
       toast.success(response.data.message);
       
-      // Refresh data to show updated member/request list
       fetchTeamData(); 
     } catch (error) {
       toast.error(error.response?.data?.message || `Error ${action}ing request.`);
@@ -185,8 +185,15 @@ const TeamDetails = () => {
     );
   }
 
-  const currentMembers = [teamData.leader, ...teamData.members];
-  const spotsRemaining = teamData.maxMembers - currentMembers.length;
+  const currentMembers = [teamData.leader, ...(teamData.members || [])];
+  const spotsRemaining = teamData.maxMembers
+    ? teamData.maxMembers - currentMembers.length
+    : 0;
+
+  // ✅ Fix for invalid invite link from backend
+  const inviteLink = teamData.secretLink?.startsWith("http")
+    ? teamData.secretLink
+    : `${window.location.origin}/join/${teamData.code}`;
 
   return (
     <div className="min-h-screen bg-gray-900 relative">
@@ -214,8 +221,8 @@ const TeamDetails = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Invite Code</label>
                     <div className="flex items-center gap-2 p-3 bg-gray-700/50 border border-green-500/20 rounded-lg">
-                      <span className="flex-1 font-mono text-green-300">{teamData.secretCode}</span>
-                      <Button onClick={() => handleCopy(teamData.secretCode, 'code')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
+                      <span className="flex-1 font-mono text-green-300">{teamData.code}</span>
+                      <Button onClick={() => handleCopy(teamData.code, 'code')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
                         {copiedItem === 'code' ? <Check size={16} /> : <Copy size={16} />}
                       </Button>
                     </div>
@@ -223,8 +230,8 @@ const TeamDetails = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Invite Link</label>
                     <div className="flex items-center gap-2 p-3 bg-gray-700/50 border border-green-500/20 rounded-lg">
-                      <span className="flex-1 font-mono text-green-300 truncate">{teamData.secretLink}</span>
-                      <Button onClick={() => handleCopy(teamData.secretLink, 'link')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
+                      <span className="flex-1 font-mono text-green-300 truncate">{inviteLink}</span>
+                      <Button onClick={() => handleCopy(inviteLink, 'link')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
                         {copiedItem === 'link' ? <Check size={16} /> : <Copy size={16} />}
                       </Button>
                     </div>
@@ -254,7 +261,7 @@ const TeamDetails = () => {
           </>
         )}
         
-        {/* Current Team Members (Visible to all) */}
+        {/* Current Team Members */}
         <div>
           <h2 className="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
             <Users className="w-6 h-6 text-green-400" />
