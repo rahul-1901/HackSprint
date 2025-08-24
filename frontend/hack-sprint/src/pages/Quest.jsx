@@ -57,6 +57,8 @@ const Quest = () => {
   const [previewQuest, setPreviewQuest] = useState(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [redirectCountdown, setRedirectCountdown] = useState(null)
+  const [dummyPreview, setDummyPreview] = useState({ question: "", options: [] });
+  const [prevFive, setPrevFive] = useState([]);
 
   const navigate = useNavigate();
 
@@ -88,6 +90,45 @@ const Quest = () => {
   }
 
   useEffect(() => {
+  const fetchDailyQuizzes = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/dailyquiz/allquiz");
+      const quizData = response.data.quizData || [];
+
+      // ✅ Build preview: only 5 questions total across all quizzes
+      const allQuestions = quizData.flatMap(quiz => quiz.questions);
+      const topFiveQuestions = allQuestions.slice(0, 5);
+
+      const preview = {
+        question: "Here are the last 5 Daily Quiz Questions:",
+        options: topFiveQuestions.map((q, i) => `Q${i + 1}: ${q.question}`),
+      };
+      setDummyPreview(preview);
+
+      // ✅ Build prevFive: each quiz keeps its own questions
+      const latestFiveQuizzes = quizData.slice(0, 5).map((quiz) => ({
+        key: quiz._id,
+        date: new Date(quiz.date).toLocaleDateString(undefined, { 
+          month: "short", 
+          day: "numeric" 
+        }),
+        topic: quiz.Title,
+        questions: quiz.questions, // 👈 keep original per-quiz questions
+      }));
+      setPrevFive(latestFiveQuizzes);
+
+    } catch (err) {
+      console.error("Error fetching quizzes:", err);
+    }
+  };
+
+  fetchDailyQuizzes();
+}, []);
+
+
+
+
+  useEffect(() => {
     const fetchQuestions = async () => {
       try {
         const response = await axios.get("http://localhost:3000/api/devquest")
@@ -112,25 +153,27 @@ const Quest = () => {
   const todayTopic = (questions[0] && questions[0].topic) || "Web Development (MERN Stack)"
   const todayDateStr = new Date().toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })
 
-  const prevFive = Array.from({ length: 5 }).map((_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate() - (i + 1))
-    return {
-      key: i,
-      date: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
-      topic: "Web Dev",
-    }
-  })
+  // const prevFive = Array.from({ length: 5 }).map((_, i) => {
+  //   const d = new Date()
+  //   d.setDate(d.getDate() - (i + 1))
+  //   return {
+  //     key: i,
+  //     date: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+  //     topic: "Web Dev",
+  //   }
+  // })
 
-  const dummyPreview = {
-    question: "What is web technology?",
-    options: [
-      "A collection of tools and techniques used to create and deliver content on the World Wide Web",
-      "A type of software that enables users to access and interact with information on the internet",
-      "A network of interconnected computers that share information and services",
-      "A system for storing and retrieving information on the internet",
-    ],
-  }
+  // const dummyPreview = {
+  //   question: "What is web technology?",
+  //   options: [
+  //     "A collection of tools and techniques used to create and deliver content on the World Wide Web",
+  //     "A type of software that enables users to access and interact with information on the internet",
+  //     "A network of interconnected computers that share information and services",
+  //     "A system for storing and retrieving information on the internet",
+  //   ],
+  // }
+
+
 
   // Animation variants
   const containerVariants = {
@@ -333,7 +376,7 @@ const Quest = () => {
                   accent: "top-0 right-0",
                 },
                 {
-                  title: "MERN Stack Challenges",
+                  title: "New Daily Challenges",
                   desc: "Hands-on problems covering MongoDB, Express, React, and Node.js.",
                   accent: "bottom-0 left-0",
                 },
@@ -704,20 +747,23 @@ const Quest = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.4 }}
               >
-                <motion.button
-                  onClick={handleViewAll}
-                  className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-[1.01] shadow-lg"
-                  whileHover={{
-                    scale: 1.02,
-                    boxShadow: "0 10px 30px rgba(34, 197, 94, 0.3)",
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {redirectCountdown !== null && !isLoggedIn
-                    ? `Redirecting to login in ${redirectCountdown}...`
-                    : "View All Questions"}
-                </motion.button>
-
+                {!isLoggedIn && (
+                  <motion.button
+                    onClick={handleViewAll}
+                    className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-[1.01] shadow-lg"
+                    whileHover={{
+                      scale: 1.02,
+                      boxShadow: "0 10px 30px rgba(34, 197, 94, 0.3)",
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {redirectCountdown !== null ? (
+                      <span>Redirecting to login in {redirectCountdown}...</span>
+                    ) : (
+                      <span>View All Questions</span>
+                    )}
+                  </motion.button>
+                )}
               </motion.div>
             </motion.div>
           </motion.div>
