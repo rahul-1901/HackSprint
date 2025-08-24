@@ -26,6 +26,7 @@ import HackathonDetails from './pages/Hackathon.jsx';
 import { RegistrationForm } from './hackathon/RegistrationForm.jsx';
 import Leaderboard from './pages/LeaderBoard.jsx';
 import TeamDetails from './pages/TeamDetails.jsx'; // Import the new component
+import { SubmissionForm } from './hackathon/SubmissionForm.jsx';
 
 function App() {
 
@@ -74,6 +75,7 @@ function App() {
           {/* Hackathon and Team Routes */}
           <Route path="/hackathon/:id" element={<HackathonDetails />} />
           <Route path="/hackathon/RegistrationForm/:id" element={<RegistrationForm />} />
+          <Route path="/hackathon/SubmissionForm/:id" element={<SubmissionForm isOpen={true} onClose={() => {}}/> } />
           {/* ADDED ROUTE: This is the new route for the team management page */}
           <Route path="/hackathon/:hackathonId/team/:teamId" element={<AuthenticateRoute element={<TeamDetails />} />} />
 
