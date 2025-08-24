@@ -41,7 +41,7 @@ function App() {
   return (
     <>
       <Router>
-        {/* <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} /> */}
+        <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} />
         <Loader />
         <HideRoute>
           <Navbar />
@@ -64,7 +64,7 @@ function App() {
           <Route path="/questions" element={<Questions />} caseSensitive />
           {/* <Route path="/login" element={<GoogleAuthWrapper />} caseSensitive /> */}
           <Route path="/account/login" element={<Login />} caseSensitive></Route>
-          {/* <Route path="/account/signup" element={<Signup />} caseSensitive></Route> */}
+          <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
           <Route path="/account/verify-email" element={<Verification />} caseSensitive></Route>
           <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive></Route>
           <Route path="/hackathon/:id" element={<HackathonDetails />} />
