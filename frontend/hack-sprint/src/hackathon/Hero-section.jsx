@@ -5,7 +5,7 @@ import { Calendar, Users, Trophy, Clock, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../backendApis/api";
 import LoginForm from "./LoginForm";
-import { SubmissionForm } from "./SubmissionForm";
+import SubmissionForm from "./SubmissionForm";
 
 export const HeroSection = ({
   title,
@@ -23,6 +23,7 @@ export const HeroSection = ({
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSubmissionModal, setShowSubmissionModal] = useState(false);
   const [registrationInfo, setRegistrationInfo] = useState(false);
 
   const navigate = useNavigate();
@@ -90,8 +91,8 @@ export const HeroSection = ({
   };
 
   const handleSubmit = () => {
-    navigate(`/hackathon/SubmissionForm/${hackathonId}`);
-  };
+setShowSubmissionModal(true);  
+};
 
   const formatDateRange = (start, end) => {
     const startDateObj = new Date(start);
@@ -154,7 +155,7 @@ export const HeroSection = ({
       return (
         <Button
           onClick={handleSubmit}
-          className="group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+          className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
         >
           <span className="flex items-center gap-2">
             Submit Now
@@ -262,6 +263,14 @@ export const HeroSection = ({
           </div>
         </div>
       )}
+
+      {/* Submission Modal */}
+   {showSubmissionModal && (
+  <SubmissionForm
+    isOpen={showSubmissionModal}
+    onClose={() => setShowSubmissionModal(false)}
+  />
+)}
     </>
   );
 };
