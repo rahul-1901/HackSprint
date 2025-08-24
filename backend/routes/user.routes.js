@@ -28,5 +28,5 @@ userRoutes.post("/incorrectanswer" , resetStreak);
 userRoutes.post("/finishquiz" , devQuestionsAnsweredData );
 userRoutes.patch("/updateEducation" , updatingEducation);
 userRoutes.patch("/updateConnectedApps" , updatingConnectedApps);
-userRoutes.get("/:quizId/leaderBoard" , displayLeaderBoard);
+userRoutes.get("/leaderBoard" , displayLeaderBoard);
 export default userRoutes;
