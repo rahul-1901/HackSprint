@@ -114,11 +114,14 @@ const userSchema = new mongoose.Schema(
     attemptedDevQuestions: [
       { type: mongoose.Schema.Types.ObjectId, ref: "dailyQuiz" }
     ],
+    devQuestionSubmittedTime : {
+      type : Date
+    },
     institute: {
       type: String
     },
     passOutYear: {
-      type: String
+      type: Number
     },
     department: {
       type: String

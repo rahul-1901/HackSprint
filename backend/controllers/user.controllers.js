@@ -435,6 +435,7 @@ export const devQuestionsAnsweredData = async(req,res)=>{
     if(!quiz){
       return res.status(404).json({message : "dailyquiz not found"})
     }
+    user.devQuestionSubmittedTime = new Date(Date.now());
     if(user.currentQuizPoints >= (user.currentQuizTotalPoints)/2){
       user.streaks += 1;
     }else{
@@ -524,8 +525,8 @@ export const displayLeaderBoard = async (req, res) => {
   try {
     // Fetch all users and sort them by points in descending order
     const users = await UserModel.find()
-      .sort({ points: -1 })   // -1 => descending
-      .select("name email points") // Only return necessary fields
+      .sort({ points: -1 , devQuestionSubmittedTime : 1}) // -1 => descending
+      .select("name email points devQuestionSubmittedTime") // Only return necessary fields
 
     if (!users || users.length === 0) {
       return res.status(404).json({ message: "No users found" });
