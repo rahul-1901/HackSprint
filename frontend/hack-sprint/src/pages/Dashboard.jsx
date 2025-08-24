@@ -1,345 +1,692 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify'
+import React, { useEffect, useState } from "react";
+import { getDashboard } from "../backendApis/api";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { Eye, CheckCircle, MessageSquare, Star, Coins, User } from "lucide-react";
+import { School, Clock, Laptop, MapPin, Edit } from "lucide-react";
+import CalendarHeatmap from "react-calendar-heatmap";
+import "react-calendar-heatmap/dist/styles.css";
 
-const Dashboard = () => {
 
-  const [data, setData] = useState({
-    nickname: 'User_Name', // Dummy data
-    github_id: 'example_id.github', // Dummy data
-    avatar_url: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png', // Dummy data (GitHub logo)
-    submissions: [
-      {
-        title: 'Hackathon of Code',
-        problem_statement: 'Problem Statement of Hackathon',
-        submitted_at: new Date().toString(),
-      },
-      {
-        title: 'Hackathon 1',
-        problem_statement: 'Build an AI assistant.',
-        submitted_at: new Date().toString(),
-      },
-      {
-        title: 'Hackathon 2',
-        problem_statement: 'Create a weather app.',
-        submitted_at: new Date().toString(),
-      },
-    ],
-  });
 
+// Floating Particles (Background)
+const FloatingParticles = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    {[...Array(20)].map((_, i) => (
+      <div
+        key={i}
+        className="absolute w-1 h-1 bg-green-400 rounded-full opacity-30 animate-pulse"
+        style={{
+          left: `${Math.random() * 100}%`,
+          top: `${Math.random() * 100}%`,
+          animationDelay: `${Math.random() * 5}s`,
+          animationDuration: `${3 + Math.random() * 4}s`,
+        }}
+      />
+    ))}
+  </div>
+);
+
+// Grid Background
+const GridBackground = () => (
+  <div className="absolute inset-0 opacity-10">
+    <div
+      className="absolute inset-0"
+      style={{
+        backgroundImage: `
+          linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px)
+        `,
+        backgroundSize: "50px 50px",
+      }}
+    />
+  </div>
+);
+
+export const UserDashboard = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [coins, setCoins] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [showReward, setShowReward] = useState(false);
   const navigate = useNavigate();
+  const [editEducation, setEditEducation] = useState(false);
+const [educationData, setEducationData] = useState({
+  institute: "",
+  passoutYear: "",
+  department: "",
+});
+
+  // Daily Coin + Streak System
+  useEffect(() => {
+    const today = new Date().toDateString();
+    const lastVisit = localStorage.getItem("lastVisit");
+    const storedCoins = parseInt(localStorage.getItem("coins") || "0", 10);
+    const storedStreak = parseInt(localStorage.getItem("streak") || "0", 10);
+
+    let newCoins = storedCoins;
+    let newStreak = storedStreak;
+    let rewardEarned = 0;
+
+    if (lastVisit !== today) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (lastVisit === yesterday.toDateString()) {
+        newStreak = storedStreak + 1; // continued streak
+      } else {
+        newStreak = 1; // reset streak
+      }
+
+      rewardEarned = 10 + Math.floor(newStreak / 5) * 5; // 10 coins + bonus every 5 days
+      newCoins += rewardEarned;
+
+      localStorage.setItem("coins", newCoins.toString());
+      localStorage.setItem("streak", newStreak.toString());
+      localStorage.setItem("lastVisit", today);
+
+      setShowReward(true);
+    }
+
+    setCoins(newCoins);
+    setStreak(newStreak);
+  }, []);
+  
+
+  // Fetch Dashboard Data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getDashboard();
+        setData(res.data.userData);
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const res = await getDashboard();
+      const userData = res.data.userData;
+      setData(userData);
+
+      // ✅ update education data once user info is fetched
+      setEducationData({
+        institute: userData.education?.institute || "",
+        passoutYear: userData.education?.passoutYear || "",
+        department: userData.education?.department || "",
+      });
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, []);
 
 
   const handleLogout = () => {
     localStorage.clear();
-    toast.success("Logout successfull...", { autoClose: 1000 })
+    toast.success("Logout successfull...", { autoClose: 1000 });
     setTimeout(() => {
-      navigate('/');
-    }, 1700)
+      navigate("/");
+    }, 1700);
   };
 
+  // If still loading
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-green-400 text-xl">
+        Loading Dashboard...
+      </div>
+    );
+  }
+
+  // If no data
+  if (!data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-red-400 text-xl">
+        Failed to load dashboard ❌
+      </div>
+    );
+  }
+
   return (
-    <div
-      style={{
-        padding: '2rem',
-        paddingTop: '6rem',
+    <div className="relative min-h-screen bg-gray-900 text-white overflow-hidden">
+      <GridBackground />
+      <FloatingParticles />
 
-        minHeight: '100vh',
-        backgroundColor: '#0a0e17',
-        color: 'white',
-        fontFamily: "'Courier New', Courier, monospace", // General monospace font
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+      <div className="relative z-10 max-w-7xl mx-auto p-6 flex flex-col md:flex-row gap-6">
+        {/* LEFT COLUMN */}
+        <div className="w-full md:w-1/4 space-y-6">
+          {/* Profile Card */}
+<div className="bg-white/5 border border-green-500/20 rounded-xl p-6 flex flex-col items-center hover:border-green-400 transition-all text-center">
+  <div className="relative">
+    <img
+      src={
+        data.avatar_url ||
+        "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png"
+      }
+      alt="Avatar"
+      className="w-24 h-24 rounded-full border-2 border-green-500/50"
+    />
+  </div>
 
-      }}
-    >
-      {/* Header (as seen in the image) - Ideally a separate component */}
-      {/* <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          backgroundColor: '#1a1d29',
-          padding: '1rem 2rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          borderBottom: '2px solid #00ff9f',
-          zIndex: 10,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img
-            src="https://hacksprint.com/logo.png" // Placeholder, replace with actual logo if available
-            alt="HACKSPRINT Logo"
-            style={{ width: '40px', marginRight: '10px' }}
-          />
-          <span
-            style={{
-              fontSize: '1.5rem',
-              fontWeight: 'bold',
-              color: 'white',
-              fontFamily: "'Press Start 2P', cursive", // Keeping pixelated for HACKSPRINT title
-            }}
-          >
-            HACKSPRINT
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '2rem', fontSize: '1.1rem' }}>
-          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>
-            HOME PAGE
-          </a>
-          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>
-            ABOUT US
-          </a>
-          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>
-            QUESTS
-          </a>
-          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>
-            DASHBOARD
-          </a>
-        </div>
-        <div
-          style={{
-            width: '30px',
-            height: '30px',
-            borderRadius: '50%',
-            backgroundColor: '#cccccc',
-            border: '2px solid white',
-          }}
-        ></div>
-      </div> */}
+  <h2 className="mt-4 text-xl font-bold">{data.name || "Unnamed User"}</h2>
+  <p className="text-sm text-gray-400">{data.roll_no || "N/A"}</p>
+  <p className="text-sm text-green-400 mt-1">
+    Rank: #{data.rank || "N/A"}
+  </p>
 
-      <div
-        style={{
-          width: 'clamp(300px, 90%, 900px)',
-          marginTop: '2rem',
-        }}
-      >
-        {/* User Info Section */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start', // Align items to the start to properly position Nickname below avatar
-            backgroundColor: '#1d2233',
-            padding: '1.5rem 2.5rem',
-            borderRadius: '16px',
-            border: '2px solid #00ff9f',
-            marginBottom: '2rem',
-            boxShadow: '0px 0px 15px #00ff9f66',
-            position: 'relative',
-          }}
-        >
-          {/* Avatar and Nickname Container */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start', // Align contents to the start
-              marginRight: '2rem',
-            }}
-          >
-            <div
-              style={{
-                position: 'relative',
-                width: '120px', // Same size as image
-                height: '120px',
-                borderRadius: '12px',
-                border: '3px solid #00ff9f',
-                overflow: 'hidden', // Ensure image stays within bounds
-                marginBottom: '10px', // Space between avatar and "Nickname"
-              }}
-            >
-              <img
-                src={data.avatar_url} // Uses the dummy avatar_url
-                alt="avatar"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: '9px', // Slightly smaller border radius for inner image
-                }}
-              />
+  <button
+  onClick={handleLogout}
+  className="mt-3 px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
+>
+  Logout
+</button>
+
+</div>
 
 
+          {/* Coins + Streak */}
+          <div className="bg-white/5 border border-yellow-500/20 rounded-xl p-4 flex flex-col items-center">
+            <div className="flex items-center gap-2 text-yellow-400 font-bold">
+              <Coins /> <span>{coins} Coins</span>
             </div>
-            <span
-              style={{
-                fontSize: '1.2rem',
-                color: 'white',
-                fontWeight: 'bold',
-              }}
-            >
-              Nickname
-            </span>
+            <p className="text-sm text-gray-400 mt-1">🔥 Streak: {streak} days</p>
           </div>
 
-          <div style={{ flexGrow: 1 }}>
-            <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: 'white' }}>
-              {data.nickname} {/* Uses the dummy nickname */}
-            </h2>
-            <p style={{ display: 'flex', alignItems: 'center', fontSize: '1.2rem' }}>
-              <span style={{ marginRight: '8px' }}>
-                {/* GitHub Icon SVG */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  height="24"
-                  fill="currentColor"
-                >
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387 0.599 0.111 0.793-0.261 0.793-0.577v-2.234c-3.338 0.726-4.033-1.416-4.033-1.416-0.546-1.387-1.333-1.756-1.333-1.756-1.087-0.744 0.084-0.729 0.084-0.729 1.205 0.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.493 0.998 0.108-0.776 0.418-1.305 0.762-1.604-2.665-0.305-5.467-1.334-5.467-5.931 0-1.311 0.469-2.381 1.236-3.221-0.124-0.305-0.535-1.524 0.118-3.176 0 0 1.008-0.322 3.301 1.23 0.957-0.266 1.983-0.399 3.003-0.399 1.02 0 2.047 0.133 3.004 0.399 2.294-1.552 3.302-1.23 3.302-1.23 0.653 1.653 0.242 2.871 0.118 3.176 0.77 0.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921 0.43 0.372 0.823 1.102 0.823 2.222v3.293c0 0.319 0.192 0.694 0.801 0.576 4.765-1.589 8.196-6.085 8.196-11.389 0-6.627-5.373-12-12-12z"></path>
-                </svg>
-              </span>
-              {data.github_id} {/* Uses the dummy github_id */}
-            </p>
+          {/* Community Stats */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-4 space-y-3">
+            <h3 className="text-lg font-semibold text-green-400">Community Stats</h3>
+            <div className="flex items-center gap-3">
+              <Eye size={16} className="text-green-400" />
+              <span>Views: {data.stats?.views || 0}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle size={16} className="text-green-400" />
+              <span>Solutions: {data.stats?.solutions || 0}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <MessageSquare size={16} className="text-green-400" />
+              <span>Discussions: {data.stats?.discussions || 0}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Star size={16} className="text-green-400" />
+              <span>Reputation: {data.stats?.reputation || 0}</span>
+            </div>
           </div>
-          <button
-            onClick={handleLogout}
-            style={{
-              marginLeft: 'auto',
-              padding: '0.8rem 1.8rem',
-              backgroundColor: '#ff3c3c',
-              border: '2px solid #e02929',
-              borderRadius: '8px',
-              color: 'white',
-              fontWeight: 'bold',
-              fontSize: '1.1rem',
-              cursor: 'pointer',
-              transition: 'background 0.3s ease, transform 0.1s ease',
-              boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.4)',
-            }}
-            onMouseOver={(e) => {
-              e.target.style.backgroundColor = '#e02929';
-              e.target.style.transform = 'translateY(-2px)';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.backgroundColor = '#ff3c3c';
-              e.target.style.transform = 'translateY(0)';
-            }}
-          >
-            Logout
-          </button>
-        </div>
 
-
-        {/* Submitted Hackathons Section */}
-        <div
-          style={{
-            backgroundColor: '#1d2233',
-            borderRadius: '16px',
-            padding: '1.5rem',
-            border: '2px solid #00ff9f',
-            boxShadow: '0px 0px 15px #00ff9f66',
-          }}
-        >
-          <h3
-            className='ZaptronFont text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-800 tracking-widest z-10 text-center relative text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl'
-          >
-            SUBMITTED HACKATHONS
-            {/* Inner div for blur/glow effect */}
-
-          </h3>
-
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              color: 'white',
-            }}
-          >
-            <thead>
-              <tr>
-                <th
-                  style={{
-                    padding: '15px',
-                    backgroundColor: '#111820',
-                    color: '#00ff9f',
-                    textAlign: 'left',
-                    border: '1px solid #00ff9f',
-                  }}
-                >
-                  Hackathon
-                </th>
-                <th
-                  style={{
-                    padding: '15px',
-                    backgroundColor: '#111820',
-                    color: '#00ff9f',
-                    textAlign: 'left',
-                    border: '1px solid #00ff9f',
-                  }}
-                >
-                  Problem Statement
-                </th>
-                <th
-                  style={{
-                    padding: '15px',
-                    backgroundColor: '#111820',
-                    color: '#00ff9f',
-                    textAlign: 'left',
-                    border: '1px solid #00ff9f',
-                  }}
-                >
-                  Time of Submission
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.submissions.map((entry, idx) => (
-                <tr
-                  key={idx}
-                  style={{
-                    backgroundColor: idx % 2 === 0 ? '#2a3042' : '#1d2233',
-                  }}
-                >
-                  <td
-                    style={{
-                      padding: '12px',
-                      border: '1px solid #333',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <span
-
-                      style={{
-                        width: '10px',
-                        height: '10px',
-                        borderRadius: '50%',
-                        backgroundColor: '#00ff9f',
-                        marginRight: '10px',
-                        flexShrink: 0,
-                      }}
-                    ></span>
-                    {entry.title}
-                  </td>
-                  <td
-                    style={{
-                      padding: '12px',
-                      border: '1px solid #333',
-                    }}
-                  >
-                    {entry.problem_statement}
-                  </td>
-                  <td
-                    style={{
-                      padding: '12px',
-                      border: '1px solid #333',
-                    }}
-                  >
-                    {new Date(entry.submitted_at).toLocaleString()}
-                  </td>
-                </tr>
+          {/* Languages */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-4">
+            <h3 className="text-lg font-semibold text-green-400">Languages</h3>
+            {Array.isArray(data.languages) &&
+              data.languages.map((lang, i) => (
+                <div key={i} className="flex justify-between mt-2">
+                  <span>{lang.name}</span>
+                  <span className="text-gray-400">
+                    {lang.solved} problems solved
+                  </span>
+                </div>
               ))}
-            </tbody>
-          </table>
+          </div>
+
+          {/* Skills */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-4 space-y-3">
+            <h3 className="text-lg font-semibold text-green-400">Skills</h3>
+            {data.skills &&
+              Object.entries(data.skills).map(([level, items], idx) => (
+                <div key={idx}>
+                  <div className="text-sm font-bold mb-2">{level}</div>
+                  <div className="flex flex-wrap gap-2">
+                    {items.map((item, i) => (
+                      <span
+                        key={i}
+                        className="px-2 py-1 bg-green-500/10 border border-green-500/20 rounded-lg text-sm"
+                      >
+                        {item.name} x{item.count}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+          </div>
         </div>
+
+        {/* RIGHT COLUMN */}
+        <div className="flex-1 space-y-6">
+
+        {/* Submissions Heatmap */}
+<div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+  <h3 className="text-lg font-semibold text-green-400 mb-3">
+    Submissions in the Last Year
+  </h3>
+
+  <CalendarHeatmap
+    startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
+    endDate={new Date()}
+    values={
+      Array.isArray(data.submissions) && data.submissions.length > 0
+        ? data.submissions.map((s) => ({
+            date: new Date(s.submitted_at).toISOString().split("T")[0],
+            count: 1,
+          }))
+        : // Prefilled demo values
+          [
+            { date: "2024-08-15", count: 2 },
+            { date: "2024-09-10", count: 3 },
+            { date: "2024-11-05", count: 1 },
+            { date: "2025-01-20", count: 4 },
+            { date: "2025-02-10", count: 2 },
+            { date: "2025-03-05", count: 3 },
+          ]
+    }
+    classForValue={(value) => {
+      if (!value) return "color-empty";
+      if (value.count === 1) return "color-scale-1";
+      if (value.count === 2) return "color-scale-2";
+      if (value.count === 3) return "color-scale-3";
+      return "color-scale-4";
+    }}
+    tooltipDataAttrs={(value) => {
+      if (!value || !value.date) return null;
+      return {
+        "data-tip": `${value.date}: ${value.count || 0} submissions`,
+      };
+    }}
+    showWeekdayLabels={true}
+  />
+
+  {/* Legend */}
+  <div className="flex items-center gap-1 text-xs text-gray-400 mt-4">
+    <span>Less</span>
+    <div className="w-3 h-3 rounded-sm bg-green-900/20" />
+    <div className="w-3 h-3 rounded-sm bg-green-400" />
+    <div className="w-3 h-3 rounded-sm bg-green-500" />
+    <div className="w-3 h-3 rounded-sm bg-green-600" />
+    <div className="w-3 h-3 rounded-sm bg-green-700" />
+    <span>More</span>
+  </div>
+
+  {/* Custom Heatmap Colors */}
+  <style>{`
+    .react-calendar-heatmap .color-empty {
+      fill: #064e3b; /* dark green for empty days */
+    }
+    .react-calendar-heatmap .color-scale-1 {
+      fill: #10b981; /* light green */
+    }
+    .react-calendar-heatmap .color-scale-2 {
+      fill: #059669; /* medium green */
+    }
+    .react-calendar-heatmap .color-scale-3 {
+      fill: #047857; /* dark green */
+    }
+    .react-calendar-heatmap .color-scale-4 {
+      fill: #065f46; /* deepest green */
+    }
+  `}</style>
+</div>
+
+
+
+       {/* Connected Apps */}
+<div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+  <h3 className="text-lg font-semibold text-green-400 mb-3">
+    Connected Apps
+  </h3>
+
+  {data.editAppsIndex === undefined ? (
+    <div>
+      {Array.isArray(data.connectedApps) && data.connectedApps.length > 0 ? (
+        <div className="space-y-3">
+          {data.connectedApps.map((app, idx) => (
+            <div
+              key={idx}
+              className="flex justify-between items-center p-3 bg-gray-800/40 border border-green-500/20 rounded-lg"
+            >
+              <span className="text-gray-200 font-medium">{app.name}</span>
+              <div className="flex gap-2">
+                <a
+                  href={app.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-lg text-green-300 hover:bg-green-600/40 transition cursor-pointer"
+                >
+                  Visit
+                </a>
+                <button
+                  onClick={() => setData({ ...data, editAppsIndex: idx, tempAppName: app.name, tempAppUrl: app.url })}
+                  className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-yellow-400 hover:bg-yellow-600/40 cursor-pointer"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => {
+                    const newApps = [...(data.connectedApps || [])];
+                    newApps.splice(idx, 1);
+                    setData({ ...data, connectedApps: newApps });
+                  }}
+                  className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-400">No connected apps available.</p>
+      )}
+
+      <button
+        onClick={() => setData({ ...data, editAppsIndex: "new", tempAppName: "", tempAppUrl: "" })}
+        className="mt-3 px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40 cursor-pointer"
+      >
+        Add App
+      </button>
+    </div>
+  ) : (
+    <div className="space-y-3 mt-2">
+      <input
+        type="text"
+        placeholder="App Name (e.g. GitHub, LinkedIn)"
+        value={data.tempAppName || ""}
+        onChange={(e) => setData({ ...data, tempAppName: e.target.value })}
+        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+      />
+      <input
+        type="url"
+        placeholder="App URL (https://...)"
+        value={data.tempAppUrl || ""}
+        onChange={(e) => setData({ ...data, tempAppUrl: e.target.value })}
+        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+      />
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => {
+            if (data.tempAppName && data.tempAppUrl) {
+              const newApps = [...(data.connectedApps || [])];
+
+              if (data.editAppsIndex === "new") {
+                // Adding a new app
+                newApps.push({ name: data.tempAppName, url: data.tempAppUrl });
+              } else {
+                // Editing existing app
+                newApps[data.editAppsIndex] = { name: data.tempAppName, url: data.tempAppUrl };
+              }
+
+              setData({
+                ...data,
+                connectedApps: newApps,
+                editAppsIndex: undefined,
+                tempAppName: "",
+                tempAppUrl: "",
+              });
+            }
+          }}
+          className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40 cursor-pointer"
+        >
+          Save
+        </button>
+        <button
+          onClick={() =>
+            setData({ ...data, editAppsIndex: undefined, tempAppName: "", tempAppUrl: "" })
+          }
+          className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
+        >
+          Cancel
+        </button>
       </div>
     </div>
-  );
-};
+  )}
+</div>
 
-export default Dashboard;
+  
+{/* Education */}
+<div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+  <h3 className="text-lg font-semibold text-green-400 mb-4">Education</h3>
+
+  {/* Loop through multiple education entries */}
+  {(data?.education && data.education.length > 0) ? (
+    data.education.map((edu, idx) => {
+      // ✅ calculate opacity per card
+      const opacity = 1 - idx * 0.15; // decreases 15% each next card
+      const bgColor = `rgba(31, 41, 55, ${opacity})`; // gray-800 with decreasing intensity
+
+      return (
+        <div
+          key={idx}
+          className="p-4 mb-4 border border-green-500/20 rounded-lg shadow-md hover:scale-[1.01] transition-transform space-y-3 relative"
+          style={{ backgroundColor: bgColor }}
+        >
+          {/* College Name + Timeline */}
+          <div className="flex justify-between items-center">
+            <h4 className="text-xl font-bold text-white flex items-center gap-2">
+              <School size={20} /> {edu?.institute || "N/A"}
+            </h4>
+            {edu?.timeline && (
+              <p className="text-sm text-gray-300 flex items-center gap-2">
+                <Clock size={16} /> {edu.timeline}
+              </p>
+            )}
+          </div>
+
+          {/* Department + Grade */}
+          {(edu?.department || edu?.grade) && (
+            <div className="flex justify-between text-sm text-gray-400 mt-1">
+              {edu.department && (
+                <span className="flex items-center gap-2 font-medium text-white">
+                  <Laptop size={16} /> {edu.department}
+                </span>
+              )}
+              {edu.grade && (
+                <span className="flex items-center gap-2 font-medium">
+                  <span className="text-green-300">CGPA:</span> {edu.grade}
+                  <Star size={14} className="text-yellow-400" />
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Location */}
+          {edu?.location && (
+            <p className="text-xs text-gray-400 flex items-center gap-2 mt-2">
+              <MapPin size={14} /> {edu.location}
+            </p>
+          )}
+
+          {/* Edit/Delete Buttons */}
+          <div className="flex justify-end gap-3 mt-3">
+            <button
+              onClick={() => {
+                setEducationData(edu);
+                setEditEducation(true);
+                setEditIndex(idx);
+              }}
+              className="px-3 py-1 rounded-lg bg-green-500/20 hover:bg-green-600/40 border border-green-500/40 text-green-400 cursor-pointer flex items-center gap-1"
+            >
+              <Edit size={16} /> Edit
+            </button>
+            <button
+              onClick={() => {
+                const updated = [...data.education];
+                updated.splice(idx, 1);
+                setData({ ...data, education: updated });
+              }}
+              className="px-3 py-1 rounded-lg bg-red-500/20 hover:bg-red-600/40 border border-red-500/40 text-red-400 cursor-pointer flex items-center gap-1"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      );
+    })
+  ) : (
+    <p className="text-gray-400">No education data available.</p>
+  )}
+
+  {/* Add/Edit Form */}
+  {editEducation && (
+    <div className="space-y-3 mt-4">
+      <input
+        type="text"
+        placeholder="Institute"
+        value={educationData?.institute || ""}
+        onChange={(e) =>
+          setEducationData({ ...educationData, institute: e.target.value })
+        }
+        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+      />
+      <input
+        type="text"
+        placeholder="Timeline (e.g., 2024–2028)"
+        value={educationData?.timeline || ""}
+        onChange={(e) =>
+          setEducationData({ ...educationData, timeline: e.target.value })
+        }
+        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+      />
+      <input
+        type="text"
+        placeholder="Department / Branch (e.g., Computer Science)"
+        value={educationData?.department || ""}
+        onChange={(e) =>
+          setEducationData({ ...educationData, department: e.target.value })
+        }
+        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+      />
+      <input
+        type="text"
+        placeholder="CGPA/Percentage (e.g., 8.7/10)"
+        value={educationData?.grade || ""}
+        onChange={(e) =>
+          setEducationData({ ...educationData, grade: e.target.value })
+        }
+        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+      />
+      <input
+        type="text"
+        placeholder="Location (e.g., New York, USA)"
+        value={educationData?.location || ""}
+        onChange={(e) =>
+          setEducationData({ ...educationData, location: e.target.value })
+        }
+        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+      />
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => {
+            let updated = [...(data.education || [])];
+            if (typeof editIndex === "number") {
+              updated[editIndex] = educationData; // update existing
+            } else {
+              updated.push(educationData); // add new
+            }
+            setData({ ...data, education: updated });
+            setEducationData({});
+            setEditIndex(null);
+            setEditEducation(false);
+          }}
+          className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40"
+        >
+          Save
+        </button>
+        <button
+          onClick={() => {
+            setEditEducation(false);
+            setEducationData({});
+            setEditIndex(null);
+          }}
+          className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  )}
+
+  {/* Add New Education Button */}
+  {!editEducation && (
+    <div className="flex justify-end mt-4">
+      <button
+        onClick={() => setEditEducation(true)}
+        className="px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40"
+      >
+        + Add Education
+      </button>
+    </div>
+  )}
+</div>
+
+
+
+
+
+          {/* Participated in Hackathons */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+            <h3 className="text-lg font-semibold text-green-400">
+              Participated in Hackathons
+            </h3>
+            <ul className="mt-4 space-y-3">
+              {Array.isArray(data.submissions) && data.submissions.length > 0 ? (
+                data.submissions.map((hack, idx) => (
+                  <li
+                    key={idx}
+                    className="flex justify-between items-center text-gray-300"
+                  >
+                    <span>{hack.title}</span>
+                    <a
+  href={hack.repo_url || "#"}
+  className="text-green-400 underline hover:text-green-300 cursor-pointer"
+  target="_blank"
+  rel="noreferrer"
+>
+  View Repo
+</a>
+
+                  </li>
+                ))
+              ) : (
+                <p className="text-gray-400">📦 No hackathon submissions yet.</p>
+              )}
+            </ul>
+          </div>
+          
+
+
+
+      
+
+      {/* Reward Popup */}
+      {showReward && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white text-black p-6 rounded-2xl shadow-lg text-center w-80">
+            <h2 className="text-xl font-bold mb-2">🎉 Daily Reward!</h2>
+            <p className="mb-2">You earned <span className="text-yellow-600 font-bold">+10 coins</span> today.</p>
+            <p className="text-sm text-gray-600 mb-4">🔥 Current Streak: {streak} days</p>
+            <button
+              onClick={() => setShowReward(false)}
+              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+            >
+              Awesome!
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+    </div>
+    </div>
+ ); 
+}
+
+export default UserDashboard;

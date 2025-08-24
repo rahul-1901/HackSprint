@@ -2,6 +2,9 @@
 import mongoose from 'mongoose'
 
 const hackathonSchema = new mongoose.Schema({
+    image : {
+        type : String
+    },
     title: {
         type: String,
         required: true
@@ -13,7 +16,7 @@ const hackathonSchema = new mongoose.Schema({
         type: String
     },
     submissions: {
-        type: Array
+        type: [{ type: mongoose.Schema.Types.ObjectId, ref: "submissions" }],
         //No. of participants of a hackathon are equal to submissions array no.of elements.
     },
     startDate: {
@@ -32,7 +35,7 @@ const hackathonSchema = new mongoose.Schema({
     difficulty: {
         type: String,
         enum: {
-            values: ["Advanced", "Expert", "Intermediate"]
+            values: ["Advanced", "Expert", "Intermediate", "Beginner"]
         }
     },
     category: {
@@ -50,9 +53,39 @@ const hackathonSchema = new mongoose.Schema({
         //     values : ["React" , "Node.js","MongoDB" , "Socket.io","Python","TensorFlow" , "OpenAI" , "FastAPI","Solidity" , "Web3.js" , "IPFS","Arduino" , "PostgreSQL"]
         // }
     },
-    numParticipants : {
-        type : Number
-    }
+    numParticipants: {
+        type: Number,
+        default: 0
+    },
+    overview: {
+        type: String
+    },
+    themes: {
+        type: [String]
+    },
+    FAQs: {
+        type: [String]
+    },
+    teams: {
+        type: [
+            { type: mongoose.Schema.Types.ObjectId, ref: "teams" },
+        ]
+    },
+    aboutUs: {
+        type: String
+    },
+    projectSubmission: {
+        type: [String]
+    },
+    TandCforHackathon: {
+        type: [String]
+    },
+    evaluationCriteria: {
+        type: [String]
+    },
+    registeredParticipants: [
+        { type: mongoose.Schema.Types.ObjectId, ref: "registeredParticipants" }
+    ]
 })
 
 hackathonSchema.pre(/^find/, async function (next) {

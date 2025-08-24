@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from "react-router-dom";
 import Loader from '../components/Loader'
 import { Users, Calendar, Timer, ArrowRight, Code, Trophy, Zap, Star, Github, ExternalLink, Terminal, Coffee, Bug, Lightbulb, Cpu, Database } from 'lucide-react'
 import axios from "axios";
@@ -56,6 +57,7 @@ const TabButton = ({ active, onClick, children, count, icon: Icon }) => (
 )
 
 const HackathonCard = ({ hackathon }) => {
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false)
   const [countdown, setCountdown] = useState('')
   const [imageLoaded, setImageLoaded] = useState(false)
@@ -116,6 +118,7 @@ const HackathonCard = ({ hackathon }) => {
         }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => navigate(`/hackathon/${hackathon._id}`)}
     >
       {/* Scan line effect */}
       <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-green-400/20 to-transparent transform -skew-x-12 transition-transform duration-1000 ${isHovered ? 'translate-x-full' : '-translate-x-full'
@@ -333,7 +336,7 @@ const Hackathons = () => {
 
         setActiveHackathons(mapData(activeRes.data.allHackathons, 'active'));
         setExpiredHackathons(mapData(expiredRes.data.expiredHackathons, 'expired'));
-        setUpcomingHackathons(mapData(upcomingRes.data.upcomingHackathons || [], 'upcoming')); // Handle if endpoint doesn't exist yet
+        // setUpcomingHackathons(mapData(upcomingRes.data.upcomingHackathons || [], 'upcoming')); // Handle if endpoint doesn't exist yet
       } catch (error) {
         console.error("Error fetching hackathons:", error);
         // Handle the case where upcoming endpoint doesn't exist yet
@@ -452,7 +455,7 @@ const Hackathons = () => {
                 <span className="text-green-400 font-mono">{getCurrentHackathons().length}</span> {activeTab}
               </div>
               <button className="text-green-400 hover:text-green-300 transition-colors">
-                <ExternalLink size={20} />
+                {/* <ExternalLink size={20} /> */}
               </button>
             </div>
           </div>
