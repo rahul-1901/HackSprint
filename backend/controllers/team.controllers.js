@@ -181,7 +181,7 @@ export const handleRequests = async (req, res) => {
         yearsOfExperience: userDoc.yearsOfExperience || "",
         workEmailAddress: userDoc.workEmailAddress || "",
       });
-      
+
       await UserModel.findByIdAndUpdate(userId, {
         $addToSet: { registeredHackathons: hackathonId },
       });
@@ -204,8 +204,12 @@ export const handleRequests = async (req, res) => {
 
 export const searchTeamByCode = async (req, res) => {
   try {
-    const { code } = req.params;
-    const team = await TeamModel.findOne({ code }).populate("leader", "name email");
+    const { secretCode } = req.params;
+
+    const team = await TeamModel.findOne({ secretCode })  
+      .populate("leader")//, "name email")
+      .populate("members")//, "name email rollNo phone branch year")   // populate members
+      .populate("pendingMembers")//, "name email rollNo phone branch year"); // populate pending requests
 
     if (!team) {
       return res.status(404).json({ message: "Team not found" });
@@ -216,16 +220,26 @@ export const searchTeamByCode = async (req, res) => {
       team: {
         id: team._id,
         name: team.name,
-        // code: team.code,
+        code: team.secretCode,
         leader: team.leader,
+        members: team.members,
+        pendingMembers: team.pendingMembers,
         membersCount: team.members.length,
-        pendingRequestsCount: team.pendingMembers.length
-      }
+        pendingRequestsCount: team.pendingMembers.length,
+        createdAt: team.createdAt,
+        updatedAt: team.updatedAt,
+        secretLink : team.secretLink
+      },
     });
   } catch (error) {
-    res.status(500).json({ message: "something went wrong while searching the team!" });
+    console.error("Error searching team:", error);
+    res.status(500).json({
+      message: "Something went wrong while searching the team!",
+      error: error.message,
+    });
   }
-}
+};
+
 
 export const getPendingRequests = async (req, res) => {
   try {
