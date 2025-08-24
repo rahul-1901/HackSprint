@@ -32,7 +32,7 @@ function Button({ children, variant = "default", className = "", ...props }) {
   );
 }
 
-export const SubmissionForm = ({ isOpen, onClose }) => {
+const SubmissionForm = ({ isOpen, onClose }) => {
   const { id: hackathonId } = useParams();
   const [repoUrl, setRepoUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -81,8 +81,8 @@ export const SubmissionForm = ({ isOpen, onClose }) => {
   };
 
   const onCloseClick = () => {
-     navigate(`/hackathon/${hackathonId}`);
-  }
+  onClose?.(); // closes the modal
+};
 
   if (!isOpen || !hackathon) return null;
 
@@ -152,8 +152,8 @@ export const SubmissionForm = ({ isOpen, onClose }) => {
             required
           />
           <Button type="submit" 
-          disabled={loading} className="group w-full bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base">
-            {loading ? "Submitting..." : "🚀 Submit Project"}
+          disabled={loading} className="cursor-pointer group w-full bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base">
+            {loading ? "Submitting..." : "Submit Project"}
           </Button>
         </form>
       </motion.div>
@@ -168,3 +168,5 @@ const StatCard = ({ icon: Icon, label, value }) => (
     <div className="font-semibold text-white">{value}</div>
   </div>
 );
+
+export default SubmissionForm;
