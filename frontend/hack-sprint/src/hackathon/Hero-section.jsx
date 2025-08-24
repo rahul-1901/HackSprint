@@ -4,7 +4,8 @@ import { Badge } from "./Badge";
 import { Calendar, Users, Trophy, Clock, ChevronRight, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../backendApis/api";
-import LoginForm from "./LoginForm"; // Adjust the import path as needed
+import LoginForm from "./LoginForm";
+import { SubmissionForm } from "./SubmissionForm";
 
 export const HeroSection = ({
   title,
@@ -12,8 +13,8 @@ export const HeroSection = ({
   isActive,
   startDate,
   endDate,
-  participantCount,
-  prizeMoney,
+  participantCount = 0,
+  prizeMoney = 0,
   imageUrl = "/assets/hackathon-banner.png",
   hackathonId,
 }) => {
@@ -67,6 +68,7 @@ useEffect(() => {
       window.removeEventListener('visibilitychange', fetchData);
     };
   }, [hackathonId]);
+
 
 
   const handleRegister = () => {
@@ -141,6 +143,7 @@ useEffect(() => {
       );
     }
 
+
     if (!isActive) {
       return null;
     }
@@ -158,6 +161,7 @@ useEffect(() => {
           </span>
         </Button>
       );
+
     } else { // User is not registered for this hackathon
       return (
         <Button
@@ -241,6 +245,7 @@ useEffect(() => {
                   </Button>
                 ))}
             </div> */}
+
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
@@ -271,17 +276,16 @@ useEffect(() => {
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setShowLoginModal(false)}
           />
-
           {/* Modal Content */}
+
           <div className="relative z-10 max-w-md w-full mx-4">
-            {/* Login Form */}
             <LoginForm
               onLoginSuccess={handleLoginSuccess}
               showTitle={true}
               showSignupLink={true}
               showForgotPassword={true}
               showGoogleLogin={true}
-              redirectTo="#" // Prevent navigation since we handle it in onLoginSuccess
+              redirectTo="#"
               containerClassName="bg-gray-900/95 backdrop-blur-sm border border-green-500/20 text-white shadow-[0_0_25px_#5fff6050] p-6 sm:p-10 rounded-xl w-full"
             />
           </div>
