@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { getDashboard } from '../backendApis/api'; // To get current user
@@ -28,6 +28,7 @@ const GridBackground = () => (
 const TeamDetails = () => {
   const { hackathonId, teamId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [teamData, setTeamData] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -35,38 +36,98 @@ const TeamDetails = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [copiedItem, setCopiedItem] = useState(null);
 
-  // Fetch team data from the backend
-  const fetchTeamData = useCallback(async () => {
-    try {
-      // NOTE: Assuming an endpoint like this exists to get team details.
-      // You may need to create this endpoint on your backend.
-      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/team/${teamId}`);
-      setTeamData(response.data);
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Error fetching team data.');
-      console.error('Error fetching team data:', error);
-    } finally {
-      setLoading(false);
-    }
+  // Gets just the secret code string from localStorage
+  const getStoredTeamCode = useCallback(() => {
+    return localStorage.getItem(`teamDetails_${teamId}`);
   }, [teamId]);
 
+  const fetchTeamData = useCallback(async (user) => {
+    if (!user) return;
+
+    const secretCode = getStoredTeamCode();
+    
+    try {
+      if (secretCode) {
+        // Use the secretCode string directly in the API URL
+        const teamSearchResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/team/search/${secretCode}`);
+        const basicTeamData = teamSearchResponse.data.team;
+        console.log("Fetched basic team data:", basicTeamData);
+        
+        const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: user._id });
+        
+        const fullTeamData = {
+            ...basicTeamData,
+            leader: user,
+            pendingMembers: pendingResponse.data,
+            maxMembers: 4, 
+            createdAt: user.createdAt,
+        };
+        console.log("Fetched full team data:", fullTeamData);
+        setTeamData(fullTeamData);
+      } else {
+        // Fallback method if no invite code is found in storage
+        console.warn("No secret code found in storage. Using fallback data fetching.");
+        try {
+          const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: user._id });
+          
+          const partialTeamData = {
+              name: "Your Team",
+              leader: user,
+              members: [],
+              pendingMembers: pendingResponse.data,
+              secretCode: null,
+              secretLink: null,
+              maxMembers: 4,
+              createdAt: user.createdAt,
+          };
+          setTeamData(partialTeamData);
+        } catch (fallbackError) {
+          // If even the pending requests fail, create minimal team data
+          console.error("Fallback data fetching failed:", fallbackError);
+          const minimalTeamData = {
+              name: "Your Team",
+              leader: user,
+              members: [],
+              pendingMembers: [],
+              secretCode: null,
+              secretLink: null,
+              maxMembers: 4,
+              createdAt: user.createdAt,
+          };
+          setTeamData(minimalTeamData);
+        }
+      }
+    } catch (error) {
+        toast.error(error.response?.data?.message || 'Error fetching team data.');
+        console.error('Error fetching team data:', error);
+    } finally {
+        setLoading(false);
+    }
+  }, [teamId, hackathonId, getStoredTeamCode]);
+
   useEffect(() => {
-    // Fetch the logged-in user to check if they are the leader
-    const fetchCurrentUser = async () => {
+    // Store only the secret code string in localStorage
+    if (location.state?.secretCode) {
+        localStorage.setItem(`teamDetails_${teamId}`, location.state.secretCode);
+    }
+
+    const fetchInitialData = async () => {
       try {
         const res = await getDashboard();
-        setCurrentUser(res.data.userData);
+        const user = res.data.userData;
+        setCurrentUser(user);
+        fetchTeamData(user); 
       } catch (err) {
         toast.error("You must be logged in to view this page.");
         navigate('/login');
       }
     };
     
-    fetchCurrentUser();
-    fetchTeamData();
-  }, [hackathonId, teamId, navigate, fetchTeamData]);
+    fetchInitialData();
+  }, [hackathonId, teamId, navigate, fetchTeamData, location.state]);
 
   const handleCopy = (text, type) => {
+    if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
       toast.success("Copied to clipboard!");
       setCopiedItem(type);
@@ -83,11 +144,11 @@ const TeamDetails = () => {
         action: action,
       };
       
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/handle`, payload);
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/handleRequest`, payload);
       toast.success(response.data.message);
       
       // Refresh data to show updated member/request list
-      fetchTeamData(); 
+      fetchTeamData(currentUser); 
     } catch (error) {
       toast.error(error.response?.data?.message || `Error ${action}ing request.`);
       console.error(`Error ${action}ing request:`, error);
@@ -103,7 +164,6 @@ const TeamDetails = () => {
     });
   };
 
-  // Check if the current user is the team leader
   const isLeader = currentUser?._id === teamData?.leader?._id;
 
   const MemberCard = ({ member, isLeaderCard = false }) => (
@@ -187,6 +247,7 @@ const TeamDetails = () => {
 
   const currentMembers = [teamData.leader, ...teamData.members];
   const spotsRemaining = teamData.maxMembers - currentMembers.length;
+  const showInviteSection = teamData.secretCode && teamData.secretLink;
 
   return (
     <div className="min-h-screen bg-gray-900 relative">
@@ -199,40 +260,45 @@ const TeamDetails = () => {
             Created on {formatDate(teamData.createdAt)} • {currentMembers.length}/{teamData.maxMembers} members
           </p>
         </div>
+
+        {/* Team Code and Invite Link Section - Only show if we have the data */}
+        {showInviteSection && (
+          <div className="bg-gray-800/30 border border-green-500/20 rounded-lg p-6 mb-8">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <LinkIcon className="w-5 h-5 text-green-400" />
+              Team Information
+            </h2>
+            <div className="space-y-4">
+                <div>
+                    <label className="text-sm font-medium text-gray-300 block mb-2">Team Code</label>
+                    <div className="flex items-center gap-2">
+                        <p className="flex-1 text-lg font-mono tracking-widest bg-gray-800/60 border border-green-500/20 rounded-md p-2.5 text-green-300">{teamData.secretCode}</p>
+                        <Button onClick={() => handleCopy(teamData.secretCode, 'code')} className="p-2.5 bg-gray-700 hover:bg-gray-600 transition">
+                            {copiedItem === 'code' ? <Check size={20} className="text-green-400" /> : <Copy size={20} />}
+                        </Button>
+                    </div>
+                </div>
+                 <div>
+                    <label className="text-sm font-medium text-gray-300 block mb-2">Team Invite Link</label>
+                    <div className="flex items-center gap-2">
+                        <p className="flex-1 text-sm truncate bg-gray-800/60 border border-green-500/20 rounded-md p-2.5 text-green-300">{teamData.secretLink}</p>
+                        <Button onClick={() => handleCopy(teamData.secretLink, 'link')} className="p-2.5 bg-gray-700 hover:bg-gray-600 transition">
+                            {copiedItem === 'link' ? <Check size={20} className="text-green-400" /> : <Copy size={20} />}
+                        </Button>
+                    </div>
+                </div>
+                {isLeader && spotsRemaining > 0 && (
+                  <p className="text-sm text-gray-400 mt-2">
+                    Share this code or link with potential team members to invite them to join your team.
+                  </p>
+                )}
+            </div>
+          </div>
+        )}
         
         {/* Leader-only sections */}
         {isLeader && (
           <>
-            {/* Invite Section */}
-            {spotsRemaining > 0 && (
-              <div className="bg-gray-800/30 border border-green-500/20 rounded-lg p-6 mb-8">
-                <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                  <LinkIcon className="w-5 h-5 text-green-400" />
-                  Invite Team Members
-                </h2>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Invite Code</label>
-                    <div className="flex items-center gap-2 p-3 bg-gray-700/50 border border-green-500/20 rounded-lg">
-                      <span className="flex-1 font-mono text-green-300">{teamData.secretCode}</span>
-                      <Button onClick={() => handleCopy(teamData.secretCode, 'code')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
-                        {copiedItem === 'code' ? <Check size={16} /> : <Copy size={16} />}
-                      </Button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Invite Link</label>
-                    <div className="flex items-center gap-2 p-3 bg-gray-700/50 border border-green-500/20 rounded-lg">
-                      <span className="flex-1 font-mono text-green-300 truncate">{teamData.secretLink}</span>
-                      <Button onClick={() => handleCopy(teamData.secretLink, 'link')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
-                        {copiedItem === 'link' ? <Check size={16} /> : <Copy size={16} />}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Pending Requests */}
             <div>
               <h2 className="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
