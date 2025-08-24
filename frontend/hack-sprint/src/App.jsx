@@ -26,6 +26,8 @@ import HackathonDetails from './pages/Hackathon.jsx';
 import { RegistrationForm } from './hackathon/RegistrationForm.jsx';
 import Leaderboard from './pages/LeaderBoard.jsx';
 import TeamDetails from './pages/TeamDetails.jsx'; // Import the new component
+import VerifyEmail from './components/verifyEmail.jsx';
+import ForgotPassword from './components/forgotPassword.jsx';
 
 function App() {
 
@@ -68,7 +70,7 @@ function App() {
           {/* <Route path="/login" element={<GoogleAuthWrapper />} caseSensitive /> */}
           <Route path="/account/login" element={<Login />} caseSensitive></Route>
           <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
-          <Route path="/account/verify-email" element={<Verification />} caseSensitive></Route>
+          {/* <Route path="/account/verify-email" element={<Verification />} caseSensitive></Route> */}
           <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive></Route>
           
           {/* Hackathon and Team Routes */}
@@ -78,9 +80,10 @@ function App() {
           <Route path="/hackathon/:hackathonId/team/:teamId" element={<AuthenticateRoute element={<TeamDetails />} />} />
 
           <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />} />} caseSensitive />
-          <Route path="/leaderboard" element={<Leaderboard />} caseSensitive />
-          {/* Catch-all route for undefined paths */}
           <Route path="*" element={<NotFoundPage />} />
+          <Route path="/verify" element={<VerifyEmail />} />
+          <Route path="/account/forgot-password" element={<ForgotPassword />} caseSensitive></Route>
+          <Route path='/leaderboard' element={<Leaderboard />} />
         </Routes>
 
         <HideRoute>

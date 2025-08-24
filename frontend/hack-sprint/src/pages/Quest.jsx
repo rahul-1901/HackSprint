@@ -90,7 +90,7 @@ const Quest = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/devquest")
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/devquest`)
         const fetchedData = response.data["Questions&Answer"] || response.data.questions || response.data
         const formattedQuestions = (fetchedData || []).map((item) => ({
           id: item.id,
