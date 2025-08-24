@@ -4,8 +4,8 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { getDashboard } from '../backendApis/api'; // To get current user
 import { 
-  Users, Crown, Mail, Phone, MapPin, Check, X, Copy,
-  User, Settings, Clock, Shield, Link as LinkIcon
+  Users, Crown, Mail, Check, X, Copy,
+  User, Clock, Shield, Link as LinkIcon
 } from 'lucide-react';
 import { Button } from '../components/Button';
 
@@ -47,6 +47,7 @@ const TeamDetails = () => {
     const secretCode = getStoredTeamCode();
     
     try {
+
       if (secretCode) {
         // Use the secretCode string directly in the API URL
         const teamSearchResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/team/search/${secretCode}`);
@@ -97,6 +98,7 @@ const TeamDetails = () => {
           setTeamData(minimalTeamData);
         }
       }
+
     } catch (error) {
         toast.error(error.response?.data?.message || 'Error fetching team data.');
         console.error('Error fetching team data:', error);
@@ -112,6 +114,7 @@ const TeamDetails = () => {
     }
 
     const fetchInitialData = async () => {
+
       try {
         const res = await getDashboard();
         const user = res.data.userData;
@@ -147,8 +150,10 @@ const TeamDetails = () => {
       const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/handleRequest`, payload);
       toast.success(response.data.message);
       
+
       // Refresh data to show updated member/request list
       fetchTeamData(currentUser); 
+
     } catch (error) {
       toast.error(error.response?.data?.message || `Error ${action}ing request.`);
       console.error(`Error ${action}ing request:`, error);
@@ -245,9 +250,11 @@ const TeamDetails = () => {
     );
   }
 
+
   const currentMembers = [teamData.leader, ...teamData.members];
   const spotsRemaining = teamData.maxMembers - currentMembers.length;
   const showInviteSection = teamData.secretCode && teamData.secretLink;
+
 
   return (
     <div className="min-h-screen bg-gray-900 relative">
@@ -299,6 +306,38 @@ const TeamDetails = () => {
         {/* Leader-only sections */}
         {isLeader && (
           <>
+
+            {/* Invite Section */}
+            {spotsRemaining > 0 && (
+              <div className="bg-gray-800/30 border border-green-500/20 rounded-lg p-6 mb-8">
+                <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                  <LinkIcon className="w-5 h-5 text-green-400" />
+                  Invite Team Members
+                </h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Invite Code</label>
+                    <div className="flex items-center gap-2 p-3 bg-gray-700/50 border border-green-500/20 rounded-lg">
+                      <span className="flex-1 font-mono text-green-300">{teamData.code}</span>
+                      <Button onClick={() => handleCopy(teamData.code, 'code')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
+                        {copiedItem === 'code' ? <Check size={16} /> : <Copy size={16} />}
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Invite Link</label>
+                    <div className="flex items-center gap-2 p-3 bg-gray-700/50 border border-green-500/20 rounded-lg">
+                      <span className="flex-1 font-mono text-green-300 truncate">{inviteLink}</span>
+                      <Button onClick={() => handleCopy(inviteLink, 'link')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
+                        {copiedItem === 'link' ? <Check size={16} /> : <Copy size={16} />}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+
             {/* Pending Requests */}
             <div>
               <h2 className="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
@@ -320,7 +359,7 @@ const TeamDetails = () => {
           </>
         )}
         
-        {/* Current Team Members (Visible to all) */}
+        {/* Current Team Members */}
         <div>
           <h2 className="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
             <Users className="w-6 h-6 text-green-400" />

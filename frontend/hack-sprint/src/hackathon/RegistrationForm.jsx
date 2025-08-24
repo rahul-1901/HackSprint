@@ -219,11 +219,20 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
             toast.success(response.data.message || "Team created successfully!");
             onSubmit(teamForm);
             
-            setTeamDetails({
+            const teamData = {
                 code: response.data.secretCode,
                 link: response.data.team.secretLink,
                 id: response.data.team._id
-            });
+            };
+            
+            // Store secret code in localStorage for persistence
+            // Note: In Claude.ai artifacts, localStorage is not supported
+            // For your own environment, uncomment the lines below:
+            // localStorage.setItem('teamSecretCode', response.data.secretCode);
+            // localStorage.setItem('teamData', JSON.stringify(teamData));
+            // localStorage.setItem('hackathonId', hackathonId);
+            
+            setTeamDetails(teamData);
             setShowTeamInfo(true); // Show the modal
         } else {
              toast.error(response.data.message || "Team creation failed");
@@ -246,6 +255,15 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
         payload.hackathon = hackathonId;
         
         const response = await axios.post(url, payload);
+        
+        // Store joined team info in localStorage
+        // Note: In Claude.ai artifacts, localStorage is not supported
+        // For your own environment, uncomment the lines below:
+        // if (response.data && response.data.team) {
+        //   localStorage.setItem('joinedTeamCode', code);
+        //   localStorage.setItem('joinedTeamData', JSON.stringify(response.data.team));
+        //   localStorage.setItem('hackathonId', hackathonId);
+        // }
         
         // Assuming success on non-error response
         toast.success(response.data.message || "Join request sent successfully!");
@@ -270,6 +288,7 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
               details={teamDetails}
               onClose={() => {
                   setShowTeamInfo(false);
+
                   // *** FIX APPLIED HERE ***
                   // Navigate to the team page and pass the details in the state object.
                   // This allows the TeamDetails component to read it from location.state
@@ -279,6 +298,7 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
                       secretCode: teamDetails.code
                     }
                   });
+
               }}
           />
       )}
