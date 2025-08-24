@@ -597,11 +597,11 @@ const verifyEmail = async (req, res) => {
       },
     });
 
-    return res.redirect("http://localhost:5173/?verified=success");
+    return res.redirect(`${process.env.FRONTEND_URL}/?verified=success`);
 
   } catch (err) {
     console.error("Verify error:", err);
-    return res.redirect("http://localhost:5173/?verified=failed");
+    return res.redirect(`${process.env.FRONTEND_URL}/?verified=failed`);
   }
 };
 
