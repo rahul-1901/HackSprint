@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from "react-router-dom";
-import Loader from '../components/Loader'
-import { Users, Calendar, Timer, ArrowRight, Code, Trophy, Zap, Star, Github, ExternalLink, Terminal, Coffee, Bug, Lightbulb, Cpu, Database } from 'lucide-react'
-import axios from "axios";
+"use client"
 
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import Loader from "../components/Loader"
+import { Users, Calendar, Timer, Code, Trophy, Zap, Search, Filter, X } from "lucide-react"
+import axios from "axios"
 
 const FloatingParticles = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -15,7 +16,7 @@ const FloatingParticles = () => (
           left: `${Math.random() * 100}%`,
           top: `${Math.random() * 100}%`,
           animationDelay: `${Math.random() * 5}s`,
-          animationDuration: `${3 + Math.random() * 4}s`
+          animationDuration: `${3 + Math.random() * 4}s`,
         }}
       />
     ))}
@@ -23,31 +24,34 @@ const FloatingParticles = () => (
 )
 
 const GridBackground = () => (
-  <div className="absolute inset-0 opacity-10">
-    <div className="absolute inset-0" style={{
-      backgroundImage: `
+  <div className="absolute inset-0 opacity-10  pointer-events-none">
+    <div
+      className="absolute inset-0"
+      style={{
+        backgroundImage: `
         linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
         linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px)
       `,
-      backgroundSize: '50px 50px'
-    }} />
+        backgroundSize: "50px 50px",
+      }}
+    />
   </div>
 )
 
 const TabButton = ({ active, onClick, children, count, icon: Icon }) => (
   <button
     onClick={onClick}
-    className={`relative px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-300 flex items-center gap-2 sm:gap-3 font-medium text-sm sm:text-base ${
-      active
-        ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-        : 'bg-white/5 text-gray-400 border border-gray-700/50 hover:bg-white/10 hover:text-green-400 hover:border-green-500/20'
-    }`}
+    className={`relative px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-300 flex items-center gap-2 sm:gap-3 font-medium text-sm sm:text-base ${active
+      ? "bg-green-500/20 text-green-300 border border-green-500/30"
+      : "bg-white/5 text-gray-400 border border-gray-700/50 hover:bg-white/10 hover:text-green-400 hover:border-green-500/20"
+      }`}
   >
-    <Icon size={16} className={active ? 'text-green-400' : 'text-gray-500'} />
+    <Icon size={16} className={active ? "text-green-400" : "text-gray-500"} />
     <span>{children}</span>
-    <span className={`px-2 py-0.5 rounded-full text-xs font-mono ${
-      active ? 'bg-green-500/30 text-green-300' : 'bg-gray-700/50 text-gray-400'
-    }`}>
+    <span
+      className={`px-2 py-0.5 rounded-full text-xs font-mono ${active ? "bg-green-500/30 text-green-300" : "bg-gray-700/50 text-gray-400"
+        }`}
+    >
       {count}
     </span>
     {active && (
@@ -57,72 +61,74 @@ const TabButton = ({ active, onClick, children, count, icon: Icon }) => (
 )
 
 const HackathonCard = ({ hackathon }) => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const [isHovered, setIsHovered] = useState(false)
-  const [countdown, setCountdown] = useState('')
+  const [countdown, setCountdown] = useState("")
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
 
   function getProgress(startDate, endDate) {
-    const now = new Date().getTime();
-    const start = new Date(startDate).getTime();
-    const end = new Date(endDate).getTime();
+    const now = new Date().getTime()
+    const start = new Date(startDate).getTime()
+    const end = new Date(endDate).getTime()
 
-    if (now <= start) return 0;
-    if (now >= end) return 100;
+    if (now <= start) return 0
+    if (now >= end) return 100
 
-    const totalDuration = end - start;
-    const elapsed = now - start;
+    const totalDuration = end - start
+    const elapsed = now - start
 
-    return ((elapsed / totalDuration) * 100).toFixed(2);
+    return ((elapsed / totalDuration) * 100).toFixed(2)
   }
 
   const getCountdown = (targetDate) => {
-    const now = new Date().getTime();
-    const target = new Date(targetDate).getTime();
-    const diff = target - now;
+    const now = new Date().getTime()
+    const target = new Date(targetDate).getTime()
+    const diff = target - now
 
     if (diff <= 0) {
-      return "0d 0h 0m";
+      return "0d 0h 0m"
     }
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
 
-    return `${days}d ${hours}h ${minutes}m`;
-  };
+    return `${days}d ${hours}h ${minutes}m`
+  }
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCountdown(getCountdown(hackathon.status === 'upcoming' ? hackathon.startDate : hackathon.endDate));
-    }, 1000);
+      setCountdown(getCountdown(hackathon.status === "upcoming" ? hackathon.startDate : hackathon.endDate))
+    }, 1000)
 
-    return () => clearInterval(interval);
-  }, [hackathon.endDate, hackathon.startDate, hackathon.status]);
+    return () => clearInterval(interval)
+  }, [hackathon.endDate, hackathon.startDate, hackathon.status])
 
-  const isExpired = hackathon.status === 'expired'
-  const isUpcoming = hackathon.status === 'upcoming'
+  const isExpired = hackathon.status === "expired"
+  const isUpcoming = hackathon.status === "upcoming"
 
   const getStatusColor = () => {
-    if (isExpired) return 'red'
-    if (isUpcoming) return 'blue'
-    return 'green'
+    if (isExpired) return "red"
+    if (isUpcoming) return "blue"
+    return "green"
   }
 
   const statusColor = getStatusColor()
 
   return (
     <div
-      className={`border border-green-500/20 bg-white/5 backdrop-blur-sm hover:border-green-400 hover:scale-[1.02] transition-all duration-300 rounded-xl cursor-pointer relative group overflow-hidden ${isHovered ? 'shadow-2xl shadow-green-500/20' : ''
+      className={`border border-green-500/20 bg-white/5 backdrop-blur-sm hover:border-green-400 hover:scale-[1.02] transition-all duration-300 rounded-xl cursor-pointer relative group overflow-hidden ${isHovered ? "shadow-2xl shadow-green-500/20" : ""
         }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => navigate(`/hackathon/${hackathon._id}`)}
     >
       {/* Scan line effect */}
-      <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-green-400/20 to-transparent transform -skew-x-12 transition-transform duration-1000 ${isHovered ? 'translate-x-full' : '-translate-x-full'
-        }`} />
+      <div
+        className={`absolute inset-0 bg-gradient-to-r from-transparent via-green-400/20 to-transparent transform -skew-x-12 transition-transform duration-1000 ${isHovered ? "translate-x-full" : "-translate-x-full"
+          }`}
+      />
 
       {/* Glow effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-green-400/0 via-green-400/5 to-green-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -136,11 +142,10 @@ const HackathonCard = ({ hackathon }) => {
             {hackathon.image && !imageError ? (
               <>
                 <img
-                  src={hackathon.image}
+                  src={hackathon.image || "/placeholder.svg"}
                   alt={hackathon.title}
-                  className={`w-full h-full object-cover transition-all duration-500 ${
-                    imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
-                  } ${isHovered ? 'scale-105' : 'scale-100'}`}
+                  className={`w-full h-full object-cover transition-all duration-500 ${imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110"
+                    } ${isHovered ? "scale-105" : "scale-100"}`}
                   onLoad={() => setImageLoaded(true)}
                   onError={() => setImageError(true)}
                 />
@@ -152,16 +157,19 @@ const HackathonCard = ({ hackathon }) => {
               /* Fallback Design */
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800 relative">
                 <div className="absolute inset-0 opacity-10">
-                  <div className="w-full h-full" style={{
-                    backgroundImage: `
+                  <div
+                    className="w-full h-full"
+                    style={{
+                      backgroundImage: `
                       linear-gradient(45deg, rgba(34, 197, 94, 0.1) 25%, transparent 25%),
                       linear-gradient(-45deg, rgba(34, 197, 94, 0.1) 25%, transparent 25%),
                       linear-gradient(45deg, transparent 75%, rgba(34, 197, 94, 0.1) 75%),
                       linear-gradient(-45deg, transparent 75%, rgba(34, 197, 94, 0.1) 75%)
                     `,
-                    backgroundSize: '30px 30px',
-                    backgroundPosition: '0 0, 0 15px, 15px -15px, -15px 0px'
-                  }} />
+                      backgroundSize: "30px 30px",
+                      backgroundPosition: "0 0, 0 15px, 15px -15px, -15px 0px",
+                    }}
+                  />
                 </div>
                 <div className="text-center z-10">
                   <Code size={40} className="text-green-400/60 mx-auto mb-2" />
@@ -172,7 +180,9 @@ const HackathonCard = ({ hackathon }) => {
 
             {/* Status Badge on Image */}
             <div className="absolute top-3 left-3 z-20">
-              <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full backdrop-blur-md bg-black/40 border border-${statusColor}-500/30`}>
+              <div
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full backdrop-blur-md bg-black/40 border border-${statusColor}-500/30`}
+              >
                 <span className={`h-2 w-2 rounded-full bg-${statusColor}-400 animate-pulse`}></span>
                 <span className={`text-xs font-medium text-${statusColor}-300 uppercase tracking-wide`}>
                   {hackathon.status}
@@ -183,7 +193,10 @@ const HackathonCard = ({ hackathon }) => {
             {/* Floating Tech Icons */}
             <div className="absolute bottom-3 left-3 flex gap-1 z-20">
               {(hackathon.techStack || []).slice(0, 3).map((tech, index) => (
-                <div key={index} className="backdrop-blur-sm bg-black/30 text-green-400 text-xs px-2 py-1 rounded border border-green-500/20">
+                <div
+                  key={index}
+                  className="backdrop-blur-sm bg-black/30 text-green-400 text-xs px-2 py-1 rounded border border-green-500/20"
+                >
                   {tech}
                 </div>
               ))}
@@ -195,9 +208,10 @@ const HackathonCard = ({ hackathon }) => {
             </div>
 
             {/* Geometric overlay effect */}
-            <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
-              isHovered ? 'animate-pulse' : ''
-            }`}>
+            <div
+              className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isHovered ? "animate-pulse" : ""
+                }`}
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-green-400/5 rotate-45 transform translate-x-16 -translate-y-16" />
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-400/5 rotate-12 transform -translate-x-12 translate-y-12" />
             </div>
@@ -208,10 +222,14 @@ const HackathonCard = ({ hackathon }) => {
         <div className="flex-1 px-4 sm:px-5 py-4 sm:py-5 relative z-10">
           {/* Timer Badge */}
           <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
-            <div className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-${statusColor}-500/10 backdrop-blur-sm`}>
+            <div
+              className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-${statusColor}-500/10 backdrop-blur-sm`}
+            >
               <Timer size={12} className={`text-${statusColor}-400`} />
               <span className={`font-mono text-xs sm:text-sm text-${statusColor}-400`}>
-                {isExpired ? '0d 0h 0m' : (countdown || getCountdown(isUpcoming ? hackathon.startDate : hackathon.endDate))}
+                {isExpired
+                  ? "0d 0h 0m"
+                  : countdown || getCountdown(isUpcoming ? hackathon.startDate : hackathon.endDate)}
               </span>
             </div>
           </div>
@@ -239,7 +257,7 @@ const HackathonCard = ({ hackathon }) => {
               </div>
             </div>
 
-            <p className='text-gray-400 text-sm sm:text-base mb-4 line-clamp-2'>{hackathon.description}</p>
+            <p className="text-gray-400 text-sm sm:text-base mb-4 line-clamp-2">{hackathon.description}</p>
 
             {/* Tech Stack - Mobile Only (Desktop shown on image) */}
             <div className="flex flex-wrap gap-2 mb-4 lg:hidden">
@@ -250,18 +268,18 @@ const HackathonCard = ({ hackathon }) => {
               ))}
             </div>
 
-            <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 lg:gap-8'>
-              <div className='flex items-center text-xs sm:text-sm'>
-                <Users size={14} className='text-gray-500' />
-                <span className='ml-1 text-gray-400'>{hackathon.participants} participants</span>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 lg:gap-8">
+              <div className="flex items-center text-xs sm:text-sm">
+                <Users size={14} className="text-gray-500" />
+                <span className="ml-1 text-gray-400">{hackathon.participants} participants</span>
               </div>
-              <div className='flex items-center text-xs sm:text-sm'>
-                <Trophy size={14} className='text-gray-500' />
-                <span className='ml-1 text-gray-400'>${hackathon.prize}</span>
+              <div className="flex items-center text-xs sm:text-sm">
+                <Trophy size={14} className="text-gray-500" />
+                <span className="ml-1 text-gray-400">${hackathon.prize}</span>
               </div>
-              <div className='flex items-center text-xs sm:text-sm'>
-                <Calendar size={14} className='text-gray-500' />
-                <span className='ml-1 text-gray-400'>{hackathon.dates}</span>
+              <div className="flex items-center text-xs sm:text-sm">
+                <Calendar size={14} className="text-gray-500" />
+                <span className="ml-1 text-gray-400">{hackathon.dates}</span>
               </div>
             </div>
           </div>
@@ -269,7 +287,7 @@ const HackathonCard = ({ hackathon }) => {
       </div>
 
       {/* Progress bar for active hackathons */}
-      {hackathon.status === 'active' && (
+      {hackathon.status === "active" && (
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700/50">
           <div
             className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300"
@@ -283,10 +301,16 @@ const HackathonCard = ({ hackathon }) => {
 
 const Hackathons = () => {
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('active')
+  const [activeTab, setActiveTab] = useState("active")
   const [activeHackathons, setActiveHackathons] = useState([])
   const [expiredHackathons, setExpiredHackathons] = useState([])
   const [upcomingHackathons, setUpcomingHackathons] = useState([])
+
+  // Search and Filter States
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("")
+  const [selectedDifficulty, setSelectedDifficulty] = useState("")
+  const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000)
@@ -298,20 +322,20 @@ const Hackathons = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('fade-in');
+            entry.target.classList.add("fade-in")
           }
-        });
+        })
       },
-      { threshold: 0.1 }
-    );
+      { threshold: 0.1 },
+    )
 
-    const sections = document.querySelectorAll('.fade-section');
-    sections.forEach((section) => observer.observe(section));
+    const sections = document.querySelectorAll(".fade-section")
+    sections.forEach((section) => observer.observe(section))
 
     return () => {
-      sections.forEach((section) => observer.unobserve(section));
-    };
-  }, []);
+      sections.forEach((section) => observer.unobserve(section))
+    }
+  }, [])
 
   useEffect(() => {
     const fetchHackathons = async () => {
@@ -320,7 +344,7 @@ const Hackathons = () => {
           axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons`),
           axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/expiredHackathons`),
           // axios.get("http://localhost:3000/api/hackathons/upcomingHackathons"), // Assuming this endpoint exists
-        ]);
+        ])
 
         const mapData = (data, status) =>
           (data || []).map((h) => ({
@@ -329,113 +353,164 @@ const Hackathons = () => {
             participants: h.numParticipants || 0,
             prize: h.prizeMoney,
             techStack: h.techStackUsed || [],
-            category: h.category || 'General',
+            category: h.category || "General",
             image: h.image || h.imageUrl || null, // Support both 'image' and 'imageUrl' field names
-            dates: `${new Date(h.startDate).toLocaleDateString()} - ${new Date(h.endDate).toLocaleDateString()}`
-          }));
+            dates: `${new Date(h.startDate).toLocaleDateString()} - ${new Date(h.endDate).toLocaleDateString()}`,
+          }))
 
-        setActiveHackathons(mapData(activeRes.data.allHackathons, 'active'));
-        setExpiredHackathons(mapData(expiredRes.data.expiredHackathons, 'expired'));
+        setActiveHackathons(mapData(activeRes.data.allHackathons, "active"))
+        setExpiredHackathons(mapData(expiredRes.data.expiredHackathons, "expired"))
         // setUpcomingHackathons(mapData(upcomingRes.data.upcomingHackathons || [], 'upcoming')); // Handle if endpoint doesn't exist yet
       } catch (error) {
-        console.error("Error fetching hackathons:", error);
+        console.error("Error fetching hackathons:", error)
         // Handle the case where upcoming endpoint doesn't exist yet
-        if (error.response?.status === 404 && error.config.url.includes('upcomingHackathons')) {
-          setUpcomingHackathons([]);
+        if (error.response?.status === 404 && error.config.url.includes("upcomingHackathons")) {
+          setUpcomingHackathons([])
         }
       }
-    };
+    }
 
-    fetchHackathons();
-  }, []);
+    fetchHackathons()
+  }, [])
 
   const getCurrentHackathons = () => {
+    let hackathons
     switch (activeTab) {
-      case 'active':
-        return activeHackathons;
-      case 'upcoming':
-        return upcomingHackathons;
-      case 'expired':
-        return expiredHackathons;
+      case "active":
+        hackathons = activeHackathons
+        break
+      case "upcoming":
+        hackathons = upcomingHackathons
+        break
+      case "expired":
+        hackathons = expiredHackathons
+        break
       default:
-        return activeHackathons;
+        hackathons = activeHackathons
     }
+
+    // Apply filters
+    return hackathons.filter((hackathon) => {
+      const matchesSearch = hackathon.title.toLowerCase().includes(searchTerm.toLowerCase())
+
+      const mainCategories = ["Web Dev", "AI/ML", "Blockchain", "IoT"]
+
+      let matchesCategory = true
+      if (selectedCategory) {
+        if (selectedCategory === "Other") {
+          // ✅ Exclude hackathons that have ANY of the main categories
+          const hackathonCategories = Array.isArray(hackathon.category)
+            ? hackathon.category
+            : [hackathon.category]
+
+          matchesCategory = hackathonCategories.every(
+            (cat) => !mainCategories.includes(cat)
+          )
+        } else {
+          // ✅ Normal case: match exact category
+          matchesCategory = Array.isArray(hackathon.category)
+            ? hackathon.category.includes(selectedCategory)
+            : hackathon.category === selectedCategory
+        }
+      }
+
+      const matchesDifficulty = !selectedDifficulty || hackathon.difficulty === selectedDifficulty
+
+      return matchesSearch && matchesCategory && matchesDifficulty
+    })  
   }
+
+  // Get unique categories and difficulties from all hackathons
+  const getAllCategories = () => {
+    return ["Web Dev", "AI/ML", "Blockchain", "IoT", "Other"]
+  }
+
+  const getAllDifficulties = () => {
+    return ["Beginner", "Intermediate", "Advanced", "Expert"]
+  }
+
+  const clearFilters = () => {
+    setSearchTerm("")
+    setSelectedCategory("")
+    setSelectedDifficulty("")
+  }
+
+  const hasActiveFilters = searchTerm || selectedCategory || selectedDifficulty
 
   const getTabTitle = () => {
     switch (activeTab) {
-      case 'active':
-        return 'Active Hackathons';
-      case 'upcoming':
-        return 'Upcoming Hackathons';
-      case 'expired':
-        return 'Expired Hackathons';
+      case "active":
+        return "Active Hackathons"
+      case "upcoming":
+        return "Upcoming Hackathons"
+      case "expired":
+        return "Expired Hackathons"
       default:
-        return 'Active Hackathons';
+        return "Active Hackathons"
     }
   }
 
   const getTabIcon = () => {
     switch (activeTab) {
-      case 'active':
+      case "active":
         return (
           <span className="relative flex items-center">
             <span className="h-3 w-3 rounded-full bg-green-400 animate-pulse shadow-lg inline-block"></span>
             <span className="absolute inset-0 h-3 w-3 rounded-full bg-green-400 animate-ping"></span>
           </span>
-        );
-      case 'upcoming':
-        return <span className="h-3 w-3 rounded-full bg-blue-400 shadow-lg"></span>;
-      case 'expired':
-        return <span className="h-3 w-3 rounded-full bg-red-400 opacity-50"></span>;
+        )
+      case "upcoming":
+        return <span className="h-3 w-3 rounded-full bg-blue-400 shadow-lg"></span>
+      case "expired":
+        return <span className="h-3 w-3 rounded-full bg-red-400 opacity-50"></span>
       default:
-        return null;
+        return null
     }
   }
 
   const getTabGradient = () => {
     switch (activeTab) {
-      case 'active':
-        return 'from-green-300 to-green-800';
-      case 'upcoming':
-        return 'from-blue-300 to-blue-800';
-      case 'expired':
-        return 'from-red-300 to-red-500';
+      case "active":
+        return "from-green-300 to-green-800"
+      case "upcoming":
+        return "from-blue-300 to-blue-800"
+      case "expired":
+        return "from-red-300 to-red-500"
       default:
-        return 'from-green-300 to-green-800';
+        return "from-green-300 to-green-800"
     }
   }
 
   return (
-    <div className='bg-gray-900 relative overflow-hidden min-h-screen -mt-16'>
+    <div className="bg-gray-900 relative overflow-hidden min-h-screen -mt-16">
       <Loader />
       <GridBackground />
       <FloatingParticles />
 
       {/* Tab Navigation */}
-      <div className='flex items-center justify-center px-4 sm:px-6 lg:px-8 mt-24 sm:mt-32 lg:mt-40'>
-        <div className='flex flex-col w-full max-w-7xl'>
+      <div className="flex items-center justify-center px-4 sm:px-6 lg:px-8 mt-24 sm:mt-32 lg:mt-40">
+        <div className="flex flex-col w-full max-w-7xl">
           {/* Tab Buttons */}
           <div className="flex flex-wrap gap-3 sm:gap-4 mb-8 sm:mb-10">
             <TabButton
-              active={activeTab === 'active'}
-              onClick={() => setActiveTab('active')}
+              active={activeTab === "active"}
+              onClick={() => setActiveTab("active")}
               count={activeHackathons.length}
               icon={Zap}
             >
               Active
             </TabButton>
             <TabButton
-              active={activeTab === 'upcoming'}
-              onClick={() => setActiveTab('upcoming')}
+              active={activeTab === "upcoming"}
+              onClick={() => setActiveTab("upcoming")}
               count={upcomingHackathons.length}
               icon={Calendar}
             >
               Upcoming
             </TabButton>
             <TabButton
-              active={activeTab === 'expired'}
-              onClick={() => setActiveTab('expired')}
+              active={activeTab === "expired"}
+              onClick={() => setActiveTab("expired")}
               count={expiredHackathons.length}
               icon={Timer}
             >
@@ -443,9 +518,104 @@ const Hackathons = () => {
             </TabButton>
           </div>
 
+          {/* Search and Filter Section */}
+          <div className="mb-8 space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search hackathons by title..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="block w-full pl-10 pr-12 py-3 border border-gray-700/50 rounded-lg bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-colors"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+
+            {/* Filter Controls */}
+            <div className="flex flex-wrap gap-3 items-center">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${showFilters || hasActiveFilters
+                  ? "bg-green-500/20 text-green-300 border border-green-500/30"
+                  : "bg-white/5 text-gray-400 border border-gray-700/50 hover:bg-white/10 hover:text-green-400"
+                  }`}
+              >
+                <Filter size={16} />
+                Filters
+                {hasActiveFilters && (
+                  <span className="bg-green-500/30 text-green-300 px-2 py-0.5 rounded-full text-xs">
+                    {[searchTerm, selectedCategory, selectedDifficulty].filter(Boolean).length}
+                  </span>
+                )}
+              </button>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-colors"
+                >
+                  <X size={14} />
+                  Clear Filters
+                </button>
+              )}
+            </div>
+
+            {/* Filter Dropdowns */}
+            {showFilters && (
+              <div className="flex flex-wrap gap-4 p-4 bg-white/5 backdrop-blur-sm rounded-lg border border-gray-700/50 z-50">
+                {/* Category Filter */}
+                <div className="min-w-48">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Category</label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-700/50 rounded-lg bg-white/5 backdrop-blur-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 z-10"
+                  >
+                    <option value="" className="bg-gray-800 text-white">All Categories</option>
+                    {getAllCategories().map((category) => (
+                      <option key={category} value={category} className="bg-gray-800 text-white">
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Difficulty Filter */}
+                <div className="min-w-48">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Difficulty</label>
+                  <select
+                    value={selectedDifficulty}
+                    onChange={(e) => setSelectedDifficulty(e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-700/50 rounded-lg bg-white/5 backdrop-blur-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50"
+                  >
+                    <option value="" className="bg-gray-800">All Difficulties</option>
+                    {getAllDifficulties().map((difficulty) => (
+                      <option key={difficulty} value={difficulty} className="bg-gray-800">
+                        {difficulty}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Section Header */}
           <div className="flex items-center justify-between mb-8">
-            <h2 className={`text-2xl sm:text-3xl lg:text-5xl ZaptronFont text-transparent bg-clip-text bg-gradient-to-b ${getTabGradient()} flex items-center gap-3`}>
+            <h2
+              className={`text-2xl sm:text-3xl lg:text-5xl ZaptronFont text-transparent bg-clip-text bg-gradient-to-b ${getTabGradient()} flex items-center gap-3`}
+            >
               {getTabIcon()}
               {getTabTitle()}
             </h2>
@@ -453,24 +623,26 @@ const Hackathons = () => {
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-400">
                 <span className="text-green-400 font-mono">{getCurrentHackathons().length}</span> {activeTab}
+                {hasActiveFilters && <span className="text-yellow-400 ml-2">(filtered)</span>}
               </div>
-              <button className="text-green-400 hover:text-green-300 transition-colors">
-                {/* <ExternalLink size={20} /> */}
-              </button>
             </div>
           </div>
 
           {/* Hackathons List */}
-          <div className='space-y-4 sm:space-y-6 mb-20 sm:mb-32 lg:mb-40'>
+          <div className="space-y-4 sm:space-y-6 mb-20 sm:mb-32 lg:mb-40">
             {getCurrentHackathons().length > 0 ? (
               getCurrentHackathons().map((hackathon, index) => (
                 <HackathonCard key={`${activeTab}-${index}`} hackathon={hackathon} />
               ))
             ) : (
               <div className="text-center py-12 sm:py-16">
-                <div className="text-6xl sm:text-8xl mb-4 opacity-20">🏆</div>
-                <h3 className="text-xl sm:text-2xl text-gray-400 mb-2">No {activeTab} hackathons</h3>
-                <p className="text-gray-500">Check back later for updates!</p>
+                <div className="text-6xl sm:text-8xl mb-4 opacity-20">{hasActiveFilters ? "🔍" : "🏆"}</div>
+                <h3 className="text-xl sm:text-2xl text-gray-400 mb-2">
+                  {hasActiveFilters ? "No hackathons match your filters" : `No ${activeTab} hackathons`}
+                </h3>
+                <p className="text-gray-500">
+                  {hasActiveFilters ? "Try adjusting your search or filters" : "Check back later for updates!"}
+                </p>
               </div>
             )}
           </div>
