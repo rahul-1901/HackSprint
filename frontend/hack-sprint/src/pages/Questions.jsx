@@ -312,6 +312,7 @@ const Questions = () => {
         } catch (err) {
             console.error("❌ Error logging quiz finish:", err);
         }
+        setQuizCompleted(true);
 
         // navigate after logging quiz finish
         // navigate("/results", { state: { userAnswers, questions, score } });
@@ -556,14 +557,14 @@ const Questions = () => {
                             {currentQuestionIndex === questions.length - 1 ? (
                                 <button
                                     onClick={handleFinishQuiz}
-                                    className="finish-btn"
+                                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 animate-fade-in border border-green-400/30 shadow-lg"
                                 >
                                     Finish Quiz
                                 </button>
                             ) : (
                                 <button
                                     onClick={handleNextButton}
-                                    className="next-btn"
+                                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 animate-fade-in border border-green-400/30 shadow-lg"
                                 >
                                     Next Question
                                 </button>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
-import { Calendar, Users, Trophy, Clock, ChevronRight } from "lucide-react";
+import { Calendar, Users, Trophy, Clock, ChevronRight, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../backendApis/api";
 import LoginForm from "./LoginForm";
@@ -18,7 +18,7 @@ export const HeroSection = ({
   imageUrl = "/assets/hackathon-banner.png",
   hackathonId,
 }) => {
-  const [imageError, setImageError] = useState(false);
+   const [imageError, setImageError] = useState(false);
   const [userData, setUserData] = useState(null);
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -28,24 +28,22 @@ export const HeroSection = ({
 
   const navigate = useNavigate();
 
-  useEffect(() => {
+useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const res = await getDashboard();
-        const fetchedUserData = res.data.userData || null;
-
+        const fetchedUserData = res.data.userData;
         setUserData(fetchedUserData);
         setIsVerified(fetchedUserData?.isVerified || false);
 
-        if (
-          fetchedUserData &&
-          Array.isArray(fetchedUserData.registeredHackathons)
-        ) {
+        if (fetchedUserData && Array.isArray(fetchedUserData.registeredHackathons)) {
+          
           const registrationFound = fetchedUserData.registeredHackathons.find(
             (registrationId) => String(registrationId) === String(hackathonId)
           );
           setRegistrationInfo(!!registrationFound);
+
         } else {
           setRegistrationInfo(false);
         }
@@ -60,21 +58,20 @@ export const HeroSection = ({
 
     fetchData();
 
-    // Refresh when user comes back to the tab
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
+    window.addEventListener('focus', fetchData);
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
         fetchData();
       }
-    };
-
-    window.addEventListener("focus", fetchData);
-    window.addEventListener("visibilitychange", handleVisibilityChange);
+    });
 
     return () => {
-      window.removeEventListener("focus", fetchData);
-      window.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener('focus', fetchData);
+      window.removeEventListener('visibilitychange', fetchData);
     };
   }, [hackathonId]);
+
+
 
   const handleRegister = () => {
     if (isVerified) {
@@ -82,6 +79,10 @@ export const HeroSection = ({
     } else {
       setShowLoginModal(true);
     }
+  };
+
+  const handleSubmit = () => {
+    navigate(`/hackathon/${hackathonId}`);
   };
 
   const handleLoginSuccess = (data) => {
@@ -93,7 +94,6 @@ export const HeroSection = ({
   const handleSubmit = () => {
 setShowSubmissionModal(true);  
 };
-
   const formatDateRange = (start, end) => {
     const startDateObj = new Date(start);
     const endDateObj = new Date(end);
@@ -102,7 +102,10 @@ setShowSubmissionModal(true);
     const monthDayOptions = { month: "long", day: "numeric" };
 
     if (startYear === endYear) {
-      const startStr = startDateObj.toLocaleDateString("en-US", monthDayOptions);
+      const startStr = startDateObj.toLocaleDateString(
+        "en-US",
+        monthDayOptions
+      );
       const endStr = endDateObj.toLocaleDateString("en-US", {
         ...monthDayOptions,
         year: "numeric",
@@ -110,10 +113,9 @@ setShowSubmissionModal(true);
       return `${startStr} – ${endStr}`;
     } else {
       const fullOptions = { ...monthDayOptions, year: "numeric" };
-      return `${startDateObj.toLocaleDateString(
-        "en-US",
-        fullOptions
-      )} – ${endDateObj.toLocaleDateString("en-US", fullOptions)}`;
+      const startStr = startDateObj.toLocaleDateString("en-US", fullOptions);
+      const endStr = endDateObj.toLocaleDateString("en-US", fullOptions);
+      return `${startStr} – ${endStr}`;
     }
   };
 
@@ -140,18 +142,18 @@ setShowSubmissionModal(true);
   const renderActionButton = () => {
     if (loading) {
       return (
-        <Button
-          disabled
-          className="bg-gray-500/50 text-white font-bold w-auto"
-        >
+        <Button disabled size="lg" className="bg-gray-500/50 text-white font-bold w-auto">
           Loading...
         </Button>
       );
     }
 
-    if (!isActive) return null;
 
-    if (registrationInfo) {
+    if (!isActive) {
+      return null;
+    }
+
+    if (registrationInfo) { // User is registered
       return (
         <Button
           onClick={handleSubmit}
@@ -159,15 +161,17 @@ setShowSubmissionModal(true);
         >
           <span className="flex items-center gap-2">
             Submit Now
+            {/* The Send icon is not imported, you may need to add: import { Send } from "lucide-react"; */}
             <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
           </span>
         </Button>
       );
-    } else {
+
+    } else { // User is not registered for this hackathon
       return (
         <Button
           onClick={handleRegister}
-          className="group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+          className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
         >
           <span className="flex items-center gap-2">
             Register Now
@@ -216,11 +220,37 @@ setShowSubmissionModal(true);
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 leading-tight tracking-tight">
                 {title}
               </h1>
-              <p className="text-lg text-gray-400 leading-relaxed">{subTitle}</p>
+              <p className="text-lg text-gray-400 leading-relaxed">
+                {subTitle}
+              </p>
             </div>
             <div className="flex-shrink-0 w-full lg:w-auto text-center lg:text-left">
+              {/* --- CHANGE 5: Render the action button using the new logic --- */}
               {renderActionButton()}
             </div>
+            {/* <div className="flex-shrink-0 w-full lg:w-auto text-center lg:text-left">
+              {isActive &&
+                (loading ? (
+                  <Button
+                    disabled
+                    size="lg"
+                    className="bg-gray-500/50 text-white font-bold w-auto"
+                  >
+                    Loading...
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleRegister}
+                    className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+                  >
+                    <span className="flex items-center gap-2">
+                      Register Now
+                      <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                  </Button>
+                ))}
+            </div> */}
+
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
@@ -230,7 +260,7 @@ setShowSubmissionModal(true);
               icon={Users}
             />
             <StatCard
-              value={`$${prizeMoney.toLocaleString()}`}
+              value={`$${prizeMoney?.toLocaleString()}`}
               label="Prize Pool"
               icon={Trophy}
             />
@@ -246,10 +276,13 @@ setShowSubmissionModal(true);
       {/* Login Modal */}
       {showLoginModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setShowLoginModal(false)}
           />
+          {/* Modal Content */}
+
           <div className="relative z-10 max-w-md w-full mx-4">
             <LoginForm
               onLoginSuccess={handleLoginSuccess}
