@@ -527,21 +527,18 @@ export const updatingConnectedApps = async (req, res) => {
 
 export const displayLeaderBoard = async (req, res) => {
   try {
-    const { quizId } = req.params;  // pass quizId in query params
+    // Find the latest quiz by date (descending order, pick first one)
+    const latestQuiz = await dailyQuizModel
+      .findOne()
+      .sort({ createdAt: -1 }) // latest quiz
+      .populate("attemptedBy", "name email points devQuestionSubmittedTime");
 
-    if (!quizId) {
-      return res.status(400).json({ message: "quizId is required" });
-    }
-
-    // Fetch quiz and its attemptedBy users
-    const quiz = await dailyQuizModel.findById(quizId).populate("attemptedBy", "name email points devQuestionSubmittedTime");
-
-    if (!quiz) {
-      return res.status(404).json({ message: "Quiz not found" });
+    if (!latestQuiz) {
+      return res.status(404).json({ message: "No quizzes found" });
     }
 
     // Sort attempted users only
-    const leaderboard = quiz.attemptedBy.sort((a, b) => {
+    const leaderboard = latestQuiz.attemptedBy.sort((a, b) => {
       // First sort by points descending, then by submission time ascending
       if (b.points !== a.points) {
         return b.points - a.points;
@@ -550,11 +547,13 @@ export const displayLeaderBoard = async (req, res) => {
     });
 
     if (leaderboard.length === 0) {
-      return res.status(404).json({ message: "No users attempted this quiz" });
+      return res.status(404).json({ message: "No users attempted the latest quiz" });
     }
 
     return res.status(200).json({
-      message: "Leaderboard fetched successfully",
+      message: "Latest Quiz Leaderboard fetched successfully",
+      quizId: latestQuiz._id,
+      quizTitle: latestQuiz.Title,
       leaderboard
     });
 
@@ -563,3 +562,4 @@ export const displayLeaderBoard = async (req, res) => {
     res.status(500).json({ message: "Something went wrong while fetching leaderboard!" });
   }
 };
+

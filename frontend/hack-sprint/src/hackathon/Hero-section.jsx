@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
-import { Calendar, Users, Trophy, Clock, ChevronRight, Send } from "lucide-react";
+import {
+  Calendar,
+  Users,
+  Trophy,
+  Clock,
+  ChevronRight,
+  Send,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../backendApis/api";
 import LoginForm from "./LoginForm";
@@ -18,7 +25,7 @@ export const HeroSection = ({
   imageUrl = "/assets/hackathon-banner.png",
   hackathonId,
 }) => {
-   const [imageError, setImageError] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const [userData, setUserData] = useState(null);
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -28,7 +35,7 @@ export const HeroSection = ({
 
   const navigate = useNavigate();
 
-useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -37,13 +44,14 @@ useEffect(() => {
         setUserData(fetchedUserData);
         setIsVerified(fetchedUserData?.isVerified || false);
 
-        if (fetchedUserData && Array.isArray(fetchedUserData.registeredHackathons)) {
-          
+        if (
+          fetchedUserData &&
+          Array.isArray(fetchedUserData.registeredHackathons)
+        ) {
           const registrationFound = fetchedUserData.registeredHackathons.find(
             (registrationId) => String(registrationId) === String(hackathonId)
           );
           setRegistrationInfo(!!registrationFound);
-
         } else {
           setRegistrationInfo(false);
         }
@@ -58,20 +66,18 @@ useEffect(() => {
 
     fetchData();
 
-    window.addEventListener('focus', fetchData);
-    window.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
+    window.addEventListener("focus", fetchData);
+    window.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
         fetchData();
       }
     });
 
     return () => {
-      window.removeEventListener('focus', fetchData);
-      window.removeEventListener('visibilitychange', fetchData);
+      window.removeEventListener("focus", fetchData);
+      window.removeEventListener("visibilitychange", fetchData);
     };
   }, [hackathonId]);
-
-
 
   const handleRegister = () => {
     if (isVerified) {
@@ -81,10 +87,6 @@ useEffect(() => {
     }
   };
 
-  const handleSubmit = () => {
-    navigate(`/hackathon/${hackathonId}`);
-  };
-
   const handleLoginSuccess = (data) => {
     setShowLoginModal(false);
     setIsVerified(true);
@@ -92,8 +94,8 @@ useEffect(() => {
   };
 
   const handleSubmit = () => {
-setShowSubmissionModal(true);  
-};
+    setShowSubmissionModal(true);
+  };
   const formatDateRange = (start, end) => {
     const startDateObj = new Date(start);
     const endDateObj = new Date(end);
@@ -142,18 +144,22 @@ setShowSubmissionModal(true);
   const renderActionButton = () => {
     if (loading) {
       return (
-        <Button disabled size="lg" className="bg-gray-500/50 text-white font-bold w-auto">
+        <Button
+          disabled
+          size="lg"
+          className="bg-gray-500/50 text-white font-bold w-auto"
+        >
           Loading...
         </Button>
       );
     }
 
-
     if (!isActive) {
       return null;
     }
 
-    if (registrationInfo) { // User is registered
+    if (registrationInfo) {
+      // User is registered
       return (
         <Button
           onClick={handleSubmit}
@@ -166,8 +172,8 @@ setShowSubmissionModal(true);
           </span>
         </Button>
       );
-
-    } else { // User is not registered for this hackathon
+    } else {
+      // User is not registered for this hackathon
       return (
         <Button
           onClick={handleRegister}
@@ -250,7 +256,6 @@ setShowSubmissionModal(true);
                   </Button>
                 ))}
             </div> */}
-
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
@@ -298,12 +303,12 @@ setShowSubmissionModal(true);
       )}
 
       {/* Submission Modal */}
-   {showSubmissionModal && (
-  <SubmissionForm
-    isOpen={showSubmissionModal}
-    onClose={() => setShowSubmissionModal(false)}
-  />
-)}
+      {showSubmissionModal && (
+        <SubmissionForm
+          isOpen={showSubmissionModal}
+          onClose={() => setShowSubmissionModal(false)}
+        />
+      )}
     </>
   );
 };
