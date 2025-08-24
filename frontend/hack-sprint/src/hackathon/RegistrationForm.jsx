@@ -270,7 +270,15 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
               details={teamDetails}
               onClose={() => {
                   setShowTeamInfo(false);
-                  navigate(`/hackathon/${hackathonId}/team/${teamDetails.id}`);
+                  // *** FIX APPLIED HERE ***
+                  // Navigate to the team page and pass the details in the state object.
+                  // This allows the TeamDetails component to read it from location.state
+                  // and save it to localStorage.
+                  navigate(`/hackathon/${hackathonId}/team/${teamDetails.id}`, {
+                    state: {
+                      secretCode: teamDetails.code
+                    }
+                  });
               }}
           />
       )}

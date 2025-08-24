@@ -131,12 +131,23 @@
     font-weight: 400;
 }
 
+@font-face {
+    font-family: 'Molgan';
+    src: url("./assets/MolganRegular-YqWj2.otf") format('opentype');
+    font-style: normal;
+    font-weight: 400;
+}
+
 body {
     background-color: #111827;
 }
 
 .ZaptronFont {
     font-family: 'Techbit';
+}
+
+.MolganFont {
+    font-family: 'Molgan';
 }
 
 .fade-section {
