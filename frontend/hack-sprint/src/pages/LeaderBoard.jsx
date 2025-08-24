@@ -13,7 +13,7 @@ const Leaderboard = () => {
   useEffect(() => {
   const fetchLeaderboard = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/user/leaderBoard");
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user/leaderBoard`);
       console.log("Leaderboard data:", res.data);
       setLeaderboard(res.data.leaderboard || []);
     } catch (err) {
