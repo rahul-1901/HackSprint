@@ -38,7 +38,7 @@ const TeamDetails = () => {
 
   // Gets just the secret code string from localStorage
   const getStoredTeamCode = useCallback(() => {
-    return localStorage.getItem(`teamDetails_${teamId}`);
+    return localStorage.getItem(`teamDetails_code`);
   }, [teamId]);
 
   const fetchTeamData = useCallback(async (user) => {
@@ -52,7 +52,7 @@ const TeamDetails = () => {
         // Use the secretCode string directly in the API URL
         const teamSearchResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/team/search/${secretCode}`);
         const basicTeamData = teamSearchResponse.data.team;
-        console.log("Fetched basic team data:", basicTeamData);
+        console.log(basicTeamData);
         
         const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: user._id });
         
@@ -327,7 +327,7 @@ const TeamDetails = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Invite Link</label>
                     <div className="flex items-center gap-2 p-3 bg-gray-700/50 border border-green-500/20 rounded-lg">
-                      <span className="flex-1 font-mono text-green-300 truncate">{inviteLink}</span>
+                      <span className="flex-1 font-mono text-green-300 truncate">{teamData.secretLink}</span>
                       <Button onClick={() => handleCopy(inviteLink, 'link')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
                         {copiedItem === 'link' ? <Check size={16} /> : <Copy size={16} />}
                       </Button>

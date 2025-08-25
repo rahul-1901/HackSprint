@@ -32,8 +32,24 @@ export const HeroSection = ({
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSubmissionModal, setShowSubmissionModal] = useState(false);
   const [registrationInfo, setRegistrationInfo] = useState(false);
+  const [leaderButton, setLeaderButton] = useState(false)
+  const [leaderValue, setLeaderValue] = useState("")
 
   const navigate = useNavigate();
+    useEffect(() => {
+      const checkLeader = async () => {
+        if (localStorage.getItem('teamDetails_code')) {
+          setLeaderValue(localStorage.getItem('teamDetails_code'))
+          setLeaderButton(true)
+        } else {
+          setLeaderButton(false)
+          setLeaderValue('')
+        }
+      }
+
+      checkLeader()
+    }, [])
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +57,7 @@ export const HeroSection = ({
       try {
         const res = await getDashboard();
         const fetchedUserData = res.data.userData;
+        console.log(fetchedUserData)
         setUserData(fetchedUserData);
         setIsVerified(fetchedUserData?.isVerified || false);
 
@@ -86,6 +103,10 @@ export const HeroSection = ({
       setShowLoginModal(true);
     }
   };
+
+  const handleLeader = () => {
+    navigate(`/hackathon/${hackathonId}/team/${leaderValue}`)
+  }
 
   const handleLoginSuccess = (data) => {
     setShowLoginModal(false);
@@ -207,11 +228,10 @@ export const HeroSection = ({
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
           <div className="flex flex-wrap items-center gap-4 mb-4">
             <Badge
-              className={`${
-                isActive
-                  ? "bg-green-400/10 text-green-300 border-green-400/20"
-                  : "bg-gray-800 text-gray-400 border-gray-700"
-              } px-3 py-1 text-sm font-medium border`}
+              className={`${isActive
+                ? "bg-green-400/10 text-green-300 border-green-400/20"
+                : "bg-gray-800 text-gray-400 border-gray-700"
+                } px-3 py-1 text-sm font-medium border`}
             >
               {isActive ? "Active" : "Ended"}
             </Badge>
@@ -230,8 +250,18 @@ export const HeroSection = ({
                 {subTitle}
               </p>
             </div>
-            <div className="flex-shrink-0 w-full lg:w-auto text-center lg:text-left">
+            <div className="flex gap-5 w-full lg:w-auto text-center lg:text-left">
               {/* --- CHANGE 5: Render the action button using the new logic --- */}
+              {leaderButton ? 
+              <Button
+              onClick={handleLeader}
+                className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+              >
+                <span className="flex items-center gap-2">
+                  Leader DashBoard
+                  <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+              </Button> : <></>}
               {renderActionButton()}
             </div>
             {/* <div className="flex-shrink-0 w-full lg:w-auto text-center lg:text-left">
