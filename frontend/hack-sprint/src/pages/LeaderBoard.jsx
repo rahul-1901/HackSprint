@@ -6,7 +6,6 @@ import { Trophy, Crown, User } from "lucide-react";
 import axios from "axios";
 
 const Leaderboard = () => {
-  const [filter, setFilter] = useState("All Time");
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -16,7 +15,6 @@ const Leaderboard = () => {
         const res = await axios.get(
           `${import.meta.env.VITE_API_BASE_URL}/api/user/leaderBoard`
         );
-        console.log("Leaderboard data:", res.data);
         setLeaderboard(res.data.leaderboard || []);
       } catch (err) {
         console.error("Error fetching leaderboard:", err);
@@ -37,7 +35,7 @@ const Leaderboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 text-white px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-br overflow-hidden from-slate-900 via-gray-900 to-slate-800 text-white px-4 py-10">
       {/* Header Banner */}
       <div className="max-w-6xl mx-auto text-center mb-12">
         <motion.div
@@ -47,8 +45,8 @@ const Leaderboard = () => {
           className="relative"
         >
           <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-cyan-400/20 to-emerald-400/20 rounded-full"></div>
-          <h1 className="relative text-5xl md:text-6xl font-black bg-gradient-to-r from-cyan-300 via-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            <Trophy className="inline-block mr-4 text-yellow-400" size={48} />
+          <h1 className="relative text-4xl sm:text-5xl md:text-6xl font-black bg-gradient-to-r from-cyan-300 via-blue-400 to-emerald-400 bg-clip-text text-transparent">
+            <Trophy className="inline-block mr-3 text-yellow-400" size={40} />
             Leaderboard
           </h1>
         </motion.div>
@@ -56,12 +54,10 @@ const Leaderboard = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-slate-400 mt-4 text-lg font-medium"
+          className="text-slate-400 mt-4 text-base sm:text-lg font-medium"
         >
           Compete with the best minds and claim your throne
         </motion.p>
-
-        {/* Filter Tabs */}
       </div>
 
       {/* Leaderboard Container */}
@@ -72,37 +68,30 @@ const Leaderboard = () => {
         className="max-w-6xl mx-auto"
       >
         {/* Top 3 Podium */}
-        <div className="grid grid-cols-3 gap-12 mb-12 max-w-5xl mx-auto items-end">
-          {/* Second place (left) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12 mb-12 max-w-5xl mx-auto items-end">
           {leaderboard[1] && <PodiumCard user={leaderboard[1]} place={2} />}
-
-          {/* First place (center, bigger) */}
-          {leaderboard[0] && (
-            <PodiumCard user={leaderboard[0]} place={1} highlight />
-          )}
-
-          {/* Third place (right) */}
+          {leaderboard[0] && <PodiumCard user={leaderboard[0]} place={1} highlight />}
           {leaderboard[2] && <PodiumCard user={leaderboard[2]} place={3} />}
         </div>
 
         {/* Main Leaderboard Table */}
-        <div className="bg-slate-800/20 backdrop-blur-2xl rounded-3xl border border-slate-700/30 shadow-2xl shadow-slate-900/50 overflow-hidden">
-          <div className="bg-gradient-to-r from-slate-800/60 via-slate-700/60 to-slate-800/60 px-8 py-8 border-b border-slate-600/20">
-            <h2 className="text-3xl font-black text-center bg-gradient-to-r from-slate-200 to-slate-400 bg-clip-text text-transparent">
+        <div className="bg-slate-800/20 backdrop-blur-2xl rounded-2xl md:rounded-3xl border border-slate-700/30 shadow-2xl shadow-slate-900/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-800/60 via-slate-700/60 to-slate-800/60 px-4 sm:px-8 py-6 sm:py-8 border-b border-slate-600/20">
+            <h2 className="text-2xl sm:text-3xl font-black text-center bg-gradient-to-r from-slate-200 to-slate-400 bg-clip-text text-transparent">
               Global Rankings
             </h2>
-            <p className="text-center text-slate-400 mt-2 font-medium">
+            <p className="text-center text-slate-400 mt-2 font-medium text-sm sm:text-base">
               Elite performers worldwide
             </p>
           </div>
 
-          <div className="overflow-hidden">
-            <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[500px]">
               <thead>
-                <tr className="text-slate-300 text-sm font-bold uppercase tracking-widest bg-slate-800/30 border-b border-slate-600/20">
-                  <th className="py-6 px-8 text-left">Position</th>
-                  <th className="py-6 px-8 text-left">Competitor</th>
-                  <th className="py-6 px-8 text-left">Performance</th>
+                <tr className="text-slate-300 text-xs sm:text-sm font-bold uppercase tracking-widest bg-slate-800/30 border-b border-slate-600/20">
+                  <th className="py-4 sm:py-6 px-4 sm:px-8 text-left">Position</th>
+                  <th className="py-4 sm:py-6 px-4 sm:px-8 text-left">Competitor</th>
+                  <th className="py-4 sm:py-6 px-4 sm:px-8 text-left">Performance</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/20">
@@ -119,21 +108,21 @@ const Leaderboard = () => {
                     } hover:shadow-lg hover:shadow-slate-900/30 hover:translate-x-2`}
                   >
                     {/* Rank */}
-                    <td className="py-6 px-8">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-600/80 to-slate-700/80 flex items-center justify-center font-black text-white shadow-lg">
+                    <td className="py-4 sm:py-6 px-4 sm:px-8">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-600/80 to-slate-700/80 flex items-center justify-center font-black text-white shadow-lg">
                         {idx + 4}
                       </div>
                     </td>
 
                     {/* Username */}
-                    <td className="py-6 px-8">
-                      <div className="flex items-center gap-5">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center shadow-lg">
-                          <User className="text-white" size={24} />
+                    <td className="py-4 sm:py-6 px-4 sm:px-8">
+                      <div className="flex items-center gap-4 sm:gap-5">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center shadow-lg">
+                          <User className="text-white" size={20} />
                         </div>
                         <div>
-                          <span className="font-bold text-xl">{user.name}</span>
-                          <div className="text-slate-400 text-sm font-medium">
+                          <span className="font-bold text-base sm:text-xl">{user.name}</span>
+                          <div className="text-slate-400 text-xs sm:text-sm font-medium">
                             {user.email}
                           </div>
                         </div>
@@ -141,8 +130,8 @@ const Leaderboard = () => {
                     </td>
 
                     {/* Points */}
-                    <td className="py-6 px-8">
-                      <div className="font-black text-2xl text-emerald-400">
+                    <td className="py-4 sm:py-6 px-4 sm:px-8">
+                      <div className="font-black text-lg sm:text-2xl text-emerald-400">
                         {user.points} pts
                       </div>
                     </td>
@@ -165,7 +154,7 @@ const PodiumCard = ({ user, place, highlight }) => (
     transition={{ duration: 0.5 }}
     className={`relative text-center ${highlight ? "scale-110 order-2" : ""}`}
   >
-    <div className="relative bg-gradient-to-br from-slate-400/15 to-slate-600/15 border border-slate-400/20 rounded-2xl p-6 backdrop-blur-md hover:scale-105 transition-all duration-500">
+    <div className="relative bg-gradient-to-br from-slate-400/15 to-slate-600/15 border border-slate-400/20 rounded-2xl p-4 sm:p-6 backdrop-blur-md hover:scale-105 transition-all duration-500">
       {place === 1 && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
           <div className="bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full p-2 shadow-lg shadow-yellow-400/30">
@@ -176,7 +165,7 @@ const PodiumCard = ({ user, place, highlight }) => (
 
       <div className="relative z-10">
         <div
-          className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg ${
+          className={`w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full flex items-center justify-center shadow-lg ${
             place === 1
               ? "bg-gradient-to-br from-yellow-400 to-amber-500 shadow-yellow-400/30"
               : place === 2
@@ -184,10 +173,10 @@ const PodiumCard = ({ user, place, highlight }) => (
               : "bg-gradient-to-br from-orange-400 to-orange-500 shadow-orange-400/30"
           }`}
         >
-          <span className="text-white font-black text-xl">{place}</span>
+          <span className="text-white font-black text-lg sm:text-xl">{place}</span>
         </div>
-        <h3 className="font-bold text-lg mb-2">{user.name}</h3>
-        <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+        <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">{user.name}</h3>
+        <p className="text-xl sm:text-2xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
           {user.points}
         </p>
       </div>
