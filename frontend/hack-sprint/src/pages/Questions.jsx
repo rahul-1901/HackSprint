@@ -13,7 +13,7 @@ const Questions = () => {
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [questions, setQuestions] = useState([]);
     const [userAnswers, setUserAnswers] = useState([]);
-    const [quizResetTimer, setQuizResetTimer] = useState(300); // 5 minutes in seconds
+    const [quizResetTimer, setQuizResetTimer] = useState(86400); // 5 minutes in seconds
     const [isLoading, setIsLoading] = useState(true);
     const [quizId, setQuizId] = useState(null);
     const [userId, setUserId] = useState('')
@@ -52,7 +52,7 @@ const Questions = () => {
         if (startTime) {
             const currentTime = Date.now();
             const elapsedTime = Math.floor((currentTime - parseInt(startTime)) / 1000);
-            return elapsedTime >= 300; // 5 minutes
+            return elapsedTime >= 86400; // 5 minutes
         }
         return false;
     };
@@ -79,7 +79,7 @@ const Questions = () => {
         setIsCorrect(false);
         setQuizCompleted(false);
         setUserAnswers([]);
-        setQuizResetTimer(300);
+        setQuizResetTimer(86400);
         clearProgress();
     };
 
@@ -120,7 +120,7 @@ const Questions = () => {
             if (startTime && savedResetTimer) {
                 const currentTime = Date.now();
                 const elapsedTime = Math.floor((currentTime - parseInt(startTime)) / 1000);
-                const remainingTime = Math.max(0, 300 - elapsedTime);
+                const remainingTime = Math.max(0, 86400 - elapsedTime);
                 setQuizResetTimer(remainingTime);
             } else if (savedResetTimer !== null) {
                 setQuizResetTimer(parseInt(savedResetTimer, 10));
@@ -345,7 +345,7 @@ const Questions = () => {
         setExplanationTimer(0);
         setQuizCompleted(false);
         setUserAnswers([]);
-        setQuizResetTimer(300);
+        setQuizResetTimer(86400);
         localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
     };
 
@@ -367,10 +367,13 @@ const Questions = () => {
 
     // Format time for display
     const formatTime = (seconds) => {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-    };
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
 
     // Show loading screen
     if (isLoading || questions.length === 0) {
@@ -397,7 +400,7 @@ const Questions = () => {
                 <div className="text-center max-w-2xl relative z-10">
                     <h1 className="text-4xl md:text-6xl font-bold mb-8 text-green-400">DevQuest Challenge</h1>
                     <p className="text-xl text-gray-300 mb-8">Test your development knowledge with our interactive quiz!</p>
-                    <p className="text-lg text-yellow-400 mb-8">⚡ New questions every 5 minutes!</p>
+                    <p className="text-lg text-yellow-400 mb-8">⚡ New questions every 24 hours!</p>
 
                     <button
                         onClick={startQuiz}
@@ -455,7 +458,7 @@ const Questions = () => {
 
                         {/* Auto-reset countdown */}
                         <div className="mt-6 p-4 bg-blue-800/30 rounded-lg border border-blue-500/30">
-                            <p className="text-blue-400 font-semibold">🔄 Page will refresh in: {formatTime(quizResetTimer)}</p>
+                            {/* <p className="text-blue-400 font-semibold">🔄 Page will refresh in: {formatTime(quizResetTimer)}</p> */}
                             <p className="text-sm text-gray-400 mt-1">New questions will be loaded automatically</p>
                         </div>
                     </div>
@@ -491,9 +494,9 @@ const Questions = () => {
                         )}
 
                         {/* Auto-reset countdown display */}
-                        <div className="mt-2 p-2 bg-blue-800/30 rounded-lg border border-blue-500/30 inline-block">
+                        {/* <div className="mt-2 p-2 bg-blue-800/30 rounded-lg border border-blue-500/30 inline-block">
                             <p className="text-sm text-blue-400">🔄 Page refreshes in: {formatTime(quizResetTimer)}</p>
-                        </div>
+                        </div> */}
                     </div>
 
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0 mb-4 bg-gray-800/50 backdrop-blur-sm rounded-2xl p-3 sm:p-4 border border-gray-700/50 shadow-xl">

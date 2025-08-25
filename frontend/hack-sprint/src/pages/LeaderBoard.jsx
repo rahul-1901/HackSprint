@@ -79,14 +79,22 @@ const Leaderboard = () => {
         </motion.p>
       </div>
 
-      {/* ✅ Podium 1-2-3 Correct Order */}
+      {/* ✅ Podium - Desktop: 2nd, 1st, 3rd | Mobile: 1st, 2nd, 3rd */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
         className="max-w-6xl mx-auto"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12 mb-12 max-w-5xl mx-auto items-end">
+        {/* Desktop Layout - 2nd, 1st, 3rd */}
+        <div className="hidden sm:grid grid-cols-3 gap-8 sm:gap-12 mb-12 max-w-5xl mx-auto items-end">
+          {topThree[1] && <PodiumCard user={topThree[1]} place={2} />}
+          {topThree[0] && <PodiumCard user={topThree[0]} place={1} highlight />}
+          {topThree[2] && <PodiumCard user={topThree[2]} place={3} />}
+        </div>
+
+        {/* Mobile Layout - 1st, 2nd, 3rd */}
+        <div className="sm:hidden grid grid-cols-1 gap-6 mb-12 max-w-sm mx-auto">
           {topThree[0] && <PodiumCard user={topThree[0]} place={1} highlight />}
           {topThree[1] && <PodiumCard user={topThree[1]} place={2} />}
           {topThree[2] && <PodiumCard user={topThree[2]} place={3} />}
@@ -96,19 +104,20 @@ const Leaderboard = () => {
         <div className="bg-slate-800/20 backdrop-blur-2xl rounded-2xl md:rounded-3xl border border-slate-700/30 shadow-2xl shadow-slate-900/50 overflow-hidden">
           <div className="bg-gradient-to-r from-slate-800/60 via-slate-700/60 to-slate-800/60 px-4 sm:px-8 py-6 sm:py-8 border-b border-slate-600/20">
             <h2 className="text-2xl sm:text-3xl font-black text-center bg-gradient-to-r from-slate-200 to-slate-400 bg-clip-text text-transparent">
-              Global Rankings
+             Quest Ranking
             </h2>
             <p className="text-center text-slate-400 mt-2 font-medium text-sm sm:text-base">
-              Elite performers worldwide
+              Elite performers
             </p>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[500px]">
+          {/* Desktop - No horizontal scroll, Mobile - Keep horizontal scroll */}
+          <div className="sm:overflow-visible overflow-x-auto">
+            <table className="w-full sm:min-w-0 min-w-[500px]">
               <thead>
                 <tr className="text-slate-300 text-xs sm:text-sm font-bold uppercase tracking-widest bg-slate-800/30 border-b border-slate-600/20">
-                  <th className="py-4 sm:py-6 px-4  text-left">Position</th>
-                  <th className="py-4 sm:py-6 px-10  text-left">Competitor</th>
+                  <th className="py-4 sm:py-6 px-4 text-left">Position</th>
+                  <th className="py-4 sm:py-6 px-10 text-left">Competitor</th>
                   <th className="py-4 sm:py-6 px-15 text-left">Performance</th>
                 </tr>
               </thead>
@@ -134,9 +143,9 @@ const Leaderboard = () => {
                     {/* Username */}
                     <td className="py-3 sm:py-6 px-10 sm:px-8">
                       <div className="flex items-center gap-3 sm:gap-5">
-                        <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center shadow-lg">
+                        {/* <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center shadow-lg">
                           <User className="text-white" size={18} />
-                        </div>
+                        </div> */}
                         <div className="max-w-[120px] sm:max-w-none">
                           <span className="font-bold text-sm sm:text-xl truncate">{user.name}</span>
                           <div className="text-slate-400 text-xs sm:text-sm font-medium truncate">

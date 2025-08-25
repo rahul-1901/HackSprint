@@ -1014,7 +1014,7 @@ const Home = () => {
       {/* Call to Action Section */}
      <section className="fade-section py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 relative bg-gray-900/30 backdrop-blur-sm">
         <div className="max-w-full mx-auto text-center">
-          <div className="relative bg-gray-900/70 backdrop-blur-sm border-t border-b border-gray-800/50 py-16 sm:py-24 px-6 text-center">
+          <div className="relative bg-gray-900/70 backdrop-blur-sm py-16 sm:py-24 px-6 text-center">
             {/* <div className="absolute inset-0 bg-gradient-to-br from-green-400/10 to-green-600/10 blur-2xl"></div> */}
             <div className="relative max-w-7xl mx-auto">
               {/* <div

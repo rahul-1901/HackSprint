@@ -28,6 +28,7 @@ import Leaderboard from './pages/LeaderBoard.jsx';
 import TeamDetails from './pages/TeamDetails.jsx'; // Import the new component
 import VerifyEmail from './components/verifyEmail.jsx';
 import ForgotPassword from './components/forgotPassword.jsx';
+import ScrollToTop from './components/ScrollToTop.jsx';
 
 function App() {
 
@@ -47,6 +48,7 @@ function App() {
     <>
       <Router>
         <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} />
+        <ScrollToTop/>
         <Loader />
         <HideRoute>
           <Navbar />
@@ -62,20 +64,20 @@ function App() {
           <Route path="/quest" element={<Quest />} caseSensitive />
           <Route path="/about" element={<About />} caseSensitive />
           <Route path="/hackathons" element={<AllHackathons />} caseSensitive />
-          <Route path="/admin" element={<Admin />} caseSensitive />
-          <Route path="/questions" element={<Questions />} caseSensitive />
+          {/* <Route path="/admin" element={<Admin />} caseSensitive /> */}
+          {/* <Route path="/questions" element={<Questions />} caseSensitive /> */}
           {/* <Route path="/hackathon" element={<Hackathons />} caseSensitive /> */}
-          <Route path="/admin" element={<Admin />} caseSensitive />
-          <Route path="/questions" element={<Questions />} caseSensitive />
+          <Route path="/hacksprintTeraBaap" element={<Admin />} caseSensitive />
+          <Route path="/questions" element={<AuthenticateRoute element={<Questions />} />} caseSensitive />
           {/* <Route path="/login" element={<GoogleAuthWrapper />} caseSensitive /> */}
           <Route path="/account/login" element={<Login />} caseSensitive></Route>
           <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
           {/* <Route path="/account/verify-email" element={<Verification />} caseSensitive></Route> */}
-          <Route path="/account/reset-password" element={<ResetPassword />} caseSensitive></Route>
+          <Route path="/account/reset-password" element={<AuthenticateRoute element={<ResetPassword />} />} caseSensitive></Route>
 
           {/* Hackathon and Team Routes */}
           <Route path="/hackathon/:id" element={<HackathonDetails />} />
-          <Route path="/hackathon/RegistrationForm/:id" element={<RegistrationForm />} />
+          <Route path="/hackathon/RegistrationForm/:id" element={<AuthenticateRoute element={<RegistrationForm />} />} />
           {/* ADDED ROUTE: This is the new route for the team management page */}
           <Route path="/hackathon/:hackathonId/team/:teamId" element={<AuthenticateRoute element={<TeamDetails />} />} />
 

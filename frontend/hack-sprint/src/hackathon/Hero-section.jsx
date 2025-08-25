@@ -216,7 +216,7 @@ export const HeroSection = ({
   return (
     <>
       <div className="border-b border-green-500/20">
-        <div className="w-full h-48 md:h-64 bg-gray-900">
+        <div className="w-full h-full bg-gray-900">
           <img
             src={imageError ? fallbackImage : imageUrl}
             alt="Hackathon Banner"

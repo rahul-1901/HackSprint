@@ -59,7 +59,7 @@ const Quest = () => {
   const [redirectCountdown, setRedirectCountdown] = useState(null)
   const [dummyPreview, setDummyPreview] = useState({ question: "", options: [] });
   const [prevFive, setPrevFive] = useState([]);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -90,40 +90,40 @@ const Quest = () => {
   }
 
   useEffect(() => {
-  const fetchDailyQuizzes = async () => {
-    try {
-      const response = await axios.get("http://localhost:3000/api/dailyquiz/allquiz");
-      const quizData = response.data.quizData || [];
+    const fetchDailyQuizzes = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/dailyquiz/allquiz");
+        const quizData = response.data.quizData || [];
 
-      // ✅ Build preview: only 5 questions total across all quizzes
-      const allQuestions = quizData.flatMap(quiz => quiz.questions);
-      const topFiveQuestions = allQuestions.slice(0, 5);
+        // ✅ Build preview: only 5 questions total across all quizzes
+        const allQuestions = quizData.flatMap(quiz => quiz.questions);
+        const topFiveQuestions = allQuestions.slice(0, 5);
 
-      const preview = {
-        question: "Here are the last 5 Daily Quiz Questions:",
-        options: topFiveQuestions.map((q, i) => `Q${i + 1}: ${q.question}`),
-      };
-      setDummyPreview(preview);
+        const preview = {
+          question: "Here are the last 5 Daily Quiz Questions:",
+          options: topFiveQuestions.map((q, i) => `Q${i + 1}: ${q.question}`),
+        };
+        setDummyPreview(preview);
 
-      // ✅ Build prevFive: each quiz keeps its own questions
-      const latestFiveQuizzes = quizData.slice(0, 5).map((quiz) => ({
-        key: quiz._id,
-        date: new Date(quiz.date).toLocaleDateString(undefined, { 
-          month: "short", 
-          day: "numeric" 
-        }),
-        topic: quiz.Title,
-        questions: quiz.questions, // 👈 keep original per-quiz questions
-      }));
-      setPrevFive(latestFiveQuizzes);
+        // ✅ Build prevFive: each quiz keeps its own questions
+        const latestFiveQuizzes = quizData.slice(0, 5).map((quiz) => ({
+          key: quiz._id,
+          date: new Date(quiz.date).toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric"
+          }),
+          topic: quiz.Title,
+          questions: quiz.questions, // 👈 keep original per-quiz questions
+        }));
+        setPrevFive(latestFiveQuizzes);
 
-    } catch (err) {
-      console.error("Error fetching quizzes:", err);
-    }
-  };
+      } catch (err) {
+        console.error("Error fetching quizzes:", err);
+      }
+    };
 
-  fetchDailyQuizzes();
-}, []);
+    fetchDailyQuizzes();
+  }, []);
 
 
 
@@ -150,7 +150,7 @@ const Quest = () => {
   }, [])
 
   const todayCount = questions.length || 5
-  const todayTopic = (questions[0] && questions[0].topic) || "Web Development (MERN Stack)"
+  const todayTopic = (questions[0] && questions[0].topic) || "Devlup Intro Quiz"
   const todayDateStr = new Date().toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })
 
   // const prevFive = Array.from({ length: 5 }).map((_, i) => {
@@ -453,7 +453,8 @@ const Quest = () => {
                             animate={{ scale: 1 }}
                             transition={{ delay: 0.8, type: "spring", stiffness: 300 }}
                           >
-                            {todayCount}
+                            {/* {todayCount} */}
+                            5
                           </motion.div>
                           <motion.div
                             className="text-sm font-mono text-gray-300 tracking-wide"
@@ -546,7 +547,7 @@ const Quest = () => {
                     >
                       <motion.button
                         onClick={() => navigate("/questions")}
-                        className="group inline-flex items-center justify-center gap-3 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-xl font-semibold text-white transition-all duration-300 hover:scale-[1.02] shadow-lg"
+                        className="group inline-flex items-center justify-center gap-3 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-xl font-semibold text-white transition-all duration-300 hover:scale-[1.02] shadow-lg cursor-pointer"
                         whileHover={{
                           scale: 1.05,
                           boxShadow: "0 10px 30px rgba(34, 197, 94, 0.3)",
@@ -561,7 +562,7 @@ const Quest = () => {
                           <CornerDownRight className="w-4 h-4" />
                         </motion.div>
                       </motion.button>
-                      <motion.button
+                      {/* <motion.button
                         onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}
                         className="px-6 py-3 text-sm font-medium text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-400/50 rounded-xl transition-all duration-300 hover:bg-green-500/5"
                         whileHover={{
@@ -571,7 +572,7 @@ const Quest = () => {
                         whileTap={{ scale: 0.98 }}
                       >
                         Previous DevQuests
-                      </motion.button>
+                      </motion.button> */}
                     </motion.div>
                   </div>
                 </div>
@@ -592,7 +593,7 @@ const Quest = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.3, duration: 0.6 }}
             >
-              <motion.div
+              {/* <motion.div
                 className="w-8 h-px bg-green-500"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
@@ -604,10 +605,10 @@ const Quest = () => {
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ delay: 1.6, duration: 1 }}
-              ></motion.div>
+              ></motion.div> */}
             </motion.div>
 
-            <motion.div
+            {/* <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6"
               variants={staggerContainer}
               initial="hidden"
@@ -647,7 +648,7 @@ const Quest = () => {
                   </div>
                 </motion.button>
               ))}
-            </motion.div>
+            </motion.div> */}
           </motion.section>
         </motion.main>
       </div>
