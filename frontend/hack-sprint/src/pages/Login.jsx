@@ -40,7 +40,7 @@ function Login() {
         toast.error(data.message, { className: "text-sm max-w-xs" });
       }
     } catch (err) {
-      toast.error("Something went wrong, try again...", { className: "text-sm max-w-xs" });
+      toast.error(err.message, { className: "text-sm max-w-xs" });
     }
   };
 

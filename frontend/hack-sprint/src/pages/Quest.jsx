@@ -59,7 +59,7 @@ const Quest = () => {
   const [redirectCountdown, setRedirectCountdown] = useState(null)
   const [dummyPreview, setDummyPreview] = useState({ question: "", options: [] });
   const [prevFive, setPrevFive] = useState([]);
-
+  
   const navigate = useNavigate();
 
   useEffect(() => {
