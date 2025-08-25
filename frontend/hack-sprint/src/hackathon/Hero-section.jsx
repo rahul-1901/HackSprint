@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
-import { Calendar, Users, Trophy, Clock, ChevronRight, Send } from "lucide-react";
+import {
+  Calendar,
+  Users,
+  Trophy,
+  Clock,
+  ChevronRight,
+  Send,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../backendApis/api";
 import LoginForm from "./LoginForm";
@@ -18,32 +25,50 @@ export const HeroSection = ({
   imageUrl = "/assets/hackathon-banner.png",
   hackathonId,
 }) => {
-   const [imageError, setImageError] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const [userData, setUserData] = useState(null);
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSubmissionModal, setShowSubmissionModal] = useState(false);
   const [registrationInfo, setRegistrationInfo] = useState(false);
+  const [leaderButton, setLeaderButton] = useState(false)
+  const [leaderValue, setLeaderValue] = useState("")
 
   const navigate = useNavigate();
+    useEffect(() => {
+      const checkLeader = async () => {
+        if (localStorage.getItem('teamDetails_code')) {
+          setLeaderValue(localStorage.getItem('teamDetails_code'))
+          setLeaderButton(true)
+        } else {
+          setLeaderButton(false)
+          setLeaderValue('')
+        }
+      }
 
-useEffect(() => {
+      checkLeader()
+    }, [])
+  
+
+  useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const res = await getDashboard();
         const fetchedUserData = res.data.userData;
+        console.log(fetchedUserData)
         setUserData(fetchedUserData);
         setIsVerified(fetchedUserData?.isVerified || false);
 
-        if (fetchedUserData && Array.isArray(fetchedUserData.registeredHackathons)) {
-          
+        if (
+          fetchedUserData &&
+          Array.isArray(fetchedUserData.registeredHackathons)
+        ) {
           const registrationFound = fetchedUserData.registeredHackathons.find(
             (registrationId) => String(registrationId) === String(hackathonId)
           );
           setRegistrationInfo(!!registrationFound);
-
         } else {
           setRegistrationInfo(false);
         }
@@ -58,20 +83,18 @@ useEffect(() => {
 
     fetchData();
 
-    window.addEventListener('focus', fetchData);
-    window.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
+    window.addEventListener("focus", fetchData);
+    window.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
         fetchData();
       }
     });
 
     return () => {
-      window.removeEventListener('focus', fetchData);
-      window.removeEventListener('visibilitychange', fetchData);
+      window.removeEventListener("focus", fetchData);
+      window.removeEventListener("visibilitychange", fetchData);
     };
   }, [hackathonId]);
-
-
 
   const handleRegister = () => {
     if (isVerified) {
@@ -81,6 +104,9 @@ useEffect(() => {
     }
   };
 
+  const handleLeader = () => {
+    navigate(`/hackathon/${hackathonId}/team/${leaderValue}`)
+  }
 
   const handleLoginSuccess = (data) => {
     setShowLoginModal(false);
@@ -89,8 +115,8 @@ useEffect(() => {
   };
 
   const handleSubmit = () => {
-setShowSubmissionModal(true);  
-};
+    setShowSubmissionModal(true);
+  };
   const formatDateRange = (start, end) => {
     const startDateObj = new Date(start);
     const endDateObj = new Date(end);
@@ -139,18 +165,22 @@ setShowSubmissionModal(true);
   const renderActionButton = () => {
     if (loading) {
       return (
-        <Button disabled size="lg" className="bg-gray-500/50 text-white font-bold w-auto">
+        <Button
+          disabled
+          size="lg"
+          className="bg-gray-500/50 text-white font-bold w-auto"
+        >
           Loading...
         </Button>
       );
     }
 
-
     if (!isActive) {
       return null;
     }
 
-    if (registrationInfo) { // User is registered
+    if (registrationInfo) {
+      // User is registered
       return (
         <Button
           onClick={handleSubmit}
@@ -163,8 +193,8 @@ setShowSubmissionModal(true);
           </span>
         </Button>
       );
-
-    } else { // User is not registered for this hackathon
+    } else {
+      // User is not registered for this hackathon
       return (
         <Button
           onClick={handleRegister}
@@ -198,11 +228,10 @@ setShowSubmissionModal(true);
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
           <div className="flex flex-wrap items-center gap-4 mb-4">
             <Badge
-              className={`${
-                isActive
-                  ? "bg-green-400/10 text-green-300 border-green-400/20"
-                  : "bg-gray-800 text-gray-400 border-gray-700"
-              } px-3 py-1 text-sm font-medium border`}
+              className={`${isActive
+                ? "bg-green-400/10 text-green-300 border-green-400/20"
+                : "bg-gray-800 text-gray-400 border-gray-700"
+                } px-3 py-1 text-sm font-medium border`}
             >
               {isActive ? "Active" : "Ended"}
             </Badge>
@@ -221,8 +250,18 @@ setShowSubmissionModal(true);
                 {subTitle}
               </p>
             </div>
-            <div className="flex-shrink-0 w-full lg:w-auto text-center lg:text-left">
+            <div className="flex gap-5 w-full lg:w-auto text-center lg:text-left">
               {/* --- CHANGE 5: Render the action button using the new logic --- */}
+              {leaderButton ? 
+              <Button
+              onClick={handleLeader}
+                className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+              >
+                <span className="flex items-center gap-2">
+                  Leader DashBoard
+                  <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+              </Button> : <></>}
               {renderActionButton()}
             </div>
             {/* <div className="flex-shrink-0 w-full lg:w-auto text-center lg:text-left">
@@ -247,7 +286,6 @@ setShowSubmissionModal(true);
                   </Button>
                 ))}
             </div> */}
-
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
@@ -295,12 +333,12 @@ setShowSubmissionModal(true);
       )}
 
       {/* Submission Modal */}
-   {showSubmissionModal && (
-  <SubmissionForm
-    isOpen={showSubmissionModal}
-    onClose={() => setShowSubmissionModal(false)}
-  />
-)}
+      {showSubmissionModal && (
+        <SubmissionForm
+          isOpen={showSubmissionModal}
+          onClose={() => setShowSubmissionModal(false)}
+        />
+      )}
     </>
   );
 };

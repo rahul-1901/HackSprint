@@ -51,6 +51,8 @@ const Navbar = () => {
     setUserInfo(null)
     setIsLoggedIn(false)
     navigate("/")
+    setIsOpen(false)
+    setShowProfileMenu(false)
   }
 
   return (
@@ -172,6 +174,79 @@ const Navbar = () => {
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isOpen && (
+          <div className="md:hidden bg-gray-900/95 backdrop-blur-md border-t border-green-500/20">
+            <div className="container mx-auto px-3 sm:px-4 py-4">
+              {/* Navigation Items */}
+              <div className="space-y-2 mb-6">
+                {navItems.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <button
+                      key={item.name}
+                      onClick={() => handleNavigate(item.pageLink)}
+                      className="flex items-center space-x-3 w-full px-4 py-3 text-gray-300 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition cursor-pointer"
+                    >
+                      <Icon size={18} />
+                      <span>{item.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* User Section */}
+              {isLoggedIn ? (
+                <div className="border-t border-green-500/20 pt-4">
+                  {/* User Info */}
+                  <div className="flex items-center p-4 bg-gray-800 rounded-lg mb-4">
+                    <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
+                      {userInfo?.name ? userInfo.name[0].toUpperCase() : "U"}
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <p className="text-white font-semibold">{userInfo?.name || "Guest User"}</p>
+                      <p className="text-gray-400 text-sm">{userInfo?.email || ""}</p>
+                    </div>
+                    <div className="flex items-center space-x-1 text-yellow-400">
+                      <Coins size={16} />
+                      <span className="text-sm font-semibold">{userInfo?.coins || 0}</span>
+                    </div>
+                  </div>
+
+                  {/* Mobile Actions */}
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => handleNavigate('/dashboard')}
+                      className="flex items-center space-x-3 w-full px-4 py-3 text-gray-300 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition cursor-pointer"
+                    >
+                      <User size={18} className="text-green-400" />
+                      <span>Profile</span>
+                    </button>
+                    
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center space-x-3 w-full px-4 py-3 text-red-400 hover:bg-red-500/20 rounded-lg transition cursor-pointer"
+                    >
+                      <LogOut size={18} />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="border-t border-green-500/20 pt-4">
+                  <button
+                    onClick={() => handleNavigate('/account/login')}
+                    className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition cursor-pointer"
+                  >
+                    <LogIn size={18} />
+                    <span>Login</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       <div className="h-14 sm:h-16" />
@@ -179,4 +254,4 @@ const Navbar = () => {
   )
 }
 
-  export default Navbar
+export default Navbar

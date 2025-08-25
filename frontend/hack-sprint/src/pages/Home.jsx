@@ -354,10 +354,10 @@ const DeveloperJourneySection = () => {
                           {journey.duration}
                         </span>
                       </div>
-                      <button className="bg-green-400/10 hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 flex items-center gap-1 hover:scale-105 hover:shadow-lg hover:shadow-green-400/20 group w-full sm:w-auto justify-center">
+                      {/* <button className="bg-green-400/10 hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 flex items-center gap-1 hover:scale-105 hover:shadow-lg hover:shadow-green-400/20 group w-full sm:w-auto justify-center">
                         View Details
                         <ChevronRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" />
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </div>
@@ -429,7 +429,7 @@ const Home = () => {
       <div className="min-h-screen flex flex-col items-center justify-center overflow-hidden relative px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-24">
         {/* Live Stats Bar */}
         <div className="absolute top-20 sm:top-24 left-1/2 transform -translate-x-1/2 z-20 w-full max-w-lg px-4">
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 bg-gray-900/80 backdrop-blur-sm border border-gray-800/50 rounded-full px-4 sm:px-6 py-3">
+          {/* <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 bg-gray-900/80 backdrop-blur-sm border border-gray-800/50 rounded-full px-4 sm:px-6 py-3">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
               <span className="text-green-400 text-xs sm:text-sm font-medium">Live:</span>
@@ -440,7 +440,7 @@ const Home = () => {
               <Trophy className="w-3 h-3 text-green-400" />
               <span className="text-white text-xs sm:text-sm">4 active competitions</span>
             </div>
-          </div>
+          </div> */}
         </div>
 
         <div className="text-center mb-8 z-20 relative max-w-6xl mx-auto">
@@ -449,7 +449,7 @@ const Home = () => {
               Welcome to the Future of Innovation
             </span>
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl ZaptronFont text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-800 tracking-widest z-10 text-center relative leading-tight">
+          <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl ZaptronFont text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-800 tracking-widest z-10 text-center relative leading-tight">
             HackSprint
             <div className="absolute inset-0 bg-gradient-to-b from-green-400 to-green-800 blur-3xl opacity-20 -z-10" />
           </h1>
@@ -464,7 +464,7 @@ const Home = () => {
             connections.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-6 sm:mt-8 justify-center px-4">
+          {/* <div className="flex flex-col sm:flex-row gap-4 mt-6 sm:mt-8 justify-center px-4">
             <button
               className="bg-green-400 hover:bg-green-500 text-gray-900 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 group text-sm sm:text-base"
               style={{ animation: "glow 2s ease-in-out infinite alternate" }}
@@ -476,7 +476,7 @@ const Home = () => {
               <Play className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
               Watch Demo
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Floating Quote Boxes - Enhanced and responsive */}
@@ -672,10 +672,10 @@ const Home = () => {
                   ))}
                 </div>
 
-                <button className="w-full bg-green-400/10 hover:bg-green-400/20 border border-green-400/20 hover:border-green-400/40 text-green-400 font-medium py-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 group-hover:scale-105 text-sm sm:text-base">
+                {/* <button className="w-full bg-green-400/10 hover:bg-green-400/20 border border-green-400/20 hover:border-green-400/40 text-green-400 font-medium py-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 group-hover:scale-105 text-sm sm:text-base">
                   Learn More
                   <ChevronRight className="w-4 h-4" />
-                </button>
+                </button> */}
               </div>
             ))}
           </div>
@@ -708,10 +708,10 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
             {[
               {
-                name: "Sarah Chen",
-                role: "Founder & CEO",
-                company: "TechFlow AI",
-                achievement: "$50M Series A",
+                name: "Kavya Bhanvadia",
+                // role: "Founder & CEO",
+                // company: "TechFlow AI",
+                // achievement: "$50M Series A",
                 quote:
                   "What started as a 48-hour hackathon project became a company that's revolutionizing workflow automation for Fortune 500 companies.",
                 gradient: "from-gray-900/80 to-gray-800/80",
@@ -719,10 +719,10 @@ const Home = () => {
                 social: { linkedin: "#", twitter: "#" },
               },
               {
-                name: "Alex Rodriguez",
-                role: "Senior Engineer",
-                company: "Meta",
-                achievement: "6-Figure Salary",
+                name: "Nayan Patidar",
+                // role: "Senior Engineer",
+                // company: "Meta",
+                // achievement: "6-Figure Salary",
                 quote:
                   "HackSprint didn't just teach me to code—it taught me to think like an innovator. The collaborative projects here prepared me for big tech.",
                 gradient: "from-gray-900/80 to-gray-800/80",
@@ -730,10 +730,10 @@ const Home = () => {
                 social: { linkedin: "#", github: "#" },
               },
               {
-                name: "Maya Patel",
-                role: "CTO",
-                company: "HealthTech Solutions",
-                achievement: "IPO Success",
+                name: "Ridham Shah",
+                // role: "CTO",
+                // company: "HealthTech Solutions",
+                // achievement: "IPO Success",
                 quote:
                   "The collaborative spirit and technical excellence I learned here shaped how I build and lead engineering teams at scale.",
                 gradient: "from-gray-900/80 to-gray-800/80",
@@ -788,11 +788,11 @@ const Home = () => {
                     <span className="bg-green-400/10 text-green-400 px-3 py-1 rounded-full text-sm font-medium border border-green-400/20">
                       {story.achievement}
                     </span>
-                    <div className="flex">
+                    {/* <div className="flex">
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} className="w-3 h-3 text-green-400 fill-current" />
                       ))}
-                    </div>
+                    </div> */}
                   </div>
                   <blockquote className="text-gray-300 italic leading-relaxed text-sm sm:text-base">
                     "{story.quote}"
@@ -845,7 +845,7 @@ const Home = () => {
 
                 <div className="grid grid-cols-2 gap-4 sm:gap-6 mb-6">
                   <div className="text-center bg-gray-800/30 rounded-lg p-3 sm:p-4">
-                    <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">15</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">6</div>
                     <div className="text-gray-400 text-xs sm:text-sm">Hackathons Completed</div>
                   </div>
                   <div className="text-center bg-gray-800/30 rounded-lg p-3 sm:p-4">
@@ -863,7 +863,7 @@ const Home = () => {
                       </div>
                       <span className="bg-green-400/20 text-green-400 px-2 py-1 rounded text-xs">NEW</span>
                     </div>
-                    <p className="text-gray-400 text-sm">127 developers currently collaborating on projects</p>
+                    <p className="text-gray-400 text-sm">6 developers currently collaborating on projects</p>
                   </div>
 
                   <div className="p-4 bg-green-600/5 border border-green-600/20 rounded-lg">
@@ -944,7 +944,7 @@ const Home = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button
+                {/* <button
                   className="bg-green-400 hover:bg-green-500 text-gray-900 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 text-sm sm:text-base"
                   style={{ animation: "glow 2s ease-in-out infinite alternate" }}
                 >
@@ -956,7 +956,7 @@ const Home = () => {
                 >
                   <Calendar className="w-4 sm:w-5 h-4 sm:h-5" />
                   View Events
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
@@ -1012,17 +1012,17 @@ const Home = () => {
       </section> */}
 
       {/* Call to Action Section */}
-      <section className="fade-section py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 relative bg-gray-900/30 backdrop-blur-sm">
+     <section className="fade-section py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 relative bg-gray-900/30 backdrop-blur-sm">
         <div className="max-w-full mx-auto text-center">
           <div className="relative bg-gray-900/70 backdrop-blur-sm border-t border-b border-gray-800/50 py-16 sm:py-24 px-6 text-center">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-400/10 to-green-600/10 blur-2xl"></div>
+            {/* <div className="absolute inset-0 bg-gradient-to-br from-green-400/10 to-green-600/10 blur-2xl"></div> */}
             <div className="relative max-w-7xl mx-auto">
-              <div
+              {/* <div
                 className="w-20 h-20 sm:w-24 sm:h-24 bg-green-400/10 border border-green-400/20 rounded-2xl flex items-center justify-center mx-auto mb-6 sm:mb-8"
                 style={{ animation: "glow 2s ease-in-out infinite alternate" }}
               >
                 <Rocket className="w-10 h-10 sm:w-12 sm:h-12 text-green-400" />
-              </div>
+              </div> */}
 
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white ZaptronFont text-center relative leading-tight mb-4 sm:mb-6">
                 Ready to Transform Your Future?
@@ -1033,7 +1033,7 @@ const Home = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6 sm:mb-8">
-                <button
+                {/* <button
                   className="bg-green-400 hover:bg-green-500 text-gray-900 font-semibold px-8 sm:px-10 py-3 sm:py-4 rounded-lg transition-all duration-300 transform hover:scale-105 text-base sm:text-lg flex items-center justify-center gap-2"
                   style={{ animation: "glow 2s ease-in-out infinite alternate" }}
                 >
@@ -1043,7 +1043,7 @@ const Home = () => {
                 <button className="border border-gray-700 text-gray-300 hover:border-green-400/50 hover:text-white font-semibold px-8 sm:px-10 py-3 sm:py-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 text-base sm:text-lg bg-gray-900/50 backdrop-blur-sm">
                   <Play className="w-4 sm:w-5 h-4 sm:h-5" />
                   Watch Success Stories
-                </button>
+                </button> */}
               </div>
 
               <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 text-sm text-gray-400">
