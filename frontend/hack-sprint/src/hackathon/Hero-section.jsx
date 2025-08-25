@@ -81,9 +81,6 @@ useEffect(() => {
     }
   };
 
-  const handleSubmit = () => {
-    navigate(`/hackathon/${hackathonId}`);
-  };
 
   const handleLoginSuccess = (data) => {
     setShowLoginModal(false);
