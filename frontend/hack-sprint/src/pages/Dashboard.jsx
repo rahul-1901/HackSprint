@@ -134,7 +134,8 @@ export const UserDashboard = () => {
 
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("email");
     toast.success("Logout successfull...", { autoClose: 1000 });
     setTimeout(() => {
       navigate("/");
