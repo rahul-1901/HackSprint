@@ -515,7 +515,7 @@ const Questions = () => {
                             {/* Navigate Button */}
                             <div className="mt-5">
                                 <button
-                                    onClick={() => navigate("/dashboard")}
+                                    onClick={() => navigate("/leaderboard")}
                                     className="px-6 py-3 cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold text-lg rounded-4xl transition-all duration-300 transform hover:scale-105 shadow-lg"
                                 >
                                     Go to Dashboard

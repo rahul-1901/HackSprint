@@ -198,7 +198,7 @@ export const UserDashboard = () => {
           {/* Coins + Streak */}
           <div className="bg-white/5 border border-yellow-500/20 rounded-xl p-4 flex flex-col items-center">
             <div className="flex items-center gap-2 text-yellow-400 font-bold">
-              <Coins /> <span>{coins} Coins</span>
+              <Coins /> <span>10 Coins</span>
             </div>
             <p className="text-sm text-gray-400 mt-1">🔥 Streak: {streak} days</p>
           </div>
