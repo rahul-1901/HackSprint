@@ -127,30 +127,30 @@ const Footer = () => {
                     </div>
                     <div className="lg:col-span-3">
                         <h3 className="text-white font-medium text-lg mb-3">Join our community</h3>
-                            <form className="flex flex-col space-y-2">
-                                <div className="relative">
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="participant@email.com"
-                                        className="w-full bg-gray-900 border border-gray-700 focus:border-green-500 focus:ring-1 focus:ring-green-500 rounded py-2 px-3 text-gray-300 placeholder-gray-500 font-mono text-sm transition duration-300"
-                                        required
-                                    />
-                                    <a
-                                        href="https://discord.com/invite/5kKqzGdhPP"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="absolute right-1 top-1 mt-[2px] bg-gray-800 hover:bg-gray-700 text-green-500 p-1 rounded transition duration-300 inline-flex items-center justify-center"
-                                        aria-label="Subscribe"
-                                    >
-                                        <SendIcon size={18} />
-                                    </a>
-                                </div>
-                                <p className="text-gray-500 text-xs">
-                                    Stay updated with our latest tutorials and resources.
-                                </p>
-                            </form>
+                        <form className="flex flex-col space-y-2">
+                            <div className="relative">
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="participant@email.com"
+                                    className="w-full bg-gray-900 border border-gray-700 focus:border-green-500 focus:ring-1 focus:ring-green-500 rounded py-2 px-3 text-gray-300 placeholder-gray-500 font-mono text-sm transition duration-300"
+                                    required
+                                />
+                                <a
+                                    href="https://discord.com/invite/5kKqzGdhPP"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="absolute right-1 top-1 mt-[2px] bg-gray-800 hover:bg-gray-700 text-green-500 p-1 rounded transition duration-300 inline-flex items-center justify-center"
+                                    aria-label="Subscribe"
+                                >
+                                    <SendIcon size={18} />
+                                </a>
+                            </div>
+                            <p className="text-gray-500 text-xs">
+                                Stay updated with our latest tutorials and resources.
+                            </p>
+                        </form>
                         <div className="mt-8">
                             <h3 className="text-white font-medium text-lg mb-2">Connect With Us</h3>
                             <div className="flex space-x-3">

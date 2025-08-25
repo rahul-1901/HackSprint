@@ -52,11 +52,11 @@ export const UserDashboard = () => {
   const [showReward, setShowReward] = useState(false);
   const navigate = useNavigate();
   const [editEducation, setEditEducation] = useState(false);
-const [educationData, setEducationData] = useState({
-  institute: "",
-  passoutYear: "",
-  department: "",
-});
+  const [educationData, setEducationData] = useState({
+    institute: "",
+    passoutYear: "",
+    department: "",
+  });
 
   // Daily Coin + Streak System
   useEffect(() => {
@@ -92,7 +92,7 @@ const [educationData, setEducationData] = useState({
     setCoins(newCoins);
     setStreak(newStreak);
   }, []);
-  
+
 
   // Fetch Dashboard Data
   useEffect(() => {
@@ -110,27 +110,27 @@ const [educationData, setEducationData] = useState({
     fetchData();
   }, []);
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const res = await getDashboard();
-      const userData = res.data.userData;
-      setData(userData);
+    const fetchData = async () => {
+      try {
+        const res = await getDashboard();
+        const userData = res.data.userData;
+        setData(userData);
 
-      // ✅ update education data once user info is fetched
-      setEducationData({
-        institute: userData.education?.institute || "",
-        passoutYear: userData.education?.passoutYear || "",
-        department: userData.education?.department || "",
-      });
-    } catch (err) {
-      console.error("Dashboard fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+        // ✅ update education data once user info is fetched
+        setEducationData({
+          institute: userData.education?.institute || "",
+          passoutYear: userData.education?.passoutYear || "",
+          department: userData.education?.department || "",
+        });
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchData();
-}, []);
+    fetchData();
+  }, []);
 
 
   const handleLogout = () => {
@@ -161,39 +161,37 @@ const [educationData, setEducationData] = useState({
 
   return (
     <div className="relative min-h-screen bg-gray-900 text-white overflow-hidden">
-      <GridBackground />
-      <FloatingParticles />
 
       <div className="relative z-10 max-w-7xl mx-auto p-6 flex flex-col md:flex-row gap-6">
         {/* LEFT COLUMN */}
         <div className="w-full md:w-1/4 space-y-6">
           {/* Profile Card */}
-<div className="bg-white/5 border border-green-500/20 rounded-xl p-6 flex flex-col items-center hover:border-green-400 transition-all text-center">
-  <div className="relative">
-    <img
-      src={
-        data.avatar_url ||
-        "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png"
-      }
-      alt="Avatar"
-      className="w-24 h-24 rounded-full border-2 border-green-500/50"
-    />
-  </div>
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 flex flex-col items-center hover:border-green-400 transition-all text-center">
+            <div className="relative">
+              <img
+                src={
+                  data.avatar_url ||
+                  "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png"
+                }
+                alt="Avatar"
+                className="w-24 h-24 rounded-full border-2 border-green-500/50"
+              />
+            </div>
 
-  <h2 className="mt-4 text-xl font-bold">{data.name || "Unnamed User"}</h2>
-  <p className="text-sm text-gray-400">{data.roll_no || "N/A"}</p>
-  <p className="text-sm text-green-400 mt-1">
-    Rank: #{data.rank || "N/A"}
-  </p>
+            <h2 className="mt-4 text-xl font-bold">{data.name || "Unnamed User"}</h2>
+            <p className="text-sm text-gray-400">{data.roll_no || "N/A"}</p>
+            <p className="text-sm text-green-400 mt-1">
+              Rank: #{data.rank || "N/A"}
+            </p>
 
-  <button
-  onClick={handleLogout}
-  className="mt-3 px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
->
-  Logout
-</button>
+            <button
+              onClick={handleLogout}
+              className="mt-3 px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
+            >
+              Logout
+            </button>
 
-</div>
+          </div>
 
 
           {/* Coins + Streak */}
@@ -264,60 +262,53 @@ const [educationData, setEducationData] = useState({
         {/* RIGHT COLUMN */}
         <div className="flex-1 space-y-6">
 
-        {/* Submissions Heatmap */}
-<div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
-  <h3 className="text-lg font-semibold text-green-400 mb-3">
-    Submissions in the Last Year
-  </h3>
+          {/* Submissions Heatmap */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+            <h3 className="text-lg font-semibold text-green-400 mb-3">
+              Get track of your submissions
+            </h3>
 
-  <CalendarHeatmap
-    startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
-    endDate={new Date()}
-    values={
-      Array.isArray(data.submissions) && data.submissions.length > 0
-        ? data.submissions.map((s) => ({
-            date: new Date(s.submitted_at).toISOString().split("T")[0],
-            count: 1,
-          }))
-        : // Prefilled demo values
-          [
-            { date: "2024-08-15", count: 2 },
-            { date: "2024-09-10", count: 3 },
-            { date: "2024-11-05", count: 1 },
-            { date: "2025-01-20", count: 4 },
-            { date: "2025-02-10", count: 2 },
-            { date: "2025-03-05", count: 3 },
-          ]
-    }
-    classForValue={(value) => {
-      if (!value) return "color-empty";
-      if (value.count === 1) return "color-scale-1";
-      if (value.count === 2) return "color-scale-2";
-      if (value.count === 3) return "color-scale-3";
-      return "color-scale-4";
-    }}
-    tooltipDataAttrs={(value) => {
-      if (!value || !value.date) return null;
-      return {
-        "data-tip": `${value.date}: ${value.count || 0} submissions`,
-      };
-    }}
-    showWeekdayLabels={true}
-  />
+            <CalendarHeatmap
+              startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
+              endDate={new Date()}
+              values={
+                Array.isArray(data.submissions) && data.submissions.length > 0
+                  ? data.submissions.map((s) => ({
+                    date: new Date(s.submitted_at).toISOString().split("T")[0],
+                    count: 1,
+                  }))
+                  : // Prefilled demo values
+                  []
+              }
+              classForValue={(value) => {
+                if (!value) return "color-empty";
+                if (value.count === 1) return "color-scale-1";
+                if (value.count === 2) return "color-scale-2";
+                if (value.count === 3) return "color-scale-3";
+                return "color-scale-4";
+              }}
+              tooltipDataAttrs={(value) => {
+                if (!value || !value.date) return null;
+                return {
+                  "data-tip": `${value.date}: ${value.count || 0} submissions`,
+                };
+              }}
+              showWeekdayLabels={true}
+            />
 
-  {/* Legend */}
-  <div className="flex items-center gap-1 text-xs text-gray-400 mt-4">
-    <span>Less</span>
-    <div className="w-3 h-3 rounded-sm bg-green-900/20" />
-    <div className="w-3 h-3 rounded-sm bg-green-400" />
-    <div className="w-3 h-3 rounded-sm bg-green-500" />
-    <div className="w-3 h-3 rounded-sm bg-green-600" />
-    <div className="w-3 h-3 rounded-sm bg-green-700" />
-    <span>More</span>
-  </div>
+            {/* Legend */}
+            <div className="flex items-center gap-1 text-xs text-gray-400 mt-4">
+              <span>Less</span>
+              <div className="w-3 h-3 rounded-sm bg-green-900/20" />
+              <div className="w-3 h-3 rounded-sm bg-green-400" />
+              <div className="w-3 h-3 rounded-sm bg-green-500" />
+              <div className="w-3 h-3 rounded-sm bg-green-600" />
+              <div className="w-3 h-3 rounded-sm bg-green-700" />
+              <span>More</span>
+            </div>
 
-  {/* Custom Heatmap Colors */}
-  <style>{`
+            {/* Custom Heatmap Colors */}
+            <style>{`
     .react-calendar-heatmap .color-empty {
       fill: #064e3b; /* dark green for empty days */
     }
@@ -334,300 +325,300 @@ const [educationData, setEducationData] = useState({
       fill: #065f46; /* deepest green */
     }
   `}</style>
-</div>
+          </div>
 
 
 
-       {/* Connected Apps */}
-<div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
-  <h3 className="text-lg font-semibold text-green-400 mb-3">
-    Connected Apps
-  </h3>
+          {/* Connected Apps */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+            <h3 className="text-lg font-semibold text-green-400 mb-3">
+              Connected Apps
+            </h3>
 
-  {data.editAppsIndex === undefined ? (
-    <div>
-      {Array.isArray(data.connectedApps) && data.connectedApps.length > 0 ? (
-        <div className="space-y-3">
-          {data.connectedApps.map((app, idx) => (
-            <div
-              key={idx}
-              className="flex justify-between items-center p-3 bg-gray-800/40 border border-green-500/20 rounded-lg"
-            >
-              <span className="text-gray-200 font-medium">{app.name}</span>
-              <div className="flex gap-2">
-                <a
-                  href={app.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-lg text-green-300 hover:bg-green-600/40 transition cursor-pointer"
-                >
-                  Visit
-                </a>
+            {data.editAppsIndex === undefined ? (
+              <div>
+                {Array.isArray(data.connectedApps) && data.connectedApps.length > 0 ? (
+                  <div className="space-y-3">
+                    {data.connectedApps.map((app, idx) => (
+                      <div
+                        key={idx}
+                        className="flex justify-between items-center p-3 bg-gray-800/40 border border-green-500/20 rounded-lg"
+                      >
+                        <span className="text-gray-200 font-medium">{app.name}</span>
+                        <div className="flex gap-2">
+                          <a
+                            href={app.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-lg text-green-300 hover:bg-green-600/40 transition cursor-pointer"
+                          >
+                            Visit
+                          </a>
+                          <button
+                            onClick={() => setData({ ...data, editAppsIndex: idx, tempAppName: app.name, tempAppUrl: app.url })}
+                            className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-yellow-400 hover:bg-yellow-600/40 cursor-pointer"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              const newApps = [...(data.connectedApps || [])];
+                              newApps.splice(idx, 1);
+                              setData({ ...data, connectedApps: newApps });
+                            }}
+                            className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-400">No connected apps available.</p>
+                )}
+
                 <button
-                  onClick={() => setData({ ...data, editAppsIndex: idx, tempAppName: app.name, tempAppUrl: app.url })}
-                  className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-yellow-400 hover:bg-yellow-600/40 cursor-pointer"
+                  onClick={() => setData({ ...data, editAppsIndex: "new", tempAppName: "", tempAppUrl: "" })}
+                  className="mt-3 px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40 cursor-pointer"
                 >
-                  Edit
-                </button>
-                <button
-                  onClick={() => {
-                    const newApps = [...(data.connectedApps || [])];
-                    newApps.splice(idx, 1);
-                    setData({ ...data, connectedApps: newApps });
-                  }}
-                  className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
-                >
-                  Delete
+                  Add App
                 </button>
               </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-400">No connected apps available.</p>
-      )}
+            ) : (
+              <div className="space-y-3 mt-2">
+                <input
+                  type="text"
+                  placeholder="App Name (e.g. GitHub, LinkedIn)"
+                  value={data.tempAppName || ""}
+                  onChange={(e) => setData({ ...data, tempAppName: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+                />
+                <input
+                  type="url"
+                  placeholder="App URL (https://...)"
+                  value={data.tempAppUrl || ""}
+                  onChange={(e) => setData({ ...data, tempAppUrl: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+                />
 
-      <button
-        onClick={() => setData({ ...data, editAppsIndex: "new", tempAppName: "", tempAppUrl: "" })}
-        className="mt-3 px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40 cursor-pointer"
-      >
-        Add App
-      </button>
-    </div>
-  ) : (
-    <div className="space-y-3 mt-2">
-      <input
-        type="text"
-        placeholder="App Name (e.g. GitHub, LinkedIn)"
-        value={data.tempAppName || ""}
-        onChange={(e) => setData({ ...data, tempAppName: e.target.value })}
-        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
-      />
-      <input
-        type="url"
-        placeholder="App URL (https://...)"
-        value={data.tempAppUrl || ""}
-        onChange={(e) => setData({ ...data, tempAppUrl: e.target.value })}
-        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
-      />
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      if (data.tempAppName && data.tempAppUrl) {
+                        const newApps = [...(data.connectedApps || [])];
 
-      <div className="flex gap-3">
-        <button
-          onClick={() => {
-            if (data.tempAppName && data.tempAppUrl) {
-              const newApps = [...(data.connectedApps || [])];
+                        if (data.editAppsIndex === "new") {
+                          // Adding a new app
+                          newApps.push({ name: data.tempAppName, url: data.tempAppUrl });
+                        } else {
+                          // Editing existing app
+                          newApps[data.editAppsIndex] = { name: data.tempAppName, url: data.tempAppUrl };
+                        }
 
-              if (data.editAppsIndex === "new") {
-                // Adding a new app
-                newApps.push({ name: data.tempAppName, url: data.tempAppUrl });
-              } else {
-                // Editing existing app
-                newApps[data.editAppsIndex] = { name: data.tempAppName, url: data.tempAppUrl };
-              }
-
-              setData({
-                ...data,
-                connectedApps: newApps,
-                editAppsIndex: undefined,
-                tempAppName: "",
-                tempAppUrl: "",
-              });
-            }
-          }}
-          className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40 cursor-pointer"
-        >
-          Save
-        </button>
-        <button
-          onClick={() =>
-            setData({ ...data, editAppsIndex: undefined, tempAppName: "", tempAppUrl: "" })
-          }
-          className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  )}
-</div>
-
-  
-{/* Education */}
-<div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
-  <h3 className="text-lg font-semibold text-green-400 mb-4">Education</h3>
-
-  {/* Loop through multiple education entries */}
-  {(data?.education && data.education.length > 0) ? (
-    data.education.map((edu, idx) => {
-      // ✅ calculate opacity per card
-      const opacity = 1 - idx * 0.15; // decreases 15% each next card
-      const bgColor = `rgba(31, 41, 55, ${opacity})`; // gray-800 with decreasing intensity
-
-      return (
-        <div
-          key={idx}
-          className="p-4 mb-4 border border-green-500/20 rounded-lg shadow-md hover:scale-[1.01] transition-transform space-y-3 relative"
-          style={{ backgroundColor: bgColor }}
-        >
-          {/* College Name + Timeline */}
-          <div className="flex justify-between items-center">
-            <h4 className="text-xl font-bold text-white flex items-center gap-2">
-              <School size={20} /> {edu?.institute || "N/A"}
-            </h4>
-            {edu?.timeline && (
-              <p className="text-sm text-gray-300 flex items-center gap-2">
-                <Clock size={16} /> {edu.timeline}
-              </p>
+                        setData({
+                          ...data,
+                          connectedApps: newApps,
+                          editAppsIndex: undefined,
+                          tempAppName: "",
+                          tempAppUrl: "",
+                        });
+                      }
+                    }}
+                    className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40 cursor-pointer"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() =>
+                      setData({ ...data, editAppsIndex: undefined, tempAppName: "", tempAppUrl: "" })
+                    }
+                    className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Department + Grade */}
-          {(edu?.department || edu?.grade) && (
-            <div className="flex justify-between text-sm text-gray-400 mt-1">
-              {edu.department && (
-                <span className="flex items-center gap-2 font-medium text-white">
-                  <Laptop size={16} /> {edu.department}
-                </span>
-              )}
-              {edu.grade && (
-                <span className="flex items-center gap-2 font-medium">
-                  <span className="text-green-300">CGPA:</span> {edu.grade}
-                  <Star size={14} className="text-yellow-400" />
-                </span>
-              )}
-            </div>
-          )}
 
-          {/* Location */}
-          {edu?.location && (
-            <p className="text-xs text-gray-400 flex items-center gap-2 mt-2">
-              <MapPin size={14} /> {edu.location}
-            </p>
-          )}
+          {/* Education */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+            <h3 className="text-lg font-semibold text-green-400 mb-4">Education</h3>
 
-          {/* Edit/Delete Buttons */}
-          <div className="flex justify-end gap-3 mt-3">
-            <button
-              onClick={() => {
-                setEducationData(edu);
-                setEditEducation(true);
-                setEditIndex(idx);
-              }}
-              className="px-3 py-1 rounded-lg bg-green-500/20 hover:bg-green-600/40 border border-green-500/40 text-green-400 cursor-pointer flex items-center gap-1"
-            >
-              <Edit size={16} /> Edit
-            </button>
-            <button
-              onClick={() => {
-                const updated = [...data.education];
-                updated.splice(idx, 1);
-                setData({ ...data, education: updated });
-              }}
-              className="px-3 py-1 rounded-lg bg-red-500/20 hover:bg-red-600/40 border border-red-500/40 text-red-400 cursor-pointer flex items-center gap-1"
-            >
-              Delete
-            </button>
+            {/* Loop through multiple education entries */}
+            {(data?.education && data.education.length > 0) ? (
+              data.education.map((edu, idx) => {
+                // ✅ calculate opacity per card
+                const opacity = 1 - idx * 0.15; // decreases 15% each next card
+                const bgColor = `rgba(31, 41, 55, ${opacity})`; // gray-800 with decreasing intensity
+
+                return (
+                  <div
+                    key={idx}
+                    className="p-4 mb-4 border border-green-500/20 rounded-lg shadow-md hover:scale-[1.01] transition-transform space-y-3 relative"
+                    style={{ backgroundColor: bgColor }}
+                  >
+                    {/* College Name + Timeline */}
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-xl font-bold text-white flex items-center gap-2">
+                        <School size={20} /> {edu?.institute || "N/A"}
+                      </h4>
+                      {edu?.timeline && (
+                        <p className="text-sm text-gray-300 flex items-center gap-2">
+                          <Clock size={16} /> {edu.timeline}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Department + Grade */}
+                    {(edu?.department || edu?.grade) && (
+                      <div className="flex justify-between text-sm text-gray-400 mt-1">
+                        {edu.department && (
+                          <span className="flex items-center gap-2 font-medium text-white">
+                            <Laptop size={16} /> {edu.department}
+                          </span>
+                        )}
+                        {edu.grade && (
+                          <span className="flex items-center gap-2 font-medium">
+                            <span className="text-green-300">CGPA:</span> {edu.grade}
+                            <Star size={14} className="text-yellow-400" />
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Location */}
+                    {edu?.location && (
+                      <p className="text-xs text-gray-400 flex items-center gap-2 mt-2">
+                        <MapPin size={14} /> {edu.location}
+                      </p>
+                    )}
+
+                    {/* Edit/Delete Buttons */}
+                    <div className="flex justify-end gap-3 mt-3">
+                      <button
+                        onClick={() => {
+                          setEducationData(edu);
+                          setEditEducation(true);
+                          setEditIndex(idx);
+                        }}
+                        className="px-3 py-1 rounded-lg bg-green-500/20 hover:bg-green-600/40 border border-green-500/40 text-green-400 cursor-pointer flex items-center gap-1"
+                      >
+                        <Edit size={16} /> Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          const updated = [...data.education];
+                          updated.splice(idx, 1);
+                          setData({ ...data, education: updated });
+                        }}
+                        className="px-3 py-1 rounded-lg bg-red-500/20 hover:bg-red-600/40 border border-red-500/40 text-red-400 cursor-pointer flex items-center gap-1"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-gray-400">No education data available.</p>
+            )}
+
+            {/* Add/Edit Form */}
+            {editEducation && (
+              <div className="space-y-3 mt-4">
+                <input
+                  type="text"
+                  placeholder="Institute"
+                  value={educationData?.institute || ""}
+                  onChange={(e) =>
+                    setEducationData({ ...educationData, institute: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+                />
+                <input
+                  type="text"
+                  placeholder="Timeline (e.g., 2024–2028)"
+                  value={educationData?.timeline || ""}
+                  onChange={(e) =>
+                    setEducationData({ ...educationData, timeline: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+                />
+                <input
+                  type="text"
+                  placeholder="Department / Branch (e.g., Computer Science)"
+                  value={educationData?.department || ""}
+                  onChange={(e) =>
+                    setEducationData({ ...educationData, department: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+                />
+                <input
+                  type="text"
+                  placeholder="CGPA/Percentage (e.g., 8.7/10)"
+                  value={educationData?.grade || ""}
+                  onChange={(e) =>
+                    setEducationData({ ...educationData, grade: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+                />
+                <input
+                  type="text"
+                  placeholder="Location (e.g., New York, USA)"
+                  value={educationData?.location || ""}
+                  onChange={(e) =>
+                    setEducationData({ ...educationData, location: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+                />
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      let updated = [...(data.education || [])];
+                      if (typeof editIndex === "number") {
+                        updated[editIndex] = educationData; // update existing
+                      } else {
+                        updated.push(educationData); // add new
+                      }
+                      setData({ ...data, education: updated });
+                      setEducationData({});
+                      setEditIndex(null);
+                      setEditEducation(false);
+                    }}
+                    className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditEducation(false);
+                      setEducationData({});
+                      setEditIndex(null);
+                    }}
+                    className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Add New Education Button */}
+            {!editEducation && (
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setEditEducation(true)}
+                  className="px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40"
+                >
+                  + Add Education
+                </button>
+              </div>
+            )}
           </div>
-        </div>
-      );
-    })
-  ) : (
-    <p className="text-gray-400">No education data available.</p>
-  )}
-
-  {/* Add/Edit Form */}
-  {editEducation && (
-    <div className="space-y-3 mt-4">
-      <input
-        type="text"
-        placeholder="Institute"
-        value={educationData?.institute || ""}
-        onChange={(e) =>
-          setEducationData({ ...educationData, institute: e.target.value })
-        }
-        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
-      />
-      <input
-        type="text"
-        placeholder="Timeline (e.g., 2024–2028)"
-        value={educationData?.timeline || ""}
-        onChange={(e) =>
-          setEducationData({ ...educationData, timeline: e.target.value })
-        }
-        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
-      />
-      <input
-        type="text"
-        placeholder="Department / Branch (e.g., Computer Science)"
-        value={educationData?.department || ""}
-        onChange={(e) =>
-          setEducationData({ ...educationData, department: e.target.value })
-        }
-        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
-      />
-      <input
-        type="text"
-        placeholder="CGPA/Percentage (e.g., 8.7/10)"
-        value={educationData?.grade || ""}
-        onChange={(e) =>
-          setEducationData({ ...educationData, grade: e.target.value })
-        }
-        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
-      />
-      <input
-        type="text"
-        placeholder="Location (e.g., New York, USA)"
-        value={educationData?.location || ""}
-        onChange={(e) =>
-          setEducationData({ ...educationData, location: e.target.value })
-        }
-        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
-      />
-
-      <div className="flex gap-3">
-        <button
-          onClick={() => {
-            let updated = [...(data.education || [])];
-            if (typeof editIndex === "number") {
-              updated[editIndex] = educationData; // update existing
-            } else {
-              updated.push(educationData); // add new
-            }
-            setData({ ...data, education: updated });
-            setEducationData({});
-            setEditIndex(null);
-            setEditEducation(false);
-          }}
-          className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40"
-        >
-          Save
-        </button>
-        <button
-          onClick={() => {
-            setEditEducation(false);
-            setEducationData({});
-            setEditIndex(null);
-          }}
-          className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  )}
-
-  {/* Add New Education Button */}
-  {!editEducation && (
-    <div className="flex justify-end mt-4">
-      <button
-        onClick={() => setEditEducation(true)}
-        className="px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40"
-      >
-        + Add Education
-      </button>
-    </div>
-  )}
-</div>
 
 
 
@@ -647,13 +638,13 @@ const [educationData, setEducationData] = useState({
                   >
                     <span>{hack.title}</span>
                     <a
-  href={hack.repo_url || "#"}
-  className="text-green-400 underline hover:text-green-300 cursor-pointer"
-  target="_blank"
-  rel="noreferrer"
->
-  View Repo
-</a>
+                      href={hack.repo_url || "#"}
+                      className="text-green-400 underline hover:text-green-300 cursor-pointer"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View Repo
+                    </a>
 
                   </li>
                 ))
@@ -662,32 +653,32 @@ const [educationData, setEducationData] = useState({
               )}
             </ul>
           </div>
-          
 
 
 
-      
 
-      {/* Reward Popup */}
-      {showReward && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white text-black p-6 rounded-2xl shadow-lg text-center w-80">
-            <h2 className="text-xl font-bold mb-2">🎉 Daily Reward!</h2>
-            <p className="mb-2">You earned <span className="text-yellow-600 font-bold">+10 coins</span> today.</p>
-            <p className="text-sm text-gray-600 mb-4">🔥 Current Streak: {streak} days</p>
-            <button
-              onClick={() => setShowReward(false)}
-              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-            >
-              Awesome!
-            </button>
-          </div>
+
+
+          {/* Reward Popup */}
+          {showReward && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+              <div className="bg-white text-black p-6 rounded-2xl shadow-lg text-center w-80">
+                <h2 className="text-xl font-bold mb-2">🎉 Daily Reward!</h2>
+                <p className="mb-2">You earned <span className="text-yellow-600 font-bold">+10 coins</span> today.</p>
+                <p className="text-sm text-gray-600 mb-4">🔥 Current Streak: {streak} days</p>
+                <button
+                  onClick={() => setShowReward(false)}
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                >
+                  Awesome!
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
-    </div>
-    </div>
- ); 
+  );
 }
 
 export default UserDashboard;

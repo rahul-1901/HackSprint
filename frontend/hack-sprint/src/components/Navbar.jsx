@@ -134,7 +134,7 @@ const Navbar = () => {
                           {/* Coins Display (non-clickable) */}
                           <div className="flex flex-col items-center p-3 bg-gray-800 rounded-lg text-gray-200 select-none">
                             <Coins size={20} className="mb-1 text-yellow-400" />
-                            <span className="text-xs">{userInfo?.coins || 0} Coins</span>
+                            <span className="text-xs">{userInfo?.coins || 10} Coins</span>
                           </div>
                         </div>
 
@@ -210,7 +210,7 @@ const Navbar = () => {
                     </div>
                     <div className="flex items-center space-x-1 text-yellow-400">
                       <Coins size={16} />
-                      <span className="text-sm font-semibold">{userInfo?.coins || 0}</span>
+                      <span className="text-sm font-semibold">{userInfo?.coins || 10}</span>
                     </div>
                   </div>
 
