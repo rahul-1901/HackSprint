@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getDashboard } from "../backendApis/api";
+import { useNavigate } from "react-router-dom";
 
 const Questions = () => {
     const [quizStarted, setQuizStarted] = useState(false);
@@ -17,7 +18,7 @@ const Questions = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [quizId, setQuizId] = useState(null);
     const [userId, setUserId] = useState('');
-
+    const navigate = useNavigate();
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -444,7 +445,7 @@ const Questions = () => {
     if (quizCompleted) {
         const stats = getQuizStats();
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 text-white relative overflow-hidden">
+            <div className="min-h-screen bg-gradient-to-br py-4 from-slate-900 via-gray-900 to-slate-800 text-white relative overflow-hidden">
                 {/* Animated Background */}
                 <div className="absolute inset-0">
                     <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
@@ -455,7 +456,7 @@ const Questions = () => {
                     <div className="text-center max-w-4xl">
                         {/* Success Badge */}
                         <div className="mb-8">
-                            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full shadow-2xl mb-6 animate-bounce">
+                            <div className="inline-flex mt-5 items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full shadow-2xl mb-2 animate-bounce">
                                 <div className="text-4xl">🏆</div>
                             </div>
 
@@ -467,7 +468,7 @@ const Questions = () => {
                         </div>
 
                         {/* Results Dashboard */}
-                        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-3xl p-8 mb-8 max-w-2xl mx-auto">
+                        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-3xl p-5 mb-8 max-w-2xl mx-auto">
                             <h2 className="text-2xl font-bold text-white mb-8">Performance Summary</h2>
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -510,6 +511,16 @@ const Questions = () => {
                                     </span>
                                 </div>
                             </div>
+
+                            {/* Navigate Button */}
+                            <div className="mt-5">
+                                <button
+                                    onClick={() => navigate("/dashboard")}
+                                    className="px-6 py-3 cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold text-lg rounded-4xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                                >
+                                    Go to Dashboard
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -548,12 +559,12 @@ const Questions = () => {
                             {/* Timer */}
                             <div className="flex items-center space-x-4">
                                 <div className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-semibold transition-all duration-300 ${timeLeft <= 5 ? 'bg-red-600/20 border border-red-500/30 text-red-400' :
-                                        timeLeft <= 10 ? 'bg-amber-600/20 border border-amber-500/30 text-amber-400' :
-                                            'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400'
+                                    timeLeft <= 10 ? 'bg-amber-600/20 border border-amber-500/30 text-amber-400' :
+                                        'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400'
                                     }`}>
                                     <div className={`w-2 h-2 rounded-full ${timeLeft <= 5 ? 'bg-red-500' :
-                                            timeLeft <= 10 ? 'bg-amber-500' :
-                                                'bg-emerald-500'
+                                        timeLeft <= 10 ? 'bg-amber-500' :
+                                            'bg-emerald-500'
                                         } animate-pulse`}></div>
                                     <span>{timeLeft}s</span>
                                 </div>
@@ -605,27 +616,27 @@ const Questions = () => {
                                             onClick={() => handleAnswerClick(index)}
                                             disabled={selectedAnswer !== null}
                                             className={`group relative p-4 rounded-xl text-left transition-all duration-300 transform hover:scale-[1.02] border-2 ${!showResult
-                                                    ? 'bg-slate-800/50 hover:bg-slate-700/50 border-slate-600/50 hover:border-emerald-500/50 cursor-pointer'
-                                                    : isSelected
-                                                        ? isCorrect
-                                                            ? 'bg-emerald-600/20 border-emerald-500/50 shadow-emerald-500/20'
-                                                            : 'bg-red-600/20 border-red-500/50 shadow-red-500/20'
-                                                        : isCorrect
-                                                            ? 'bg-emerald-600/20 border-emerald-500/50 shadow-emerald-500/20'
-                                                            : 'bg-slate-800/30 border-slate-600/30 opacity-60'
+                                                ? 'bg-slate-800/50 hover:bg-slate-700/50 border-slate-600/50 hover:border-emerald-500/50 cursor-pointer'
+                                                : isSelected
+                                                    ? isCorrect
+                                                        ? 'bg-emerald-600/20 border-emerald-500/50 shadow-emerald-500/20'
+                                                        : 'bg-red-600/20 border-red-500/50 shadow-red-500/20'
+                                                    : isCorrect
+                                                        ? 'bg-emerald-600/20 border-emerald-500/50 shadow-emerald-500/20'
+                                                        : 'bg-slate-800/30 border-slate-600/30 opacity-60'
                                                 } ${selectedAnswer !== null ? 'cursor-not-allowed' : ''}`}
                                         >
                                             <div className="flex items-start space-x-4">
                                                 {/* Option Letter */}
                                                 <div className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${!showResult
-                                                        ? 'bg-slate-700 text-slate-300 group-hover:bg-emerald-600 group-hover:text-white'
-                                                        : isSelected
-                                                            ? isCorrect
-                                                                ? 'bg-emerald-600 text-white'
-                                                                : 'bg-red-600 text-white'
-                                                            : isCorrect
-                                                                ? 'bg-emerald-600 text-white'
-                                                                : 'bg-slate-700 text-slate-400'
+                                                    ? 'bg-slate-700 text-slate-300 group-hover:bg-emerald-600 group-hover:text-white'
+                                                    : isSelected
+                                                        ? isCorrect
+                                                            ? 'bg-emerald-600 text-white'
+                                                            : 'bg-red-600 text-white'
+                                                        : isCorrect
+                                                            ? 'bg-emerald-600 text-white'
+                                                            : 'bg-slate-700 text-slate-400'
                                                     }`}>
                                                     {optionLetter}
                                                 </div>
@@ -633,10 +644,10 @@ const Questions = () => {
                                                 {/* Option Text */}
                                                 <div className="flex-1">
                                                     <p className={`text-base font-medium transition-colors duration-300 ${!showResult
-                                                            ? 'text-white group-hover:text-emerald-100'
-                                                            : isSelected || isCorrect
-                                                                ? 'text-white'
-                                                                : 'text-slate-400'
+                                                        ? 'text-white group-hover:text-emerald-100'
+                                                        : isSelected || isCorrect
+                                                            ? 'text-white'
+                                                            : 'text-slate-400'
                                                         }`}>
                                                         {option}
                                                     </p>
@@ -695,8 +706,8 @@ const Questions = () => {
                         {/* Explanation Panel */}
                         {showExplanation && (
                             <div className={`bg-slate-800/60 backdrop-blur-sm border-2 rounded-3xl p-6 shadow-2xl transition-all duration-500 ${isCorrect
-                                    ? 'border-emerald-500/50 shadow-emerald-500/10'
-                                    : 'border-red-500/50 shadow-red-500/10'
+                                ? 'border-emerald-500/50 shadow-emerald-500/10'
+                                : 'border-red-500/50 shadow-red-500/10'
                                 }`}>
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center space-x-3">

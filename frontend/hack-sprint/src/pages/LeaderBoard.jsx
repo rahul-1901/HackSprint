@@ -5,18 +5,10 @@ import { motion } from "framer-motion";
 import { Trophy, Crown, User } from "lucide-react";
 import axios from "axios";
 
-const dummyData = [
-  { _id: "1", name: "Alice Johnson", email: "alice@example.com", points: 950 },
-  { _id: "2", name: "Bob Smith", email: "bob@example.com", points: 900 },
-  { _id: "3", name: "Charlie Lee", email: "charlie@example.com", points: 870 },
-  { _id: "4", name: "David Kim", email: "david@example.com", points: 820 },
-  { _id: "5", name: "Ella Brown", email: "ella@example.com", points: 800 },
-  { _id: "6", name: "Frank Miller", email: "frank@example.com", points: 780 },
-];
-
 const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasData, setHasData] = useState(false);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -24,15 +16,21 @@ const Leaderboard = () => {
         const res = await axios.get(
           `${import.meta.env.VITE_API_BASE_URL}/api/user/leaderBoard`
         );
-        let data = res.data.leaderboard?.length ? res.data.leaderboard : dummyData;
+        let data = res.data.leaderboard || [];
 
-        // ✅ Always sort by points (descending)
-        data = [...data].sort((a, b) => b.points - a.points);
-
-        setLeaderboard(data);
+        if (data.length > 0) {
+          // ✅ Sort by points (descending)
+          data = [...data].sort((a, b) => b.points - a.points);
+          setLeaderboard(data);
+          setHasData(true);
+        } else {
+          setLeaderboard([]);
+          setHasData(false);
+        }
       } catch (err) {
-        console.error("Error fetching leaderboard, showing dummy:", err);
-        setLeaderboard(dummyData.sort((a, b) => b.points - a.points));
+        console.error("Error fetching leaderboard:", err);
+        setLeaderboard([]);
+        setHasData(false);
       } finally {
         setLoading(false);
       }
@@ -45,6 +43,54 @@ const Leaderboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center text-cyan-400 text-xl">
         Loading Leaderboard...
+      </div>
+    );
+  }
+
+  if (!hasData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br overflow-hidden from-slate-900 via-gray-900 to-slate-800 text-white px-4 py-10">
+        {/* Header */}
+        <div className="max-w-6xl mx-auto text-center mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="relative"
+          >
+            <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-cyan-400/20 to-emerald-400/20 rounded-full"></div>
+            <h1 className="relative text-4xl sm:text-5xl md:text-6xl font-black bg-gradient-to-r from-cyan-300 via-blue-400 to-emerald-400 bg-clip-text text-transparent">
+              <Trophy className="inline-block mr-3 text-yellow-400" size={40} />
+              Leaderboard
+            </h1>
+          </motion.div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="text-slate-400 mt-4 text-base sm:text-lg font-medium"
+          >
+            Compete with the best minds and claim your throne
+          </motion.p>
+        </div>
+
+        {/* No Data Message */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="max-w-4xl mx-auto text-center"
+        >
+          <div className="bg-slate-800/20 backdrop-blur-2xl rounded-2xl md:rounded-3xl border border-slate-700/30 shadow-2xl shadow-slate-900/50 p-12">
+            <Trophy className="mx-auto mb-6 text-slate-500" size={64} />
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-300 mb-4">
+              No Competitors Yet
+            </h2>
+            <p className="text-slate-400 text-lg">
+              Be the first to join the competition and claim your spot on the leaderboard!
+            </p>
+          </div>
+        </motion.div>
       </div>
     );
   }
@@ -143,9 +189,6 @@ const Leaderboard = () => {
                     {/* Username */}
                     <td className="py-3 sm:py-6 px-10 sm:px-8">
                       <div className="flex items-center gap-3 sm:gap-5">
-                        {/* <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center shadow-lg">
-                          <User className="text-white" size={18} />
-                        </div> */}
                         <div className="max-w-[120px] sm:max-w-none">
                           <span className="font-bold text-sm sm:text-xl truncate">{user.name}</span>
                           <div className="text-slate-400 text-xs sm:text-sm font-medium truncate">

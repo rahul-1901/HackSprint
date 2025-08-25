@@ -48,7 +48,7 @@ function App() {
     <>
       <Router>
         <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} />
-        <ScrollToTop/>
+        <ScrollToTop />
         <Loader />
         <HideRoute>
           <Navbar />
