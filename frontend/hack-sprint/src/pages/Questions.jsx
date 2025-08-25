@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getDashboard } from "../backendApis/api";
 
 const Questions = () => {
     const [quizStarted, setQuizStarted] = useState(false);
@@ -15,9 +16,24 @@ const Questions = () => {
     const [quizResetTimer, setQuizResetTimer] = useState(300); // 5 minutes in seconds
     const [isLoading, setIsLoading] = useState(true);
     const [quizId, setQuizId] = useState(null);
+    const [userId, setUserId] = useState('')
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await getDashboard();
+                setUserId(res.data.userData._id)
+                console.log(res.data.userData)
+            } catch (err) {
+                console.error("Dashboard fetch error:", err)
+            }
+        };
+
+        fetchData();
+    }, []);
 
     // const userId = localStorage.getItem("userId"); 
-    const userId = localStorage.getItem("userId");
+    // const userId = localStorage.getItem("userId");
 
     // Local Storage keys
     const STORAGE_KEYS = {
@@ -137,7 +153,7 @@ const Questions = () => {
     const fetchQuestions = async () => {
         try {
             setIsLoading(true);
-            const response = await axios.get('http://localhost:3000/api/dailyquiz/today');
+            const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/dailyquiz/today`);
 
             // Handle the new JSON structure
             const fetchedData = response.data.dailyQuiz.questions; // Access the 'data' array from response
@@ -269,10 +285,10 @@ const Questions = () => {
 
         try {
             if (correct) {
-                await axios.post("http://localhost:3000/api/user/correctanswer", payload);
+                await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/correctanswer`, payload);
                 console.log("✅ Correct answer logged");
             } else {
-                await axios.post("http://localhost:3000/api/user/incorrectanswer", payload);
+                await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/incorrectanswer`, payload);
                 console.log("❌ Incorrect answer logged");
             }
         } catch (err) {
@@ -307,7 +323,7 @@ const Questions = () => {
         const payload = { userId, quizId };
 
         try {
-            await axios.post("http://localhost:3000/api/user/finishquiz", payload);
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/finishquiz`, payload);
             console.log("✅ Quiz completion logged");
         } catch (err) {
             console.error("❌ Error logging quiz finish:", err);
