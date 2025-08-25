@@ -8,7 +8,7 @@ const dailyQuizSchema = new mongoose.Schema({
   date: {
     type: Date,
     required: true,
-    unique: true,   // only one quiz per day
+    // unique: true,  // only one quiz per da
   },
   questions: [
     {
