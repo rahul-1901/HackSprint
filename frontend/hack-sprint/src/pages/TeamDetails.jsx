@@ -110,7 +110,7 @@ const TeamDetails = () => {
   useEffect(() => {
     // Store only the secret code string in localStorage
     if (location.state?.secretCode) {
-        localStorage.setItem(`teamDetails_${teamId}`, location.state.secretCode);
+        localStorage.setItem(`teamDetails_code`, location.state.secretCode);
     }
 
     const fetchInitialData = async () => {
