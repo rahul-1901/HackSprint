@@ -11,21 +11,22 @@ const Leaderboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const fetchLeaderboard = async () => {
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user/leaderBoard`);
-      console.log("Leaderboard data:", res.data);
-      setLeaderboard(res.data.leaderboard || []);
-    } catch (err) {
-      console.error("Error fetching leaderboard:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/api/user/leaderBoard`
+        );
+        console.log("Leaderboard data:", res.data);
+        setLeaderboard(res.data.leaderboard || []);
+      } catch (err) {
+        console.error("Error fetching leaderboard:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchLeaderboard();
-}, []);
-
+    fetchLeaderboard();
+  }, []);
 
   if (loading) {
     return (
@@ -60,27 +61,7 @@ const Leaderboard = () => {
           Compete with the best minds and claim your throne
         </motion.p>
 
-        {/* Filter Tabs (Static for now) */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className="flex justify-center mt-8 gap-2"
-        >
-          {["All Time", "Weekly", "Monthly"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setFilter(tab)}
-              className={`px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 cursor-pointer ${
-                filter === tab
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-2xl shadow-cyan-500/25 scale-105"
-                  : "bg-slate-800/50 hover:bg-slate-700/50 border border-slate-600/30 hover:border-slate-500/50"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </motion.div>
+        {/* Filter Tabs */}
       </div>
 
       {/* Leaderboard Container */}
@@ -91,53 +72,17 @@ const Leaderboard = () => {
         className="max-w-6xl mx-auto"
       >
         {/* Top 3 Podium */}
-        <div className="grid grid-cols-3 gap-12 mb-12 max-w-5xl mx-auto">
-          {leaderboard.slice(0, 3).map((user, idx) => {
-            const positions = [1, 0, 2]; // Second place, First place, Third place
-            const actualIdx = positions[idx];
-            const actualUser = leaderboard[actualIdx];
+        <div className="grid grid-cols-3 gap-12 mb-12 max-w-5xl mx-auto items-end">
+          {/* Second place (left) */}
+          {leaderboard[1] && <PodiumCard user={leaderboard[1]} place={2} />}
 
-            if (!actualUser) return null;
+          {/* First place (center, bigger) */}
+          {leaderboard[0] && (
+            <PodiumCard user={leaderboard[0]} place={1} highlight />
+          )}
 
-            return (
-              <motion.div
-                key={actualUser._id}
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + idx * 0.1 }}
-                className={`relative text-center ${
-                  actualIdx === 0 ? "order-2 scale-110" : actualIdx === 1 ? "order-1" : "order-3"
-                }`}
-              >
-                <div className="relative bg-gradient-to-br from-slate-400/15 to-slate-600/15 border border-slate-400/20 rounded-2xl p-6 backdrop-blur-md hover:bg-gradient-to-br hover:from-slate-300/20 hover:to-slate-500/20 hover:border-slate-300/30 hover:scale-105 hover:shadow-2xl hover:shadow-slate-400/20 transition-all duration-500 group">
-                  {actualIdx === 0 && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <div className="bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full p-2 shadow-lg shadow-yellow-400/30">
-                        <Crown className="text-white" size={20} />
-                      </div>
-                    </div>
-                  )}
-                  <div className="relative z-10">
-                    <div
-                      className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg ${
-                        actualIdx === 0
-                          ? "bg-gradient-to-br from-yellow-400 to-amber-500 shadow-yellow-400/30"
-                          : actualIdx === 1
-                          ? "bg-gradient-to-br from-slate-400 to-slate-500 shadow-slate-400/30"
-                          : "bg-gradient-to-br from-orange-400 to-orange-500 shadow-orange-400/30"
-                      }`}
-                    >
-                      <span className="text-white font-black text-xl">{actualUser.rank || actualIdx + 1}</span>
-                    </div>
-                    <h3 className="font-bold text-lg mb-2">{actualUser.name}</h3>
-                    <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                      {actualUser.points}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+          {/* Third place (right) */}
+          {leaderboard[2] && <PodiumCard user={leaderboard[2]} place={3} />}
         </div>
 
         {/* Main Leaderboard Table */}
@@ -146,7 +91,9 @@ const Leaderboard = () => {
             <h2 className="text-3xl font-black text-center bg-gradient-to-r from-slate-200 to-slate-400 bg-clip-text text-transparent">
               Global Rankings
             </h2>
-            <p className="text-center text-slate-400 mt-2 font-medium">Elite performers worldwide</p>
+            <p className="text-center text-slate-400 mt-2 font-medium">
+              Elite performers worldwide
+            </p>
           </div>
 
           <div className="overflow-hidden">
@@ -186,14 +133,18 @@ const Leaderboard = () => {
                         </div>
                         <div>
                           <span className="font-bold text-xl">{user.name}</span>
-                          <div className="text-slate-400 text-sm font-medium">{user.email}</div>
+                          <div className="text-slate-400 text-sm font-medium">
+                            {user.email}
+                          </div>
                         </div>
                       </div>
                     </td>
 
                     {/* Points */}
                     <td className="py-6 px-8">
-                      <div className="font-black text-2xl text-emerald-400">{user.points} pts</div>
+                      <div className="font-black text-2xl text-emerald-400">
+                        {user.points} pts
+                      </div>
                     </td>
                   </motion.tr>
                 ))}
@@ -205,5 +156,43 @@ const Leaderboard = () => {
     </div>
   );
 };
+
+const PodiumCard = ({ user, place, highlight }) => (
+  <motion.div
+    key={user._id}
+    initial={{ opacity: 0, y: 50 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+    className={`relative text-center ${highlight ? "scale-110 order-2" : ""}`}
+  >
+    <div className="relative bg-gradient-to-br from-slate-400/15 to-slate-600/15 border border-slate-400/20 rounded-2xl p-6 backdrop-blur-md hover:scale-105 transition-all duration-500">
+      {place === 1 && (
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+          <div className="bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full p-2 shadow-lg shadow-yellow-400/30">
+            <Crown className="text-white" size={20} />
+          </div>
+        </div>
+      )}
+
+      <div className="relative z-10">
+        <div
+          className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg ${
+            place === 1
+              ? "bg-gradient-to-br from-yellow-400 to-amber-500 shadow-yellow-400/30"
+              : place === 2
+              ? "bg-gradient-to-br from-slate-400 to-slate-500 shadow-slate-400/30"
+              : "bg-gradient-to-br from-orange-400 to-orange-500 shadow-orange-400/30"
+          }`}
+        >
+          <span className="text-white font-black text-xl">{place}</span>
+        </div>
+        <h3 className="font-bold text-lg mb-2">{user.name}</h3>
+        <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+          {user.points}
+        </p>
+      </div>
+    </div>
+  </motion.div>
+);
 
 export default Leaderboard;
