@@ -2,6 +2,8 @@ import mongoose from "mongoose"
 import express from 'express'
 import UserModel from "../models/user.models.js"
 import { all } from "axios"
+import devquestModel from "../models/devquest.model.js";
+import dailyQuizModel from "../models/dailyQuiz.model.js";
 
 export const saveGitHubLink = async (req, res) => {
   try {
@@ -357,71 +359,101 @@ export const checkAndUpdateGitHubStatus = async (req, res) => {
   }
 };
 
-export const increaseStreak = async (req, res) => {
-    try {
-        const { userId } = req.body;
+  export const increaseStreak = async (req, res) => {
+      try {
+          const { userId ,questionId} = req.body;
 
-        if (!userId) {
-            return res.status(400).json({ message: "userId is required" });
-        }
+          if (!userId  || !questionId) {
+              return res.status(400).json({ message: "userId or questionId is required" });
+          }
 
-        const user = await UserModel.findById(userId);
+          const user = await UserModel.findById(userId);
+          if (!user) {
+              return res.status(404).json({ message: "User not found" });
+          }
+          const question  = await devquestModel.findById(questionId);
+          if(!question){
+              return res.status(400).json({message : "Question not found"});
+          }
+          user.points += question.points;
+          user.currentQuizPoints+=question.points;
+          user.currentQuizTotalPoints+=question.points;
+          // user.streaks+=1; // Increment streak by 1
+          user.devQuestionsCorrectlyAnswered+=1;
+          await user.save();
 
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
+          res.status(200).json({ message: "Streak and points are increased", streaks: user.streaks , points : user.points});
+      } catch (error) {
+          console.error("Error increasing streak or points:", error);
+          res.status(500).json({ message: error.message });
+      }
+  };
 
-        user.points += 1;
-        user.streaks+=1; // Increment streak by 1
-        user.devQuestionsCorrectlyAnswered+=1;
-        await user.save();
+  export const resetStreak = async (req, res) => {
+      try {
+          const { userId , questionId} = req.body;
 
-        res.status(200).json({ message: "Streak increased", streaks: user.streaks });
-    } catch (error) {
-        console.error("Error increasing streak:", error);
-        res.status(500).json({ message: error.message });
-    }
-};
+          if (!userId) {
+              return res.status(400).json({ message: "userId is required" });
+          }
 
-export const resetStreak = async (req, res) => {
-    try {
-        const { userId } = req.body;
+          const user = await UserModel.findById(userId);
 
-        if (!userId) {
-            return res.status(400).json({ message: "userId is required" });
-        }
+          if (!user) {
+              return res.status(404).json({ message: "User not found" });
+          }
+          const question  = await devquestModel.findById(questionId);
+          if(!question){
+              return res.status(400).json({message : "Question not found"});
+          }
+          user.devQuestionsIncorrectlyAnswered+=1;
+          user.currentQuizTotalPoints+=question.points;
+          // if(user.devQuestionsCorrectlyAnswered < user.devQuestionsIncorrectlyAnswered){
+          //   user.streaks = 0;
+          // }
+          // if(user.devquestions) // Reset streak to 0
+          await user.save();
 
-        const user = await UserModel.findById(userId);
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        user.devQuestionsIncorrectlyAnswered+=1;
-        if(user.devQuestionsCorrectlyAnswered < user.devQuestionsIncorrectlyAnswered){
-          user.streaks = 0;
-        }
-        // if(user.devquestions) // Reset streak to 0
-        await user.save();
-
-        res.status(200).json({ message: "Streak reset", streaks: user.streaks });
-    } catch (error) {
-        console.error("Error resetting streak:", error);
-        res.status(500).json({ message: error.message });
-    }
-};
+          res.status(200).json({ message: "Streak reset", streaks: user.streaks });
+      } catch (error) {
+          console.error("Error resetting streak:", error);
+          res.status(500).json({ message: error.message });
+      }
+  };
 
 export const devQuestionsAnsweredData = async(req,res)=>{
   try{
-    const user = await UserModel.findById(req.user.id);
+    const {userId ,quizId } = req.body;
+    if(!userId || !quizId){
+      return res.status(404).json({message : "user or quiz id not found"});
+    }
+    const user = await UserModel.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    const {correctAnswers , incorrectAnswers} = req.body;
-    if(correctAnswers >= incorrectAnswers){
-      user.streaks+=(correctAnswers);
+    const quiz = await dailyQuizModel.findById(quizId);
+    if(!quiz){
+      return res.status(404).json({message : "dailyquiz not found"})
+    }
+    if (!quiz.attemptedBy.includes(userId)) {
+      quiz.attemptedBy.push(userId);
+      await quiz.save();
+    }
+    user.devQuestionSubmittedTime = new Date(Date.now());
+    if(user.currentQuizPoints >= (user.currentQuizTotalPoints)/2){
+      user.streaks += 1;
     }else{
       user.streaks = 0;
     }
+    if (!user.attemptedDevQuestions.includes(quizId)) {
+      user.attemptedDevQuestions.push(quizId);
+    }
+    console.log(user.devQuestionsCorrectlyAnswered);
+    console.log(user.devQuestionsIncorrectlyAnswered);
+    user.devQuestionsCorrectlyAnswered = 0;
+    user.devQuestionsIncorrectlyAnswered = 0;
+    user.currentQuizPoints = 0;
+    user.currentQuizTotalPoints = 0;
     await user.save();
     res.status(200).json({
       message : "Streaks updated",
@@ -432,3 +464,102 @@ export const devQuestionsAnsweredData = async(req,res)=>{
         res.status(500).json({ message: error.message });
   }
 }
+
+export const updatingEducation = async (req, res) => {
+  try {
+    const { userId,institute, passOutYear, department } = req.body;
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          "institute": institute,
+          "passOutYear": passOutYear,
+          "department": department,
+        },
+      },
+      { new: true, runValidators: true } // return updated doc & validate
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "Education details updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const updatingConnectedApps = async (req, res) => {
+  try {
+    const { userId, AppName, AppURL } = req.body;
+
+    if (!userId || !AppName || !AppURL) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          connectedApps: { appName: AppName, appURL: AppURL }
+        }
+      },
+      { new: true } // return updated doc
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "Connected app added successfully",
+      connectedApps: updatedUser.connectedApps
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const displayLeaderBoard = async (req, res) => {
+  try {
+    // Find the latest quiz by date (descending order, pick first one)
+    const latestQuiz = await dailyQuizModel
+      .findOne()
+      .sort({ createdAt: -1 }) // latest quiz
+      .populate("attemptedBy", "name email points devQuestionSubmittedTime");
+
+    if (!latestQuiz) {
+      return res.status(404).json({ message: "No quizzes found" });
+    }
+
+    // Sort attempted users only
+    const leaderboard = latestQuiz.attemptedBy.sort((a, b) => {
+      // First sort by points descending, then by submission time ascending
+      if (b.points !== a.points) {
+        return b.points - a.points;
+      }
+      return new Date(a.devQuestionSubmittedTime) - new Date(b.devQuestionSubmittedTime);
+    });
+
+    if (leaderboard.length === 0) {
+      return res.status(404).json({ message: "No users attempted the latest quiz" });
+    }
+
+    return res.status(200).json({
+      message: "Latest Quiz Leaderboard fetched successfully",
+      quizId: latestQuiz._id,
+      quizTitle: latestQuiz.Title,
+      leaderboard
+    });
+
+  } catch (error) {
+    console.error("Error fetching leaderboard:", error);
+    res.status(500).json({ message: "Something went wrong while fetching leaderboard!" });
+  }
+};
+

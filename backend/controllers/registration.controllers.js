@@ -10,7 +10,7 @@ import { all } from "axios"
 export const registerParicipants = async (req, res) => {
     try {
         const { hackathonId } = req.params;
-        const { userId, name, contactNumber, email, currentLocation, yearsOfExperience, workEmailAddress, teamId } = req.body;
+        const { userId, name, contactNumber, college , gender , currentYearOfStudy, email, currentLocation, yearsOfExperience, workEmailAddress, teamId } = req.body;
 
         const alreadyRegistered = await RegisteredParticipantsModel.findOne({
             user: userId,
@@ -30,6 +30,9 @@ export const registerParicipants = async (req, res) => {
             team: teamId || null,
             name,
             contactNumber,
+            college,
+            currentYearOfStudy,
+            gender,
             currentLocation,
             email,
             workEmailAddress,
@@ -77,7 +80,6 @@ export const isregistered = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
-
 export const registerTeam = async (req, res) => {
   try {
     const { hackathonId } = req.params;
@@ -198,4 +200,3 @@ export const registerTeam = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-

@@ -1,6 +1,6 @@
 import express from 'express'
 import { Router } from 'express'
-import { checkAndUpdateGitHubStatus, saveGitHubLink,resetStreak , increaseStreak, devQuestionsAnsweredData } from '../controllers/user.controllers.js';
+import { checkAndUpdateGitHubStatus, saveGitHubLink,resetStreak , increaseStreak, devQuestionsAnsweredData,updatingEducation ,updatingConnectedApps, displayLeaderBoard} from '../controllers/user.controllers.js';
 import { verifyAuth } from '../middlewares/userAuth.js';
 import jwt from 'jsonwebtoken'
 
@@ -25,5 +25,8 @@ userRoutes.put("/save-gitHubLink" ,saveGitHubLink)
 userRoutes.get("/submission/github-status", verifyAuth, checkAndUpdateGitHubStatus);
 userRoutes.post("/correctanswer" , increaseStreak);
 userRoutes.post("/incorrectanswer" , resetStreak);
-userRoutes.post("/devQuestionsCorrectlyAnswered" , devQuestionsAnsweredData );
+userRoutes.post("/finishquiz" , devQuestionsAnsweredData );
+userRoutes.patch("/updateEducation" , updatingEducation);
+userRoutes.patch("/updateConnectedApps" , updatingConnectedApps);
+userRoutes.get("/leaderBoard" , displayLeaderBoard);
 export default userRoutes;

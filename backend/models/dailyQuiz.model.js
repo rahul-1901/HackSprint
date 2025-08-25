@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 const dailyQuizSchema = new mongoose.Schema({
+  Title : {
+    type : String,
+    default : "ABC TOPIC"
+  },
   date: {
     type: Date,
     required: true,
@@ -12,7 +16,11 @@ const dailyQuizSchema = new mongoose.Schema({
       ref: "devquest",   // reference to your devquest collection
       required: true,
     }
-  ]
+  ],
+  attemptedBy : [{
+    type : mongoose.Schema.Types.ObjectId,
+    ref : "users"
+  }]
 }, { timestamps: true });
 
 const dailyQuizModel = mongoose.model("dailyQuiz", dailyQuizSchema);

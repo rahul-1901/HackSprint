@@ -1,7 +1,13 @@
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
+    image: {
+      type: String
+    },
+    userName: {
+      type: String,
+    },
     email: {
       type: String,
       required: true,
@@ -23,9 +29,14 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    team: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Team",
+      default: null
+    },
     role: {
       type: String,
-      enum: ["participant", "organizer"],
+      enum: ["participant", "organizer", "admin"],
       default: "participant",
     },
 
@@ -82,6 +93,8 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
+    currentQuizPoints: { type: Number, default: 0 }, // earned in current quiz
+    currentQuizTotalPoints: { type: Number, default: 0 },
     contactNumber: {
       type: String,
       // required: true,
@@ -97,6 +110,27 @@ const userSchema = new mongoose.Schema(
     ],
     submittedHackathons: [
       { type: mongoose.Schema.Types.ObjectId, ref: "hackathons" }
+    ],
+    attemptedDevQuestions: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "dailyQuiz" }
+    ],
+    devQuestionSubmittedTime : {
+      type : Date
+    },
+    institute: {
+      type: String
+    },
+    passOutYear: {
+      type: Number
+    },
+    department: {
+      type: String
+    },
+    connectedApps: [
+      {
+        appName: { type: String, required: true },
+        appURL: { type: String, required: true }
+      }
     ],
     verificationTokenExpiresAt: Date,
     // Submissions

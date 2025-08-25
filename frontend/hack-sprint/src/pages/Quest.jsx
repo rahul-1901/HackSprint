@@ -1,320 +1,776 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import {
-  SiHtml5, SiGithub, SiPython, SiNodedotjs,
-  SiJavascript, SiMysql, SiTensorflow, SiReact, SiCss3
-} from 'react-icons/si';
-import { FiCornerDownRight } from 'react-icons/fi';
-import { motion, AnimatePresence } from 'framer-motion';
-import './Allcss.css';
+"use client"
+
+import { useState, useEffect } from "react"
+import { CornerDownRight, X } from "lucide-react"
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion"
+import axios from "axios"
+
+
+const GridBackground = () => (
+  <div className="absolute inset-0 opacity-5">
+    <div
+      className="absolute inset-0"
+      style={{
+        backgroundImage: `
+        linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px)
+      `,
+        backgroundSize: "40px 40px",
+      }}
+    />
+    <div
+      className="absolute top-1/3 left-1/4 w-32 h-32 bg-green-500/5 rounded-full blur-2xl"
+      style={{
+        animationName: "morph",
+        animationDuration: "8s",
+        animationTimingFunction: "ease-in-out",
+        animationIterationCount: "infinite",
+      }}
+    />
+    <div
+      className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-green-600/3 rounded-full blur-3xl"
+      style={{
+        animationDelay: "4s",
+        animationName: "morph",
+        animationDuration: "8s",
+        animationTimingFunction: "ease-in-out",
+        animationIterationCount: "infinite",
+      }}
+    />
+    <div
+      className="absolute top-1/2 left-1/2 w-24 h-24 bg-green-400/2 rounded-full blur-2xl"
+      style={{
+        animationDelay: "2s",
+        animationName: "morph",
+        animationDuration: "8s",
+        animationTimingFunction: "ease-in-out",
+        animationIterationCount: "infinite",
+      }}
+    />
+  </div>
+)
 
 const Quest = () => {
-  const [quizStarted, setQuizStarted] = useState(false);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(90);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [explanationTimer, setExplanationTimer] = useState(0);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [quizCompleted, setQuizCompleted] = useState(false);
-  const [questions, setQuestions] = useState([]);
-  const [previewQuest, setPreviewQuest] = useState(null);
+  const [isCorrect, setIsCorrect] = useState(false)
+  const [questions, setQuestions] = useState([])
+  const [previewQuest, setPreviewQuest] = useState(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [redirectCountdown, setRedirectCountdown] = useState(null)
+  const [dummyPreview, setDummyPreview] = useState({ question: "", options: [] });
+  const [prevFive, setPrevFive] = useState([]);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    setIsLoggedIn(!!token)
+  }, [])
+
+  // ✅ Handle countdown redirect
+  useEffect(() => {
+    if (redirectCountdown === null) return
+    if (redirectCountdown === 0) {
+      navigate("/account/login")
+      return
+    }
+    const timer = setTimeout(() => {
+      setRedirectCountdown((prev) => prev - 1)
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [redirectCountdown, navigate])
+
+  // ✅ View All Questions handler
+  const handleViewAll = () => {
+    if (isLoggedIn) {
+      navigate("/questions")
+    } else {
+      setRedirectCountdown(3)
+    }
+  }
+
+  useEffect(() => {
+  const fetchDailyQuizzes = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/dailyquiz/allquiz");
+      const quizData = response.data.quizData || [];
+
+      // ✅ Build preview: only 5 questions total across all quizzes
+      const allQuestions = quizData.flatMap(quiz => quiz.questions);
+      const topFiveQuestions = allQuestions.slice(0, 5);
+
+      const preview = {
+        question: "Here are the last 5 Daily Quiz Questions:",
+        options: topFiveQuestions.map((q, i) => `Q${i + 1}: ${q.question}`),
+      };
+      setDummyPreview(preview);
+
+      // ✅ Build prevFive: each quiz keeps its own questions
+      const latestFiveQuizzes = quizData.slice(0, 5).map((quiz) => ({
+        key: quiz._id,
+        date: new Date(quiz.date).toLocaleDateString(undefined, { 
+          month: "short", 
+          day: "numeric" 
+        }),
+        topic: quiz.Title,
+        questions: quiz.questions, // 👈 keep original per-quiz questions
+      }));
+      setPrevFive(latestFiveQuizzes);
+
+    } catch (err) {
+      console.error("Error fetching quizzes:", err);
+    }
+  };
+
+  fetchDailyQuizzes();
+}, []);
+
+
+
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/devquest');
-        const fetchedData = response.data["Questions&Answer"] || response.data.questions || response.data;
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/devquest`)
+        const fetchedData = response.data["Questions&Answer"] || response.data.questions || response.data
         const formattedQuestions = (fetchedData || []).map((item) => ({
           id: item.id,
           question: item.question,
           options: item.options,
           correctAnswer: item.correctAnswer,
           explanation: item.explanation,
-          topic: item.topic
-        }));
-        setQuestions(formattedQuestions);
+          topic: item.topic,
+        }))
+        setQuestions(formattedQuestions)
       } catch (err) {
-        console.error("Error fetching questions:", err);
+        console.error("Error fetching questions:", err)
       }
-    };
-    fetchQuestions();
-  }, []);
-
-  const QUESTION_TIMER = 90;
-
-  useEffect(() => {
-    if (quizStarted && !showExplanation && !quizCompleted && timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && !showExplanation) {
-      handleTimeUp();
     }
-  }, [timeLeft, quizStarted, showExplanation, quizCompleted]);
+    fetchQuestions()
+  }, [])
 
-  useEffect(() => {
-    if (showExplanation && explanationTimer > 0) {
-      const timer = setTimeout(() => setExplanationTimer((t) => t - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (showExplanation && explanationTimer === 0) {
-      moveToNextQuestion();
-    }
-  }, [explanationTimer, showExplanation]);
+  const todayCount = questions.length || 5
+  const todayTopic = (questions[0] && questions[0].topic) || "Web Development (MERN Stack)"
+  const todayDateStr = new Date().toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })
 
-  const handleTimeUp = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((i) => i + 1);
-      setTimeLeft(QUESTION_TIMER);
-      setSelectedAnswer(null);
-    } else {
-      setQuizCompleted(true);
-    }
-  };
+  // const prevFive = Array.from({ length: 5 }).map((_, i) => {
+  //   const d = new Date()
+  //   d.setDate(d.getDate() - (i + 1))
+  //   return {
+  //     key: i,
+  //     date: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+  //     topic: "Web Dev",
+  //   }
+  // })
 
-  const handleAnswerClick = (answerIndex) => {
-    if (selectedAnswer !== null || showExplanation) return;
-    setSelectedAnswer(answerIndex);
-    const correct = answerIndex === questions[currentQuestionIndex].correctAnswer;
-    setIsCorrect(correct);
-    setShowExplanation(true);
-    setExplanationTimer(correct ? 5 : 10);
-  };
+  // const dummyPreview = {
+  //   question: "What is web technology?",
+  //   options: [
+  //     "A collection of tools and techniques used to create and deliver content on the World Wide Web",
+  //     "A type of software that enables users to access and interact with information on the internet",
+  //     "A network of interconnected computers that share information and services",
+  //     "A system for storing and retrieving information on the internet",
+  //   ],
+  // }
 
-  const moveToNextQuestion = () => {
-    setShowExplanation(false);
-    setSelectedAnswer(null);
-    setExplanationTimer(0);
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((i) => i + 1);
-      setTimeLeft(QUESTION_TIMER);
-    } else {
-      setQuizCompleted(true);
-    }
-  };
 
-  const startQuiz = () => {
-    setQuizStarted(true);
-    setTimeLeft(QUESTION_TIMER);
-    setCurrentQuestionIndex(0);
-    setSelectedAnswer(null);
-    setShowExplanation(false);
-    setQuizCompleted(false);
-  };
 
-  const todayCount = questions.length || 5;
-  const todayTopic = (questions[0] && questions[0].topic) || 'Web Development (MERN Stack)';
-  const todayDateStr = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-
-  const prevFive = Array.from({ length: 5 }).map((_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (i + 1));
-    return {
-      key: i,
-      date: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-      topic: 'Web Dev'
-    };
-  });
-
-  // Dummy Preview Question
-  const dummyPreview = {
-    question: "What is web technology?",
-    options: [
-      "A collection of tools and techniques used to create and deliver content on the World Wide Web",
-      "A type of software that enables users to access and interact with information on the internet",
-      "A network of interconnected computers that share information and services",
-      "A system for storing and retrieving information on the internet"
-    ]
-  };
-
-  if (!quizStarted && !quizCompleted) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="min-h-screen bg-gray-900 text-white font-sans py-8 px-4 md:px-8 lg:px-12 overflow-x-hidden"
-      >
-        {/* Background watermark */}
-        <div className="absolute inset-0 pointer-events-none opacity-5 mix-blend-screen">
-          <svg className="w-full h-full" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="g1" x1="0" x2="1">
-                <stop offset="0" stopColor="#06B6D4" stopOpacity="0.06" />
-                <stop offset="1" stopColor="#06B6D4" stopOpacity="0.06" />
-              </linearGradient>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#g1)" />
-            <g transform="translate(15, 40)" >
-              <text x="0" y="0" fill="#0ea5b7" fontSize="80" opacity="0.02" fontFamily="monospace">DEVQUEST</text>
-            </g>
-          </svg>
-        </div>
-
-        <div className="max-w-6xl mx-auto relative z-10">
-          {/* Header */}
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-sm text-gray-300">HackSprint · DevQuests</h2>
-              <h1 className="text-xl sm:text-xl md:text-8xl lg:text-[7rem] xl:text-[55px] ZaptronFont text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-800 tracking-widest z-10 relative">
-                DevQuest — Daily Challenges
-              </h1>
-            </div>
-            <div className="text-right">
-              <div className="text-xl text-yellow-300">
-                 Stay consistent · Maintain Your Streak 
-              </div>
-            </div>
-          </div>
-
-          {/* 2-column layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left: four info cards */}
-            <div className="lg:col-span-5 flex flex-col gap-4">
-              {[
-                { t: 'Revise Core Concepts', d: 'Strengthen your fundamentals daily with short, focused DevQuests.' },
-                { t: 'Build Your Streak', d: 'Attempt daily and maintain your streak while climbing the leaderboard.' },
-                { t: 'MERN Stack Challenges', d: 'Hands-on problems covering MongoDB, Express, React, and Node.js.' },
-                { t: 'Sharpen Interview Skills', d: 'Curated from real-world coding interview patterns.' },
-              ].map((c) => (
-                <motion.div
-                  whileHover={{ scale: 1.03 }}
-                  key={c.t}
-                  className="bg-white/5 p-5 rounded-xl shadow-md border border-gray-700 transition"
-                >
-                  <h3 className="text-lg font-semibold text-green-400">{c.t}</h3>
-                  <p className="text-sm text-white mt-2">{c.d}</p>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Right: today's questions box */}
-            <div className="lg:col-span-7">
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.4 }}
-                className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 lg:p-8 border border-gray-700/40 shadow-2xl"
-              >
-                <div className="flex items-start gap-6">
-                  <div className="flex-shrink-0">
-                    <div className="w-28 h-28 md:w-36 md:h-36 rounded-xl bg-cyan-600 flex items-center justify-center shadow-xl">
-                      <div className="text-center text-white">
-                        <div className="text-3xl md:text-4xl font-extrabold">{todayCount}</div>
-                        <div className="text-xs md:text-sm">Questions</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-sm text-white/80">Topic</div>
-                        <div className="text-xl md:text-2xl font-semibold text-white">{todayTopic}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm text-white/80">Date</div>
-                        <div className="text-lg font-medium text-white">{todayDateStr}</div>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-white max-w-xl">
-                      DevQuest delivers short, focused challenges daily — perfect for interviews and building real-world skills.
-                    </p>
-                    <div className="mt-6 flex flex-wrap items-center gap-3">
-                      <button
-                        onClick={startQuiz}
-                        className="inline-flex items-center gap-3 px-5 py-3 rounded-xl font-semibold shadow-lg transition-transform text-white bg-[#b042ff]"
-                      >
-                        View Today's Questions <FiCornerDownRight className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-                        className="text-sm text-white underline underline-offset-2"
-                      >
-                        See previous DevQuests
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Previous DevQuests */}
-          <div className="mt-10">
-            <h3 className="text-lg font-semibold text-green-400 mb-4">Previous DevQuests</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {prevFive.map((p) => (
-                <button
-                  key={p.key}
-                  onClick={() => setPreviewQuest(p)}
-                  className="text-left p-4 rounded-xl bg-white/5 border border-gray-700/30 hover:scale-[1.02] transition-transform shadow-md"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-white font-medium">{p.date}</div>
-                    <div className="text-xs text-white/70">Preview</div>
-                  </div>
-                  <div className="mt-3 text-sm text-white font-semibold">{p.topic}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="h-16" />
-        </div>
-
-        {/* Modal Preview */}
-        <AnimatePresence>
-          {previewQuest && (
-            <motion.div
-              key="overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
-            >
-              <motion.div
-                key="modal"
-                initial={{ opacity: 0, y: 24, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 24, scale: 0.98 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
-                className="bg-gray-800 text-white p-8 rounded-2xl w-[92vw] max-w-2xl relative shadow-2xl"
-              >
-                <button
-                  className="absolute top-3 right-3 text-gray-400 hover:text-white"
-                  onClick={() => setPreviewQuest(null)}
-                >
-                  ✕
-                </button>
-                <h2 className="text-2xl font-bold mb-5">{previewQuest.topic} · {previewQuest.date}</h2>
-                <div className="overflow-hidden relative max-h-[70vh]">
-                  <p className="text-lg font-semibold mb-3">{dummyPreview.question}</p>
-                  <ul className="space-y-2 pr-2">
-                    {dummyPreview.options.map((opt, idx) => (
-                      <li key={idx} className="p-3 rounded bg-white/5">
-                        {opt}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="pointer-events-none absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-gray-800 to-transparent" />
-                </div>
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() =>
-                    alert("Redirecting to Login/Signup or showing all questions if logged in")
-                  }
-                  className="mt-6 bg-cyan-600 px-5 py-3 rounded-xl font-semibold transition text-white"
-                >
-                  View All
-                </motion.button>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    );
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.3,
+        staggerChildren: 0.1,
+      },
+    },
   }
 
-  return null;
-};
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+  }
 
-export default Quest;
+  const fadeInRight = {
+    hidden: { opacity: 0, x: 30 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+  }
+
+  const fadeInLeft = {
+    hidden: { opacity: 0, x: -30 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+  }
+
+  const scaleIn = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  }
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.2,
+      },
+    },
+  }
+
+  const cardHover = {
+    rest: { scale: 1, y: 0 },
+    hover: {
+      scale: 1.02,
+      y: -5,
+      transition: { type: "spring", stiffness: 400, damping: 17 },
+    },
+  }
+
+  const modalVariants = {
+    hidden: {
+      opacity: 0,
+      scale: 0.8,
+      y: 50,
+    },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.8,
+      y: 50,
+      transition: { duration: 0.2 },
+    },
+  }
+
+  return (
+
+    <motion.div
+      className="min-h-screen bg-gray-900 text-white font-sans relative overflow-x-hidden"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      {/* Subtle background elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800"></div>
+        {/* Geometric patterns */}
+        <GridBackground />
+
+        {/* Large typography watermark */}
+        <motion.div
+          className="absolute top-20 left-8 text-green-500/[0.03] text-[140px] font-black select-none tracking-wider transform -rotate-3"
+          initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+          animate={{ opacity: 1, scale: 1, rotate: -3 }}
+          transition={{ delay: 0.5, duration: 1.5, ease: "easeOut" }}
+        >
+          DEV
+        </motion.div>
+        <motion.div
+          className="absolute bottom-20 right-8 text-green-500/[0.02] text-[100px] font-black select-none tracking-wider"
+          initial={{ opacity: 0, scale: 0.8, rotate: 3 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ delay: 0.7, duration: 1.3, ease: "easeOut" }}
+        >
+          QUEST
+        </motion.div>
+      </div>
+
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <motion.header className="pt-8 pb-12 max-w-7xl mx-auto" variants={fadeInUp}>
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+            <motion.div className="space-y-1" variants={fadeInLeft}>
+              <motion.p
+                className="text-sm text-gray-400 font-mono tracking-wider uppercase"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+              >
+                HackSprint · DevQuests
+              </motion.p>
+              <motion.h1
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-7xl text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-700 tracking-tight leading-none"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+              >
+                DevQuest
+              </motion.h1>
+              <motion.div
+                className="flex items-center gap-4 mt-2"
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5, duration: 0.6 }}
+              >
+                <motion.div
+                  className="w-12 h-px bg-green-500"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ delay: 0.7, duration: 0.8 }}
+                ></motion.div>
+                <p className="text-lg text-gray-300 font-light tracking-wide">Daily Challenges</p>
+              </motion.div>
+            </motion.div>
+
+            <motion.div className="lg:text-right" variants={fadeInRight}>
+              <motion.div
+                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-700 rounded-full bg-gray-800/50 backdrop-blur-sm"
+                whileHover={{ scale: 1.05, borderColor: "rgb(75 85 99)" }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                <motion.div
+                  className="w-2 h-2 bg-green-400 rounded-full"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2, ease: "easeInOut" }}
+                ></motion.div>
+                <span className="text-sm text-gray-300 font-mono">Stay consistent · Maintain Your Streak</span>
+              </motion.div>
+            </motion.div>
+          </div>
+        </motion.header>
+
+        {/* Main Content */}
+        <motion.main className="max-w-7xl mx-auto" variants={staggerContainer}>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Left Column - Info Cards */}
+            <motion.div
+              className="lg:col-span-5 space-y-6"
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+            >
+              {[
+                {
+                  title: "Revise Core Concepts",
+                  desc: "Strengthen your fundamentals daily with short, focused DevQuests.",
+                  accent: "top-0 left-0",
+                },
+                {
+                  title: "Build Your Streak",
+                  desc: "Attempt daily and maintain your streak while climbing the leaderboard.",
+                  accent: "top-0 right-0",
+                },
+                {
+                  title: "New Daily Challenges",
+                  desc: "Hands-on problems covering MongoDB, Express, React, and Node.js.",
+                  accent: "bottom-0 left-0",
+                },
+                {
+                  title: "Sharpen Interview Skills",
+                  desc: "Curated from real-world coding interview patterns.",
+                  accent: "bottom-0 right-0",
+                },
+              ].map((card, index) => (
+                <motion.div
+                  key={card.title}
+                  className="group relative bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 transition-all duration-300 hover:bg-gray-800/50 hover:border-gray-600"
+                  variants={fadeInUp}
+                  initial="hidden"
+                  animate="visible"
+                  transition={{ delay: index * 0.1 }}
+                  whileHover="hover"
+                >
+                  {/* Subtle accent corner */}
+                  <motion.div
+                    className={`absolute ${card.accent} w-3 h-3 bg-green-500/30 rounded-sm transition-all duration-300 group-hover:bg-green-500/50`}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.5 + index * 0.1, duration: 0.3 }}
+                  ></motion.div>
+
+                  <div className="space-y-3">
+                    <motion.h3
+                      className="text-lg font-semibold text-green-400 group-hover:text-green-300 transition-colors"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 + index * 0.1, duration: 0.4 }}
+                    >
+                      {card.title}
+                    </motion.h3>
+                    <motion.p
+                      className="text-sm text-gray-300 leading-relaxed"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 + index * 0.1, duration: 0.4 }}
+                    >
+                      {card.desc}
+                    </motion.p>
+                  </div>
+
+                  {/* Subtle bottom line */}
+                  <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-green-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Right Column - Today's Questions */}
+            <motion.div className="lg:col-span-7" variants={fadeInRight}>
+              <motion.div
+                className="bg-gray-800/20 backdrop-blur-sm border border-gray-700/40 rounded-2xl p-8 shadow-2xl"
+                whileHover={{ y: -5, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)" }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
+                <div className="flex flex-col lg:flex-row gap-8">
+                  {/* Question Count */}
+                  <motion.div className="flex-shrink-0" variants={scaleIn}>
+                    <div className="relative">
+                      <motion.div
+                        className="w-36 h-36 rounded-xl bg-gradient-to-br from-gray-800 to-gray-700 border border-gray-600 flex items-center justify-center shadow-xl"
+                        whileHover={{
+                          rotate: [0, -5, 5, 0],
+                          transition: { duration: 0.5 },
+                        }}
+                      >
+                        <div className="text-center text-white">
+                          <motion.div
+                            className="text-4xl font-black text-green-400 mb-1"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.8, type: "spring", stiffness: 300 }}
+                          >
+                            {todayCount}
+                          </motion.div>
+                          <motion.div
+                            className="text-sm font-mono text-gray-300 tracking-wide"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1, duration: 0.4 }}
+                          >
+                            Questions
+                          </motion.div>
+                        </div>
+                      </motion.div>
+                      {/* Geometric accent */}
+                      <motion.div
+                        className="absolute -top-2 -right-2 w-4 h-4 bg-green-500/50 rounded-sm"
+                        initial={{ scale: 0, rotate: 45 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ delay: 1.2, duration: 0.4 }}
+                      ></motion.div>
+                      <motion.div
+                        className="absolute -bottom-2 -left-2 w-2 h-2 bg-green-500/30 rounded-full"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 1.4, duration: 0.3 }}
+                      ></motion.div>
+                    </div>
+                  </motion.div>
+
+                  {/* Content */}
+                  <div className="flex-1 space-y-6">
+                    {/* Header Info */}
+                    <motion.div
+                      className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4"
+                      variants={fadeInUp}
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.6, duration: 0.5 }}
+                      >
+                        <p className="text-sm text-gray-400 font-mono mb-1">TODAY'S TOPIC</p>
+                        <h3 className="text-xl lg:text-2xl font-bold text-white">{todayTopic}</h3>
+                      </motion.div>
+                      <motion.div
+                        className="text-left sm:text-right"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.7, duration: 0.5 }}
+                      >
+                        <p className="text-sm text-gray-400 font-mono mb-1">DATE</p>
+                        <p className="text-lg font-semibold text-green-400">{todayDateStr}</p>
+                      </motion.div>
+                    </motion.div>
+
+                    {/* Description */}
+                    <motion.div className="space-y-4" variants={fadeInUp}>
+                      <motion.p
+                        className="text-gray-300 leading-relaxed"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8, duration: 0.5 }}
+                      >
+                        DevQuest delivers short, focused challenges daily — perfect for interviews and building
+                        real-world skills.
+                      </motion.p>
+
+                      {/* Divider */}
+                      <motion.div
+                        className="flex items-center gap-4"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.9, duration: 0.4 }}
+                      >
+                        <div className="flex-1 h-px bg-gradient-to-r from-green-500/30 to-transparent"></div>
+                        <motion.div
+                          className="w-1 h-1 bg-green-500 rounded-full"
+                          animate={{ scale: [1, 1.5, 1] }}
+                          transition={{ repeat: Number.POSITIVE_INFINITY, duration: 3, ease: "easeInOut" }}
+                        ></motion.div>
+                        <div className="flex-1 h-px bg-gradient-to-l from-green-500/30 to-transparent"></div>
+                      </motion.div>
+                    </motion.div>
+
+                    {/* Action Buttons */}
+                    <motion.div
+                      className="flex flex-col sm:flex-row gap-4"
+                      variants={staggerContainer}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1, duration: 0.5 }}
+                    >
+                      <motion.button
+                        onClick={() => navigate("/questions")}
+                        className="group inline-flex items-center justify-center gap-3 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-xl font-semibold text-white transition-all duration-300 hover:scale-[1.02] shadow-lg"
+                        whileHover={{
+                          scale: 1.05,
+                          boxShadow: "0 10px 30px rgba(34, 197, 94, 0.3)",
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <span>View Today's Questions</span>
+                        <motion.div
+                          animate={{ x: [0, 3, 0] }}
+                          transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2, ease: "easeInOut" }}
+                        >
+                          <CornerDownRight className="w-4 h-4" />
+                        </motion.div>
+                      </motion.button>
+                      <motion.button
+                        onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}
+                        className="px-6 py-3 text-sm font-medium text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-400/50 rounded-xl transition-all duration-300 hover:bg-green-500/5"
+                        whileHover={{
+                          scale: 1.02,
+                          borderColor: "rgba(34, 197, 94, 0.5)",
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        Previous DevQuests
+                      </motion.button>
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+
+          {/* Previous DevQuests Section */}
+          <motion.section
+            className="mt-20 pb-16"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }}
+          >
+            <motion.div
+              className="flex items-center gap-4 mb-8"
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.3, duration: 0.6 }}
+            >
+              <motion.div
+                className="w-8 h-px bg-green-500"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 1.5, duration: 0.8 }}
+              ></motion.div>
+              <h2 className="text-xl font-bold text-green-400 font-mono tracking-wide">PREVIOUS DEVQUESTS</h2>
+              <motion.div
+                className="flex-1 h-px bg-gradient-to-r from-green-500/20 to-transparent"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 1.6, duration: 1 }}
+              ></motion.div>
+            </motion.div>
+
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6"
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+            >
+              {prevFive.map((quest, index) => (
+                <motion.button
+                  key={quest.key}
+                  onClick={() => setPreviewQuest(quest)}
+                  className="group text-left p-6 bg-gray-800/20 border border-gray-700/40 rounded-xl transition-all duration-300 hover:bg-gray-800/40 hover:border-gray-600/60 hover:scale-[1.02]"
+                  variants={fadeInUp}
+                  whileHover={{
+                    y: -8,
+                    boxShadow: "0 15px 35px rgba(0, 0, 0, 0.3)",
+                    transition: { type: "spring", stiffness: 300 },
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-mono text-green-400 font-semibold">{quest.date}</span>
+                      <motion.div
+                        className="w-2 h-2 bg-gray-600 group-hover:bg-green-500/50 rounded-full transition-colors"
+                        whileHover={{ scale: 1.5 }}
+                      ></motion.div>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
+                        {quest.topic}
+                      </h3>
+                      <motion.div
+                        className="mt-2 w-8 h-px bg-green-500/20 group-hover:bg-green-500/40 transition-colors"
+                        whileHover={{ scaleX: 1.5 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      ></motion.div>
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </motion.div>
+          </motion.section>
+        </motion.main>
+      </div>
+
+      {/* Modal */}
+      <AnimatePresence>
+        {previewQuest && (
+          <motion.div
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setPreviewQuest(null)}
+          >
+            <motion.div
+              className="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl"
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <motion.div
+                className="flex items-center justify-between p-6 border-b border-gray-700"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.3 }}
+              >
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-1">{previewQuest.topic}</h2>
+                  <p className="text-sm text-green-400 font-mono">{previewQuest.date}</p>
+                </div>
+                <motion.button
+                  className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                  onClick={() => setPreviewQuest(null)}
+                  whileHover={{ scale: 1.1, backgroundColor: "rgb(55 65 81)" }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <X className="w-5 h-5" />
+                </motion.button>
+              </motion.div>
+
+              {/* Modal Content */}
+              <motion.div
+                className="p-6 overflow-y-auto max-h-[70vh]"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+              >
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-green-400 mb-4 font-mono">SAMPLE QUESTION</h3>
+                    <p className="text-gray-300 leading-relaxed">{dummyPreview.question}</p>
+                  </div>
+
+                  <motion.div className="space-y-3" variants={staggerContainer} initial="hidden" animate="visible">
+                    {dummyPreview.options.map((option, idx) => (
+                      <motion.div
+                        key={idx}
+                        className="p-4 bg-gray-700/30 border border-gray-600/30 rounded-lg text-gray-300 hover:bg-gray-700/50 hover:border-gray-600/50 transition-all duration-200 shadow-lg"
+                        style={{
+                          opacity: isLoggedIn ? 1 : 1 - idx * 0.35, // 👈 forces different opacity per option
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                        }}
+                        variants={{
+                          ...fadeInUp,
+                          visible: {
+                            ...fadeInUp.visible,
+                            opacity: isLoggedIn ? 1 : 1 - idx * 0.35, // 👈 overrides only for options
+                          },
+                        }}
+                        initial="hidden"
+                        animate="visible"
+                        whileHover={{
+                          x: 5,
+                          opacity: isLoggedIn ? 1 : 1 - idx * 0.35, // opacity on hover
+                          backgroundColor: "rgba(55, 65, 81, 0.5)",
+                          boxShadow: "0 8px 25px rgba(0, 0, 0, 0.4)",
+                        }}
+                      >
+                        <span className="font-mono text-green-400 mr-3 text-sm">
+                          {String.fromCharCode(65 + idx)}.
+                        </span>
+                        <span className="text-sm">{option}</span>
+                      </motion.div>
+                    ))}
+
+                  </motion.div>
+                </div>
+              </motion.div>
+
+              {/* Modal Footer */}
+              <motion.div
+                className="p-6 border-t border-gray-700 bg-gray-800/50"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.4 }}
+              >
+                {!isLoggedIn && (
+                  <motion.button
+                    onClick={handleViewAll}
+                    className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-[1.01] shadow-lg"
+                    whileHover={{
+                      scale: 1.02,
+                      boxShadow: "0 10px 30px rgba(34, 197, 94, 0.3)",
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {redirectCountdown !== null ? (
+                      <span>Redirecting to login in {redirectCountdown}...</span>
+                    ) : (
+                      <span>View All Questions</span>
+                    )}
+                  </motion.button>
+                )}
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
+export default Quest
