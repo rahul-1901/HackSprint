@@ -66,7 +66,7 @@ const Questions = () => {
     const resetQuizState = () => {
         setQuizStarted(false);
         setCurrentQuestionIndex(0);
-        setTimeLeft(20);
+        setTimeLeft(15);
         setSelectedAnswer(null);
         setShowExplanation(false);
         setExplanationTimer(0);
