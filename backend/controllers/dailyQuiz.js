@@ -63,7 +63,7 @@ cron.schedule("0 0 * * *", async () => {
 
     // Fetch 5 random questions
     const questions = await devquestModel.aggregate([
-      { $sample: { size: 5 } }
+      { $sample: { size: 8 } }
     ]);
 
     // Always create a NEW quiz (don’t overwrite old ones)

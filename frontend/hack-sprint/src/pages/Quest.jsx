@@ -454,7 +454,7 @@ const Quest = () => {
                             transition={{ delay: 0.8, type: "spring", stiffness: 300 }}
                           >
                             {/* {todayCount} */}
-                            5
+                            8
                           </motion.div>
                           <motion.div
                             className="text-sm font-mono text-gray-300 tracking-wide"

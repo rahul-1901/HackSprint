@@ -8,7 +8,6 @@ import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
 
 
-
 // Floating Particles (Background)
 const FloatingParticles = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
