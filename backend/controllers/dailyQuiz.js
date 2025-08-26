@@ -57,7 +57,7 @@ import dailyQuizModel from "../models/dailyQuiz.model.js";
 const getDateOnly = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
 // Auto job: runs every 5 minutes (test mode)
-cron.schedule("*0 0  * * *", async () => {
+cron.schedule("0 0 * * *", async () => {
   try {
     const today = getDateOnly(new Date());
 

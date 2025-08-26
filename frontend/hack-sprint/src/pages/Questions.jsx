@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 const Questions = () => {
     const [quizStarted, setQuizStarted] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [timeLeft, setTimeLeft] = useState(20);
+    const [timeLeft, setTimeLeft] = useState(10);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [showExplanation, setShowExplanation] = useState(false);
     const [explanationTimer, setExplanationTimer] = useState(0);
@@ -66,7 +66,7 @@ const Questions = () => {
     const resetQuizState = () => {
         setQuizStarted(false);
         setCurrentQuestionIndex(0);
-        setTimeLeft(15);
+        setTimeLeft(10);
         setSelectedAnswer(null);
         setShowExplanation(false);
         setExplanationTimer(0);
@@ -164,7 +164,7 @@ const Questions = () => {
             const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
             if (savedQuizStarted === null && !checkQuizExpiry()) {
                 setQuizStarted(true);
-                setTimeLeft(20);
+                setTimeLeft(10);
                 localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
             }
         } catch (err) {
@@ -234,7 +234,7 @@ const Questions = () => {
 
         if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
-            setTimeLeft(20);
+            setTimeLeft(10);
             setSelectedAnswer(null);
         } else {
             setQuizCompleted(true);
@@ -252,7 +252,7 @@ const Questions = () => {
         newAnswers[currentQuestionIndex] = {
             selectedAnswer: answerIndex,
             isCorrect: correct,
-            timeSpent: 20 - timeLeft
+            timeSpent: 10 - timeLeft
         };
         setUserAnswers(newAnswers);
 
@@ -282,7 +282,7 @@ const Questions = () => {
 
         if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
-            setTimeLeft(20);
+            setTimeLeft(10);
         } else {
             setQuizCompleted(true);
         }
@@ -308,7 +308,7 @@ const Questions = () => {
         clearProgress();
         setQuizStarted(true);
         setCurrentQuestionIndex(0);
-        setTimeLeft(20);
+        setTimeLeft(10);
         setSelectedAnswer(null);
         setShowExplanation(false);
         setExplanationTimer(0);
@@ -350,7 +350,7 @@ const Questions = () => {
                 <div className="text-center space-y-8">
                     <div className="relative">
                         <div className="w-24 h-24 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin mx-auto"></div>
-                        <div className="absolute inset-0 w-16 h-16 border-4 border-green-300 border-t-green-600 rounded-full animate-spin mx-auto my-1 opacity-60"></div>
+                        
                     </div>
                     <div className="space-y-4">
                         <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
@@ -559,11 +559,11 @@ const Questions = () => {
                             {/* Timer */}
                             <div className="flex items-center space-x-4">
                                 <div className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-semibold transition-all duration-300 ${timeLeft <= 5 ? 'bg-red-600/20 border border-red-500/30 text-red-400' :
-                                    timeLeft <= 10 ? 'bg-amber-600/20 border border-amber-500/30 text-amber-400' :
+                                    timeLeft <= 10 ? 'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400' :
                                         'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400'
                                     }`}>
                                     <div className={`w-2 h-2 rounded-full ${timeLeft <= 5 ? 'bg-red-500' :
-                                        timeLeft <= 10 ? 'bg-amber-500' :
+                                        timeLeft <= 10 ? 'bg-emerald-500' :
                                             'bg-emerald-500'
                                         } animate-pulse`}></div>
                                     <span>{timeLeft}s</span>
