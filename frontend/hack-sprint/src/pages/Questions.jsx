@@ -350,7 +350,7 @@ const Questions = () => {
                 <div className="text-center space-y-8">
                     <div className="relative">
                         <div className="w-24 h-24 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin mx-auto"></div>
-                        
+
                     </div>
                     <div className="space-y-4">
                         <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
@@ -518,7 +518,7 @@ const Questions = () => {
                                     onClick={() => navigate("/leaderboard")}
                                     className="px-6 py-3 cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold text-lg rounded-4xl transition-all duration-300 transform hover:scale-105 shadow-lg"
                                 >
-                                    Go to Dashboard
+                                    Go to LeaderBoard
                                 </button>
                             </div>
                         </div>
