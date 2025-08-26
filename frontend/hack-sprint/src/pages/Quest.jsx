@@ -92,7 +92,7 @@ const Quest = () => {
   useEffect(() => {
     const fetchDailyQuizzes = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/dailyquiz/allquiz");
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/dailyquiz/allquiz`);
         const quizData = response.data.quizData || [];
 
         // ✅ Build preview: only 5 questions total across all quizzes
