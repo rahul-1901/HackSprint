@@ -1,37 +1,83 @@
 import React from "react";
-import { Github, Instagram, Linkedin, Twitter, Facebook } from "lucide-react";
+import { Github, Instagram, Linkedin, Twitter, Facebook, Users, Trophy } from "lucide-react";
 
 const socialLinks = [
-  { name: 'GitHub', icon: <Github size={22} />, url: 'https://github.com/devlup-labs/HackSprint' },
-  { name: 'Instagram', icon: <Instagram size={22} />, url: 'https://www.instagram.com/hack.sprint?igsh=MWN6bjlldTV2Z2Nqdg==' },
-  { name: 'LinkedIn', icon: <Linkedin size={22} />, url: 'https://www.linkedin.com/company/devlup-labs/' },
-  { name: 'Twitter', icon: <Twitter size={22} />, url: 'https://x.com/devluplabs' },
-  { name: 'Facebook', icon: <Facebook size={22} />, url: 'https://www.facebook.com/devluplabs/' }
+  { name: "GitHub", icon: <Github size={22} />, url: "https://github.com/devlup-labs/HackSprint" },
+  { name: "Instagram", icon: <Instagram size={22} />, url: "https://www.instagram.com/hack.sprint?igsh=MWN6bjlldTV2Z2Nqdg==" },
+  { name: "LinkedIn", icon: <Linkedin size={22} />, url: "https://www.linkedin.com/company/devlup-labs/" },
+  { name: "Twitter", icon: <Twitter size={22} />, url: "https://x.com/devluplabs" },
+  { name: "Facebook", icon: <Facebook size={22} />, url: "https://www.facebook.com/devluplabs/" },
 ];
 
 export default function UnderConstruction() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0f1c] text-white text-center relative">
-      {/* Logo */}
-      <img
-        src="hackSprint.webp"
-        alt="HackSprint Logo"
-        className="w-40 md:w-56 mb-8 drop-shadow-[0_0_25px_#16f36e] animate-pulse"
-      />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0f1c] text-white relative overflow-hidden px-6">
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes reveal {
+          from { opacity: 0; clip-path: inset(0 100% 0 0); }
+          to { opacity: 1; clip-path: inset(0 0 0 0); }
+        }
+        .fade-in-up { animation: fadeInUp 1s ease-out forwards; }
+        .reveal { animation: reveal 1s ease-out forwards; }
+        .pulse { animation: pulseGlow 2.5s infinite; }
+        @keyframes pulseGlow {
+          0%, 100% { filter: drop-shadow(0 0 10px #16f36e66); }
+          50% { filter: drop-shadow(0 0 25px #16f36e); }
+        }
+      `}</style>
 
-      {/* Main Message */}
-      <div className="space-y-1">
-        <p className="text-2xl sm:text-3xl md:text-5xl lg:text-5xl bg-clip-text bg-gradient-to-b from-green-400 to-green-800 tracking-widest z-10 text-center relative leading-tight ZaptronFont font-light text-green-600 uppercase">
-          We are under development
-        </p>
-
-        <p className="text-lg md:text-2xl lg:text-3xl ZaptronFont font-light tracking-wide bg-clip-text bg-gradient-to-b from-green-400 to-green-800 tracking-widest text-green-600">
-          Cooking something great for you
-        </p>
+      <div className="absolute inset-0 opacity-10">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(22, 243, 110, 0.08) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(22, 243, 110, 0.08) 1px, transparent 1px)
+            `,
+            backgroundSize: "50px 50px",
+          }}
+        />
       </div>
 
-      {/* Footer */}
-      <div className="absolute bottom-6 flex items-center gap-6 text-green-500">
+      <div className="relative z-10 max-w-4xl mx-auto text-center">
+        <img
+          src="hackSprint.webp"
+          alt="HackSprint Logo"
+          className="w-40 md:w-56 mx-auto mb-8 pulse"
+        />
+
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-600 reveal">
+          Under Maintenance
+        </h1>
+
+        <p
+          className="text-lg md:text-2xl text-green-300/90 fade-in-up mb-12"
+          style={{ animationDelay: "0.4s" }}
+        >
+          Crafting the Future of Hackathons
+        </p>
+
+        {/* Compact Stats Boxes */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16 fade-in-up" style={{ animationDelay: "0.7s" }}>
+          <div className="p-4 border border-green-500/30 bg-white/5 rounded-lg backdrop-blur-sm hover:border-green-400/50 transition">
+            <Users size={28} className="mx-auto mb-2 text-green-400" />
+            <div className="text-2xl font-bold text-green-300">300+</div>
+            <p className="text-green-200 text-sm">Platform Logins</p>
+          </div>
+          <div className="p-4 border border-green-500/30 bg-white/5 rounded-lg backdrop-blur-sm hover:border-green-400/50 transition">
+            <Trophy size={28} className="mx-auto mb-2 text-green-400" />
+            <div className="text-2xl font-bold text-green-300">150+</div>
+            <p className="text-green-200 text-sm">Quiz Participations</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Social Links */}
+      <div className="absolute bottom-6 flex items-center gap-6 text-green-400">
         {socialLinks.map((link) => (
           <a
             key={link.name}
@@ -39,7 +85,7 @@ export default function UnderConstruction() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={link.name}
-            className="hover:text-green-300 transition"
+            className="hover:text-green-300 transition-transform transform hover:scale-110"
           >
             {link.icon}
           </a>
