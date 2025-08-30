@@ -105,6 +105,9 @@ const userSchema = new mongoose.Schema(
         message: props => `${props.value} is not a valid phone number!`
       }
     },
+    leaderOfHackathons :[
+      {type : mongoose.Schema.Types.ObjectId, ref: "hackathons"}
+    ],
     registeredHackathons: [
       { type: mongoose.Schema.Types.ObjectId, ref: "hackathons" }
     ],

@@ -57,13 +57,13 @@ import dailyQuizModel from "../models/dailyQuiz.model.js";
 const getDateOnly = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
 // Auto job: runs every 5 minutes (test mode)
-cron.schedule("*/5 * * * *", async () => {
+cron.schedule("0 0 * * *", async () => {
   try {
     const today = getDateOnly(new Date());
 
     // Fetch 5 random questions
     const questions = await devquestModel.aggregate([
-      { $sample: { size: 5 } }
+      { $sample: { size: 8 } }
     ]);
 
     // Always create a NEW quiz (don’t overwrite old ones)
@@ -81,13 +81,16 @@ cron.schedule("*/5 * * * *", async () => {
 export const getDailyQuiz = async (req, res) => {
   try {
     const today = new Date();
-    const dateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-    // Find the latest quiz created today
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
     const dailyQuiz = await dailyQuizModel
-      .findOne({ date: dateOnly })
+      .findOne({
+        date: { $gte: startOfDay, $lt: endOfDay }
+      })
       .populate("questions")
-      .sort({ createdAt: -1 });  // newest first
+      .sort({ createdAt: -1 });
 
     if (!dailyQuiz) {
       return res.status(404).json({ message: "No quiz set for today yet" });
@@ -96,23 +99,22 @@ export const getDailyQuiz = async (req, res) => {
     res.status(200).json({
       message: "Today's latest quiz",
       dailyQuiz
-      // data: dailyQuiz.questions
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const sendAllQuizData = async(req , res)=>{
-  try{
-    const quizData = await dailyQuizModel.find().populate("questions");
-    res.status(200).json({
-      "message" : "successfully retrieve the quiz data",
-      quizData
-    })
-  }catch(error){
-    res.status(500).json({
-      message: error.message,
-    });
+  export const sendAllQuizData = async(req , res)=>{
+    try{
+      const quizData = await dailyQuizModel.find().populate("questions");
+      res.status(200).json({
+        "message" : "successfully retrieve the quiz data",
+        quizData
+      })
+    }catch(error){
+      res.status(500).json({
+        message: error.message,
+      });
+    }
   }
-}

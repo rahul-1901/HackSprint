@@ -64,7 +64,7 @@ export const createTeam = async (req, res) => {
     });
 
     await UserModel.findByIdAndUpdate(leader, {
-      $addToSet: { registeredHackathons: hackathon },
+      $addToSet: { registeredHackathons: hackathon, leaderOfHackathons : hackathon }
     });
     await hackathonModel.findByIdAndUpdate(hackathon, {
       $addToSet: { registeredParticipants: leader },
