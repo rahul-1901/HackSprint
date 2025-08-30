@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getDashboard } from "../backendApis/api";
+import { useNavigate } from "react-router-dom";
 
 const Questions = () => {
     const [quizStarted, setQuizStarted] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [timeLeft, setTimeLeft] = useState(20);
+    const [timeLeft, setTimeLeft] = useState(10);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [showExplanation, setShowExplanation] = useState(false);
     const [explanationTimer, setExplanationTimer] = useState(0);
@@ -13,29 +14,25 @@ const Questions = () => {
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [questions, setQuestions] = useState([]);
     const [userAnswers, setUserAnswers] = useState([]);
-    const [quizResetTimer, setQuizResetTimer] = useState(300); // 5 minutes in seconds
+    const [quizResetTimer, setQuizResetTimer] = useState(86400);
     const [isLoading, setIsLoading] = useState(true);
     const [quizId, setQuizId] = useState(null);
-    const [userId, setUserId] = useState('')
-
+    const [userId, setUserId] = useState('');
+    const navigate = useNavigate();
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const res = await getDashboard();
-                setUserId(res.data.userData._id)
-                console.log(res.data.userData)
+                setUserId(res.data.userData._id);
+                console.log(res.data.userData);
             } catch (err) {
-                console.error("Dashboard fetch error:", err)
+                console.error("Dashboard fetch error:", err);
             }
         };
 
         fetchData();
     }, []);
 
-    // const userId = localStorage.getItem("userId"); 
-    // const userId = localStorage.getItem("userId");
-
-    // Local Storage keys
     const STORAGE_KEYS = {
         CURRENT_INDEX: 'devquest_current_index',
         TIME_LEFT: 'devquest_time_left',
@@ -46,18 +43,16 @@ const Questions = () => {
         RESET_TIMER: 'devquest_reset_timer'
     };
 
-    // Check if 5 minutes have passed since quiz start
     const checkQuizExpiry = () => {
         const startTime = localStorage.getItem(STORAGE_KEYS.QUIZ_START_TIME);
         if (startTime) {
             const currentTime = Date.now();
             const elapsedTime = Math.floor((currentTime - parseInt(startTime)) / 1000);
-            return elapsedTime >= 300; // 5 minutes
+            return elapsedTime >= 86400;
         }
         return false;
     };
 
-    // Clear all localStorage data
     const clearProgress = () => {
         try {
             Object.values(STORAGE_KEYS).forEach(key => {
@@ -68,25 +63,22 @@ const Questions = () => {
         }
     };
 
-    // Reset quiz state
     const resetQuizState = () => {
         setQuizStarted(false);
         setCurrentQuestionIndex(0);
-        setTimeLeft(20);
+        setTimeLeft(10);
         setSelectedAnswer(null);
         setShowExplanation(false);
         setExplanationTimer(0);
         setIsCorrect(false);
         setQuizCompleted(false);
         setUserAnswers([]);
-        setQuizResetTimer(300);
+        setQuizResetTimer(86400);
         clearProgress();
     };
 
-    // Load progress from localStorage
     const loadProgress = () => {
         try {
-            // First check if quiz has expired
             if (checkQuizExpiry()) {
                 resetQuizState();
                 return;
@@ -116,11 +108,10 @@ const Questions = () => {
                 setQuizCompleted(JSON.parse(savedQuizCompleted));
             }
 
-            // Calculate remaining reset timer
             if (startTime && savedResetTimer) {
                 const currentTime = Date.now();
                 const elapsedTime = Math.floor((currentTime - parseInt(startTime)) / 1000);
-                const remainingTime = Math.max(0, 300 - elapsedTime);
+                const remainingTime = Math.max(0, 86400 - elapsedTime);
                 setQuizResetTimer(remainingTime);
             } else if (savedResetTimer !== null) {
                 setQuizResetTimer(parseInt(savedResetTimer, 10));
@@ -130,7 +121,6 @@ const Questions = () => {
         }
     };
 
-    // Save progress to localStorage
     const saveProgress = () => {
         try {
             localStorage.setItem(STORAGE_KEYS.CURRENT_INDEX, currentQuestionIndex.toString());
@@ -140,7 +130,6 @@ const Questions = () => {
             localStorage.setItem(STORAGE_KEYS.QUIZ_COMPLETED, JSON.stringify(quizCompleted));
             localStorage.setItem(STORAGE_KEYS.RESET_TIMER, quizResetTimer.toString());
 
-            // Save start time if not already saved
             if (!localStorage.getItem(STORAGE_KEYS.QUIZ_START_TIME)) {
                 localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
             }
@@ -149,14 +138,12 @@ const Questions = () => {
         }
     };
 
-    // Fetch questions from API
     const fetchQuestions = async () => {
         try {
             setIsLoading(true);
             const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/dailyquiz/today`);
 
-            // Handle the new JSON structure
-            const fetchedData = response.data.dailyQuiz.questions; // Access the 'data' array from response
+            const fetchedData = response.data.dailyQuiz.questions;
             const quizId = response.data.dailyQuiz._id;
 
             const formattedQuestions = fetchedData.map((item) => ({
@@ -165,21 +152,19 @@ const Questions = () => {
                 options: item.options,
                 correctAnswer: item.correctAnswer,
                 explanation: item.explanation,
-                points: item.points || 10 // Default to 10 points if not provided
+                points: item.points || 10
             }));
 
             setQuestions(formattedQuestions);
-            setQuizId(quizId); // save quizId in state
+            setQuizId(quizId);
             setIsLoading(false);
 
-            // Load progress after questions are loaded
             loadProgress();
 
-            // If no saved state, start quiz with default values
             const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
             if (savedQuizStarted === null && !checkQuizExpiry()) {
                 setQuizStarted(true);
-                setTimeLeft(20);
+                setTimeLeft(10);
                 localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
             }
         } catch (err) {
@@ -192,7 +177,6 @@ const Questions = () => {
         fetchQuestions();
     }, []);
 
-    // Auto-reset timer (5 minutes)
     useEffect(() => {
         if (quizStarted && quizResetTimer > 0) {
             const timer = setTimeout(() => {
@@ -200,12 +184,10 @@ const Questions = () => {
             }, 1000);
             return () => clearTimeout(timer);
         } else if (quizResetTimer === 0 && quizStarted) {
-            // Auto refresh page to get new questions from backend
             window.location.reload();
         }
     }, [quizResetTimer, quizStarted]);
 
-    // Auto-refresh when quiz is completed and timer reaches 0
     useEffect(() => {
         if (quizCompleted && quizResetTimer > 0) {
             const timer = setTimeout(() => {
@@ -213,19 +195,16 @@ const Questions = () => {
             }, 1000);
             return () => clearTimeout(timer);
         } else if (quizCompleted && quizResetTimer === 0) {
-            // Auto refresh page to get new questions from backend
             window.location.reload();
         }
     }, [quizResetTimer, quizCompleted]);
 
-    // Save progress whenever state changes
     useEffect(() => {
         if (questions.length > 0 && quizStarted) {
             saveProgress();
         }
     }, [currentQuestionIndex, timeLeft, userAnswers, quizStarted, quizCompleted, quizResetTimer, questions.length]);
 
-    // Timer for questions (20 seconds)
     useEffect(() => {
         if (quizStarted && !showExplanation && !quizCompleted && timeLeft > 0) {
             const timer = setTimeout(() => {
@@ -237,7 +216,6 @@ const Questions = () => {
         }
     }, [timeLeft, quizStarted, showExplanation, quizCompleted]);
 
-    // Timer for explanation display
     useEffect(() => {
         if (showExplanation && explanationTimer > 0) {
             const timer = setTimeout(() => {
@@ -256,7 +234,7 @@ const Questions = () => {
 
         if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
-            setTimeLeft(20);
+            setTimeLeft(10);
             setSelectedAnswer(null);
         } else {
             setQuizCompleted(true);
@@ -274,27 +252,24 @@ const Questions = () => {
         newAnswers[currentQuestionIndex] = {
             selectedAnswer: answerIndex,
             isCorrect: correct,
-            timeSpent: 20 - timeLeft
+            timeSpent: 10 - timeLeft
         };
         setUserAnswers(newAnswers);
 
-        // --- API CALL ---
         const questionId = questions[currentQuestionIndex].id;
         const payload = { questionId, userId };
-
 
         try {
             if (correct) {
                 await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/correctanswer`, payload);
-                console.log("✅ Correct answer logged");
+                console.log("Correct answer logged");
             } else {
                 await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/incorrectanswer`, payload);
-                console.log("❌ Incorrect answer logged");
+                console.log("Incorrect answer logged");
             }
         } catch (err) {
             console.error("Error posting answer:", err);
         }
-        // ----------------
 
         setShowExplanation(true);
         setExplanationTimer(correct ? 5 : 10);
@@ -307,7 +282,7 @@ const Questions = () => {
 
         if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
-            setTimeLeft(20);
+            setTimeLeft(10);
         } else {
             setQuizCompleted(true);
         }
@@ -318,34 +293,28 @@ const Questions = () => {
     };
 
     const handleFinishQuiz = async () => {
-
-        // const score = userAnswers.filter(ans => ans?.isCorrect).length;
         const payload = { userId, quizId };
 
         try {
             await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/finishquiz`, payload);
-            console.log("✅ Quiz completion logged");
+            console.log("Quiz completion logged");
         } catch (err) {
-            console.error("❌ Error logging quiz finish:", err);
+            console.error("Error logging quiz finish:", err);
         }
         setQuizCompleted(true);
-
-        // navigate after logging quiz finish
-        // navigate("/results", { state: { userAnswers, questions, score } });
     };
-
 
     const startQuiz = () => {
         clearProgress();
         setQuizStarted(true);
         setCurrentQuestionIndex(0);
-        setTimeLeft(20);
+        setTimeLeft(10);
         setSelectedAnswer(null);
         setShowExplanation(false);
         setExplanationTimer(0);
         setQuizCompleted(false);
         setUserAnswers([]);
-        setQuizResetTimer(300);
+        setQuizResetTimer(86400);
         localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
     };
 
@@ -365,98 +334,193 @@ const Questions = () => {
         };
     };
 
-    // Format time for display
     const formatTime = (seconds) => {
-        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
         const remainingSeconds = seconds % 60;
-        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        return `${hours.toString().padStart(2, '0')}:${minutes
+            .toString()
+            .padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
 
-    // Show loading screen
+    // Loading Screen
     if (isLoading || questions.length === 0) {
         return (
-            <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400 mx-auto mb-4"></div>
-                    <p className="text-xl">Loading Quiz...</p>
-                    <p className="text-sm text-gray-400 mt-2">Fetching latest questions...</p>
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800 text-white flex items-center justify-center">
+                <div className="text-center space-y-8">
+                    <div className="relative">
+                        <div className="w-24 h-24 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin mx-auto"></div>
+
+                    </div>
+                    <div className="space-y-4">
+                        <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
+                            Initializing DevQuest
+                        </h2>
+                        <p className="text-slate-300 text-lg">Preparing your personalized challenge...</p>
+                        <div className="flex items-center justify-center space-x-2">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce delay-100"></div>
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce delay-200"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
     }
 
-    // Show start screen
-    if (!quizStarted) {
-        return (
-            <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-8 relative overflow-hidden">
-                <div className="absolute inset-0 overflow-hidden">
-                    <div className="w-96 h-96 rounded-full opacity-10 bg-gradient-to-br from-green-500 to-green-600 absolute top-10 left-10 animate-pulse"></div>
-                    <div className="w-64 h-64 rounded-full opacity-10 bg-gradient-to-br from-green-400 to-green-500 absolute bottom-20 right-15 animate-pulse"></div>
-                </div>
+    // Start Screen
+    // if (!quizStarted) {
+    //     return (
+    //         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 text-white relative overflow-hidden">
+    //             {/* Animated Background Elements */}
+    //             <div className="absolute inset-0">
+    //                 <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
+    //                 <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+    //                 <div className="absolute top-3/4 left-1/3 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+    //             </div>
 
-                <div className="text-center max-w-2xl relative z-10">
-                    <h1 className="text-4xl md:text-6xl font-bold mb-8 text-green-400">DevQuest Challenge</h1>
-                    <p className="text-xl text-gray-300 mb-8">Test your development knowledge with our interactive quiz!</p>
-                    <p className="text-lg text-yellow-400 mb-8">⚡ New questions every 5 minutes!</p>
+    //             {/* Grid Pattern */}
+    //             <div className="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.03)_1px,transparent_1px)] bg-[size:64px_64px]"></div>
 
-                    <button
-                        onClick={startQuiz}
-                        className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl text-xl cursor-pointer transition-all duration-300 transform hover:scale-105 shadow-xl border border-green-400/30"
-                    >
-                        Start Quest
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    //             <div className="relative z-10 min-h-screen flex items-center justify-center px-6">
+    //                 <div className="text-center max-w-4xl">
+    //                     {/* Logo/Title Section */}
+    //                     <div className="mb-12 space-y-6">
+    //                         <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl mb-6 shadow-2xl">
+    //                             <div className="text-3xl font-bold text-white">DQ</div>
+    //                         </div>
 
+    //                         <h1 className="text-6xl md:text-7xl font-black bg-gradient-to-r from-emerald-300 via-green-400 to-teal-300 bg-clip-text text-transparent leading-tight">
+    //                             DevQuest
+    //                         </h1>
+
+    //                         <div className="space-y-2">
+    //                             <p className="text-2xl font-medium text-slate-300">Professional Developer Assessment</p>
+    //                             <div className="w-24 h-1 bg-gradient-to-r from-emerald-500 to-green-500 mx-auto rounded-full"></div>
+    //                         </div>
+    //                     </div>
+
+    //                     {/* Feature Cards */}
+    //                     <div className="grid md:grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto">
+    //                         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/70 transition-all duration-300">
+    //                             <div className="text-emerald-500 text-3xl mb-3">⚡</div>
+    //                             <h3 className="font-semibold text-white mb-2">Daily Challenges</h3>
+    //                             <p className="text-slate-400 text-sm">Fresh questions every 24 hours</p>
+    //                         </div>
+
+    //                         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/70 transition-all duration-300">
+    //                             <div className="text-green-500 text-3xl mb-3">🎯</div>
+    //                             <h3 className="font-semibold text-white mb-2">Instant Feedback</h3>
+    //                             <p className="text-slate-400 text-sm">Learn with detailed explanations</p>
+    //                         </div>
+
+    //                         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/70 transition-all duration-300">
+    //                             <div className="text-teal-500 text-3xl mb-3">📊</div>
+    //                             <h3 className="font-semibold text-white mb-2">Track Progress</h3>
+    //                             <p className="text-slate-400 text-sm">Monitor your skill development</p>
+    //                         </div>
+    //                     </div>
+
+    //                     {/* CTA Section */}
+    //                     <div className="space-y-6">
+    //                         <button
+    //                             onClick={startQuiz}
+    //                             className="group relative px-12 py-5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold text-xl rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-emerald-500/25"
+    //                         >
+    //                             <span className="relative z-10">Begin Assessment</span>
+    //                             <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-green-400 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+    //                         </button>
+
+    //                         <p className="text-slate-400 text-lg">
+    //                             Ready to test your development expertise?
+    //                         </p>
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     );
+    // }
+
+    // Quiz Completed Screen
     if (quizCompleted) {
         const stats = getQuizStats();
         return (
-            <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-8 relative overflow-hidden">
-                <div className="absolute inset-0 overflow-hidden">
-                    <div className="celebration-bg-1 absolute w-96 h-96 rounded-full opacity-10 animate-float-slow"></div>
-                    <div className="celebration-bg-2 absolute w-64 h-64 rounded-full opacity-10 animate-float-slow-delayed"></div>
-                    <div className="celebration-bg-3 absolute w-48 h-48 rounded-full opacity-10 animate-float-reverse"></div>
+            <div className="min-h-screen bg-gradient-to-br py-4 from-slate-900 via-gray-900 to-slate-800 text-white relative overflow-hidden">
+                {/* Animated Background */}
+                <div className="absolute inset-0">
+                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
+                    <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
                 </div>
 
-                <div className="text-center max-w-2xl animate-fade-in-up relative z-10">
-                    <div className="mb-8 animate-celebration-badge">
-                        <div className="inline-block p-6 rounded-full bg-gradient-to-r from-green-500 to-green-600 shadow-2xl">
-                            <span className="text-6xl animate-bounce-celebration">🏆</span>
+                <div className="relative z-10 min-h-screen flex items-center justify-center px-6">
+                    <div className="text-center max-w-4xl">
+                        {/* Success Badge */}
+                        <div className="mb-8">
+                            <div className="inline-flex mt-5 items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full shadow-2xl mb-2 animate-bounce">
+                                <div className="text-4xl">🏆</div>
+                            </div>
+
+                            <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-emerald-300 to-green-400 bg-clip-text text-transparent mb-4">
+                                Assessment Complete!
+                            </h1>
+
+                            <p className="text-xl text-slate-300">Excellent work on completing the DevQuest challenge</p>
                         </div>
-                    </div>
 
-                    <h1 className="text-4xl md:text-6xl font-bold mb-8 text-green-400 animate-pulse-slow">Quest Completed!</h1>
+                        {/* Results Dashboard */}
+                        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-3xl p-5 mb-8 max-w-2xl mx-auto">
+                            <h2 className="text-2xl font-bold text-white mb-8">Performance Summary</h2>
 
-                    <div className="mb-8 p-6 bg-gray-800 rounded-2xl border border-green-500/30 shadow-lg animate-fade-in-up">
-                        <p className="text-xl md:text-2xl mb-4 text-white">Quiz Statistics</p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                            <div className="bg-gray-700/50 p-3 rounded-lg">
-                                <div className="text-2xl font-bold text-green-400">{stats.total}</div>
-                                <div className="text-sm text-gray-300">Total</div>
-                            </div>
-                            <div className="bg-gray-700/50 p-3 rounded-lg">
-                                <div className="text-2xl font-bold text-green-500">{stats.answered}</div>
-                                <div className="text-sm text-gray-300">Answered</div>
-                            </div>
-                            <div className="bg-gray-700/50 p-3 rounded-lg">
-                                <div className="text-2xl font-bold text-green-300">{stats.correct}</div>
-                                <div className="text-sm text-gray-300">Correct</div>
-                            </div>
-                            <div className="bg-gray-700/50 p-3 rounded-lg">
-                                <div className="text-2xl font-bold text-green-200">{stats.percentage}%</div>
-                                <div className="text-sm text-gray-300">Score</div>
-                            </div>
-                        </div>
-                        <p className="text-lg text-gray-300 mt-4">
-                            Great job on finishing the DevQuest challenge!
-                        </p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                <div className="text-center">
+                                    <div className="w-16 h-16 bg-slate-700/50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                        <span className="text-2xl font-bold text-white">{stats.total}</span>
+                                    </div>
+                                    <p className="text-slate-400 font-medium">Total Questions</p>
+                                </div>
 
-                        {/* Auto-reset countdown */}
-                        <div className="mt-6 p-4 bg-blue-800/30 rounded-lg border border-blue-500/30">
-                            <p className="text-blue-400 font-semibold">🔄 Page will refresh in: {formatTime(quizResetTimer)}</p>
-                            <p className="text-sm text-gray-400 mt-1">New questions will be loaded automatically</p>
+                                <div className="text-center">
+                                    <div className="w-16 h-16 bg-emerald-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                        <span className="text-2xl font-bold text-emerald-400">{stats.answered}</span>
+                                    </div>
+                                    <p className="text-slate-400 font-medium">Answered</p>
+                                </div>
+
+                                <div className="text-center">
+                                    <div className="w-16 h-16 bg-green-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                        <span className="text-2xl font-bold text-green-400">{stats.correct}</span>
+                                    </div>
+                                    <p className="text-slate-400 font-medium">Correct</p>
+                                </div>
+
+                                <div className="text-center">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                                        <span className="text-2xl font-bold text-white">{stats.percentage}%</span>
+                                    </div>
+                                    <p className="text-slate-400 font-medium">Success Rate</p>
+                                </div>
+                            </div>
+
+                            {/* Performance Badge */}
+                            <div className="mt-8 pt-8 border-t border-slate-700/50">
+                                <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-600/20 to-green-600/20 border border-emerald-500/30 rounded-full">
+                                    <span className="text-emerald-400 font-semibold">
+                                        {stats.percentage >= 80 ? "Outstanding Performance!" :
+                                            stats.percentage >= 60 ? "Great Job!" :
+                                                "Good Effort! Keep Learning!"}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Navigate Button */}
+                            <div className="mt-5">
+                                <button
+                                    onClick={() => navigate("/leaderboard")}
+                                    className="px-6 py-3 cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold text-lg rounded-4xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                                >
+                                    Go to LeaderBoard
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -464,604 +528,239 @@ const Questions = () => {
         );
     }
 
+    // Quiz Interface
     const currentQuestion = questions[currentQuestionIndex];
     const hasAnsweredCurrent = userAnswers[currentQuestionIndex] !== undefined;
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6 lg:p-8 relative overflow-hidden flex flex-col items-center pt-8">
-            {/* Background elements */}
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 text-white relative overflow-hidden">
+            {/* Background Elements */}
             <div className="absolute inset-0">
-                <div className="bg-grid absolute inset-0"></div>
-                <div className="floating-orb-1 absolute w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-full opacity-10 animate-float-1"></div>
-                <div className="floating-orb-2 absolute w-24 h-24 sm:w-36 sm:h-36 lg:w-48 lg:h-48 rounded-full opacity-10 animate-float-2"></div>
-                <div className="floating-orb-3 absolute w-16 h-16 sm:w-24 sm:h-24 lg:w-32 lg:h-32 rounded-full opacity-15 animate-float-3"></div>
-                <div className="floating-orb-4 absolute w-12 h-12 sm:w-18 sm:h-18 lg:w-24 lg:h-24 rounded-full opacity-20 animate-float-4"></div>
-                <div className="animated-line-1 absolute h-px bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-30"></div>
-                <div className="animated-line-2 absolute w-px bg-gradient-to-b from-transparent via-green-500 to-transparent opacity-30"></div>
+                <div className="bg-[linear-gradient(rgba(34,197,94,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.03)_1px,transparent_1px)] bg-[size:64px_64px]"></div>
+                <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-green-500/5 rounded-full blur-3xl"></div>
             </div>
 
-            <div className="max-w-2xl w-full relative z-10">
-                {/* Header with auto-reset timer */}
-                <div className="text-center mb-4 sm:mb-6 animate-fade-in-down">
-                    <div className="mb-3 sm:mb-4 relative">
-                        {hasAnsweredCurrent && (
-                            <div className="text-sm text-green-400 animate-fade-in">
-                                ✓ Previously answered
+            <div className="relative z-10 min-h-screen flex flex-col">
+                {/* Header */}
+                <div className="border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-sm">
+                    <div className="max-w-6xl mx-auto px-6 py-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                                {/* <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
+                                    <span className="text-white font-bold text-sm">DQ</span>
+                                </div> */}
+                                <div>
+                                    <h1 className="text-xl font-bold text-white">DevQuest Assessment</h1>
+                                    <p className="text-sm text-slate-400">Question {currentQuestionIndex + 1} of {questions.length}</p>
+                                </div>
                             </div>
-                        )}
 
-                        {/* Auto-reset countdown display */}
-                        <div className="mt-2 p-2 bg-blue-800/30 rounded-lg border border-blue-500/30 inline-block">
-                            <p className="text-sm text-blue-400">🔄 Page refreshes in: {formatTime(quizResetTimer)}</p>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0 mb-4 bg-gray-800/50 backdrop-blur-sm rounded-2xl p-3 sm:p-4 border border-gray-700/50 shadow-xl">
-                        <div className="flex items-center gap-2 sm:gap-3 animate-slide-in-left">
-                            <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full animate-pulse"></div>
-                            <span className="text-base sm:text-lg font-semibold">Question {currentQuestionIndex + 1} of {questions.length}</span>
-                        </div>
-                        <div className="flex items-center gap-2 sm:gap-4 animate-slide-in-right">
-                            <span className="text-base sm:text-lg font-medium">Time Left:</span>
-                            <div className={`relative text-lg sm:text-xl lg:text-2xl font-bold px-3 sm:px-4 lg:px-6 py-2 sm:py-3 rounded-xl transition-all duration-300 shadow-lg ${timeLeft <= 5 ? 'bg-red-600 animate-pulse shadow-red-500/30' : timeLeft <= 10 ? 'bg-yellow-600 shadow-yellow-500/30' : 'bg-green-600 shadow-green-500/30'}`}>
-                                <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent rounded-xl"></div>
-                                <span className="relative z-10">{timeLeft}s</span>
+                            {/* Timer */}
+                            <div className="flex items-center space-x-4">
+                                <div className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-semibold transition-all duration-300 ${timeLeft <= 5 ? 'bg-red-600/20 border border-red-500/30 text-red-400' :
+                                    timeLeft <= 10 ? 'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400' :
+                                        'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400'
+                                    }`}>
+                                    <div className={`w-2 h-2 rounded-full ${timeLeft <= 5 ? 'bg-red-500' :
+                                        timeLeft <= 10 ? 'bg-emerald-500' :
+                                            'bg-emerald-500'
+                                        } animate-pulse`}></div>
+                                    <span>{timeLeft}s</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Progress Bar */}
-                    <div className="relative w-full bg-gray-800 rounded-full h-2 sm:h-3 mb-4 animate-fade-in border border-gray-700/50 shadow-inner">
-                        <div className="absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-full opacity-50"></div>
-                        <div
-                            className="bg-gradient-to-r from-green-500 via-green-400 to-green-300 h-2 sm:h-3 rounded-full transition-all duration-700 ease-out relative overflow-hidden shadow-lg"
-                            style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-shimmer"></div>
+                        {/* Progress Bar */}
+                        <div className="mt-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-slate-300">Progress</span>
+                                <span className="text-sm font-medium text-emerald-400">
+                                    {Math.round(((currentQuestionIndex + 1) / questions.length) * 100)}%
+                                </span>
+                            </div>
+                            <div className="w-full bg-slate-800 rounded-full h-2">
+                                <div
+                                    className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full transition-all duration-700 ease-out relative overflow-hidden"
+                                    style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-pulse"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Question Container */}
-                <div className="relative bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 animate-question-enter border border-gray-700/50 shadow-2xl">
-                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-green-400/5 rounded-2xl"></div>
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-green-400 rounded-t-2xl"></div>
+                {/* Main Content */}
+                <div className="flex-1 flex items-center justify-center px-6 py-8">
+                    <div className="max-w-4xl w-full">
+                        {/* Question Card */}
+                        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-3xl p-8 mb-8 shadow-2xl">
+                            <div className="text-center mb-8">
+                                <h2 className="text-1xl md:text-2xl font-bold text-white leading-relaxed">
+                                    {currentQuestion.question}
+                                </h2>
+                            </div>
 
-                    <div className="relative z-10">
-                        <div className="flex items-center justify-center mb-4 sm:mb-6">
-                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse mr-2 sm:mr-3 flex-shrink-0"></div>
-                            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-center animate-type-writer leading-tight px-2">
-                                {currentQuestion.question}
-                            </h2>
-                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse ml-2 sm:ml-3 flex-shrink-0"></div>
+                            {/* Answer Options */}
+                            <div className="grid gap-4 mb-8">
+                                {currentQuestion.options.map((option, index) => {
+                                    const optionLetter = String.fromCharCode(65 + index);
+                                    const isSelected = selectedAnswer === index;
+                                    const isCorrect = index === currentQuestion.correctAnswer;
+                                    const showResult = selectedAnswer !== null;
+
+                                    return (
+                                        <button
+                                            key={index}
+                                            onClick={() => handleAnswerClick(index)}
+                                            disabled={selectedAnswer !== null}
+                                            className={`group relative p-4 rounded-xl text-left transition-all duration-300 transform hover:scale-[1.02] border-2 ${!showResult
+                                                ? 'bg-slate-800/50 hover:bg-slate-700/50 border-slate-600/50 hover:border-emerald-500/50 cursor-pointer'
+                                                : isSelected
+                                                    ? isCorrect
+                                                        ? 'bg-emerald-600/20 border-emerald-500/50 shadow-emerald-500/20'
+                                                        : 'bg-red-600/20 border-red-500/50 shadow-red-500/20'
+                                                    : isCorrect
+                                                        ? 'bg-emerald-600/20 border-emerald-500/50 shadow-emerald-500/20'
+                                                        : 'bg-slate-800/30 border-slate-600/30 opacity-60'
+                                                } ${selectedAnswer !== null ? 'cursor-not-allowed' : ''}`}
+                                        >
+                                            <div className="flex items-start space-x-4">
+                                                {/* Option Letter */}
+                                                <div className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${!showResult
+                                                    ? 'bg-slate-700 text-slate-300 group-hover:bg-emerald-600 group-hover:text-white'
+                                                    : isSelected
+                                                        ? isCorrect
+                                                            ? 'bg-emerald-600 text-white'
+                                                            : 'bg-red-600 text-white'
+                                                        : isCorrect
+                                                            ? 'bg-emerald-600 text-white'
+                                                            : 'bg-slate-700 text-slate-400'
+                                                    }`}>
+                                                    {optionLetter}
+                                                </div>
+
+                                                {/* Option Text */}
+                                                <div className="flex-1">
+                                                    <p className={`text-base font-medium transition-colors duration-300 ${!showResult
+                                                        ? 'text-white group-hover:text-emerald-100'
+                                                        : isSelected || isCorrect
+                                                            ? 'text-white'
+                                                            : 'text-slate-400'
+                                                        }`}>
+                                                        {option}
+                                                    </p>
+                                                </div>
+
+                                                {/* Result Icon */}
+                                                {showResult && (isSelected || isCorrect) && (
+                                                    <div className="flex-shrink-0">
+                                                        {isSelected && isCorrect ? (
+                                                            <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                                                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                                                </svg>
+                                                            </div>
+                                                        ) : isSelected && !isCorrect ? (
+                                                            <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                                                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                                </svg>
+                                                            </div>
+                                                        ) : isCorrect && !isSelected ? (
+                                                            <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                                                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                                                </svg>
+                                                            </div>
+                                                        ) : null}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Action Button */}
+                            <div className="text-center">
+                                {currentQuestionIndex === questions.length - 1 ? (
+                                    <button
+                                        onClick={handleFinishQuiz}
+                                        className="px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium sm:font-semibold text-base sm:text-lg rounded-lg sm:rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-emerald-500/25 cursor-pointer"
+                                    >
+                                        Complete Assessment
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleNextButton}
+                                        className="px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium sm:font-semibold text-base sm:text-lg rounded-lg sm:rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-emerald-500/25 cursor-pointer"
+                                    >
+                                        Continue to Next Question
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Options */}
-                        <div className="grid grid-cols-1 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                            {currentQuestion.options.map((option, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => handleAnswerClick(index)}
-                                    disabled={selectedAnswer !== null}
-                                    className={`relative p-3 sm:p-4 lg:p-5 rounded-xl text-left transition-all duration-300 transform hover:scale-105 border ${selectedAnswer === null ? 'animate-option-enter' : ''} ${selectedAnswer === null
-                                        ? 'bg-gray-700/80 hover:bg-gray-600/80 cursor-pointer hover:shadow-xl border-gray-600/50 hover:border-green-500/50'
-                                        : selectedAnswer === index
-                                            ? isCorrect
-                                                ? 'bg-green-600/90 animate-correct-answer border-green-400 shadow-green-500/30'
-                                                : 'bg-red-600/90 animate-wrong-answer border-red-400 shadow-red-500/30'
-                                            : index === currentQuestion.correctAnswer && selectedAnswer !== null
-                                                ? 'bg-green-600/90 animate-reveal-correct border-green-400 shadow-green-500/30'
-                                                : 'bg-gray-700/50 opacity-50 border-gray-600/30'
-                                        } ${selectedAnswer !== null ? 'cursor-not-allowed' : ''}`}
-                                    style={{
-                                        animationDelay: `${index * 0.1}s`
-                                    }}
-                                >
-                                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-xl"></div>
-                                    <div className="relative z-10 flex items-center">
-                                        <span className="inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-gray-600 rounded-full font-bold mr-3 sm:mr-4 text-xs sm:text-sm flex-shrink-0">
-                                            {String.fromCharCode(65 + index)}
-                                        </span>
-                                        <span className="flex-1 text-sm sm:text-base lg:text-lg leading-relaxed">{option}</span>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Next Button */}
-                        <div className="flex justify-center mb-4">
-                            {currentQuestionIndex === questions.length - 1 ? (
-                                <button
-                                    onClick={handleFinishQuiz}
-                                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 animate-fade-in border border-green-400/30 shadow-lg"
-                                >
-                                    Finish Quiz
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={handleNextButton}
-                                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 animate-fade-in border border-green-400/30 shadow-lg"
-                                >
-                                    Next Question
-                                </button>
-                            )}
-
-                        </div>
-
-                        {/* Explanation */}
+                        {/* Explanation Panel */}
                         {showExplanation && (
-                            <div className={`relative p-4 sm:p-5 lg:p-6 rounded-xl mb-4 animate-explanation-enter border ${isCorrect ? 'bg-green-800/80 border-green-500/50 shadow-green-500/20' : 'bg-red-800/80 border-red-500/50 shadow-red-500/20'} shadow-xl backdrop-blur-sm`}>
-                                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-xl"></div>
-                                <div className="relative z-10">
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
-                                        <h3 className="text-lg sm:text-xl font-semibold animate-bounce-in flex items-center gap-2 sm:gap-3">
-                                            <span className="text-xl sm:text-2xl">{isCorrect ? '✅' : '❌'}</span>
-                                            {isCorrect ? 'Correct!' : 'Incorrect!'}
-                                        </h3>
-                                        <div className="flex items-center gap-2 text-base sm:text-lg font-bold bg-gray-900/50 px-3 sm:px-4 py-2 rounded-lg animate-pulse">
-                                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-bounce"></div>
-                                            Auto-advance in {explanationTimer}s
+                            <div className={`bg-slate-800/60 backdrop-blur-sm border-2 rounded-3xl p-6 shadow-2xl transition-all duration-500 ${isCorrect
+                                ? 'border-emerald-500/50 shadow-emerald-500/10'
+                                : 'border-red-500/50 shadow-red-500/10'
+                                }`}>
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center space-x-3">
+                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isCorrect ? 'bg-emerald-600' : 'bg-red-600'
+                                            }`}>
+                                            {isCorrect ? (
+                                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                            ) : (
+                                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-white">
+                                                {isCorrect ? 'Correct Answer!' : 'Incorrect Answer'}
+                                            </h3>
+                                            <p className="text-slate-400">
+                                                {isCorrect ? 'Well done!' : 'Review the explanation below'}
+                                            </p>
                                         </div>
                                     </div>
-                                    <div className="p-3 sm:p-4 bg-gray-900/30 rounded-lg border border-gray-700/50">
-                                        <p className="text-sm sm:text-base lg:text-lg animate-fade-in-up leading-relaxed">{currentQuestion.explanation}</p>
+
+                                    <div className="flex items-center space-x-2 px-4 py-2 bg-slate-700/50 rounded-xl border border-slate-600/50">
+                                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                                        <span className="text-slate-300 font-medium">Auto-advance in {explanationTimer}s</span>
                                     </div>
+                                </div>
+
+                                <div className="bg-slate-900/50 rounded-2xl p-6 border border-slate-700/50">
+                                    <h4 className="text-lg font-semibold text-white mb-3">Explanation</h4>
+                                    <p className="text-slate-200 leading-relaxed text-lg">
+                                        {currentQuestion.explanation}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Previously Answered Indicator */}
+                        {hasAnsweredCurrent && !showExplanation && (
+                            <div className="text-center mt-6">
+                                <div className="inline-flex items-center space-x-2 px-4 py-2 bg-emerald-600/20 border border-emerald-500/30 rounded-full">
+                                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span className="text-emerald-400 font-medium">Previously answered</span>
                                 </div>
                             </div>
                         )}
                     </div>
                 </div>
-
-                <style jsx>{`
-                    .bg-grid {
-                        background-image: 
-                            linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px);
-                        background-size: 30px 30px;
-                    }
-
-                    @media (min-width: 640px) {
-                        .bg-grid {
-                            background-size: 40px 40px;
-                        }
-                    }
-
-                    @media (min-width: 1024px) {
-                        .bg-grid {
-                            background-size: 50px 50px;
-                        }
-                    }
-
-                    .floating-orb-1 {
-                        background: linear-gradient(45deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.2));
-                        top: 10%;
-                        left: 5%;
-                    }
-
-                    .floating-orb-2 {
-                        background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(34, 197, 94, 0.2));
-                        top: 60%;
-                        right: 10%;
-                    }
-
-                    .floating-orb-3 {
-                        background: linear-gradient(225deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.2));
-                        bottom: 20%;
-                        left: 15%;
-                    }
-
-                    .floating-orb-4 {
-                        background: linear-gradient(315deg, rgba(74, 222, 128, 0.2), rgba(34, 197, 94, 0.2));
-                        top: 30%;
-                        right: 30%;
-                    }
-
-                    .animated-line-1 {
-                        top: 25%;
-                        left: 0;
-                        right: 0;
-                        animation: lineMove 8s ease-in-out infinite;
-                    }
-
-                    .animated-line-2 {
-                        top: 0;
-                        bottom: 0;
-                        right: 25%;
-                        animation: lineMove2 10s ease-in-out infinite;
-                    }
-
-                    .celebration-bg-1 {
-                        background: linear-gradient(45deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.1));
-                        top: 10%;
-                        left: 10%;
-                    }
-                    
-                    .celebration-bg-2 {
-                        background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(34, 197, 94, 0.1));
-                        top: 20%;
-                        right: 15%;
-                    }
-                    
-                    .celebration-bg-3 {
-                        background: linear-gradient(225deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.1));
-                        bottom: 20%;
-                        left: 20%;
-                    }
-
-                    @keyframes gridMove {
-                        0% {
-                            transform: translate(0, 0);
-                        }
-                        100% {
-                            transform: translate(50px, 50px);
-                        }
-                    }
-
-                    @keyframes float1 {
-                        0%, 100% {
-                            transform: translateY(0px) rotate(0deg);
-                        }
-                        50% {
-                            transform: translateY(-20px) rotate(5deg);
-                        }
-                    }
-
-                    @keyframes float2 {
-                        0%, 100% {
-                            transform: translateY(0px) rotate(0deg);
-                        }
-                        50% {
-                            transform: translateY(-15px) rotate(-3deg);
-                        }
-                    }
-
-                    @keyframes float3 {
-                        0%, 100% {
-                            transform: translateY(-10px) rotate(0deg);
-                        }
-                        50% {
-                            transform: translateY(10px) rotate(2deg);
-                        }
-                    }
-
-                    @keyframes float4 {
-                        0%, 100% {
-                            transform: translateY(0px) rotate(0deg);
-                        }
-                        50% {
-                            transform: translateY(-25px) rotate(-5deg);
-                        }
-                    }
-
-                    @keyframes lineMove {
-                        0%, 100% {
-                            opacity: 0.3;
-                            transform: translateX(-100px);
-                        }
-                        50% {
-                            opacity: 0.8;
-                            transform: translateX(100px);
-                        }
-                    }
-
-                    @keyframes lineMove2 {
-                        0%, 100% {
-                            opacity: 0.3;
-                            transform: translateY(-100px);
-                        }
-                        50% {
-                            opacity: 0.8;
-                            transform: translateY(100px);
-                        }
-                    }
-
-                    @keyframes shimmer {
-                        0% {
-                            transform: translateX(-100%);
-                        }
-                        100% {
-                            transform: translateX(100%);
-                        }
-                    }
-
-                    @keyframes fadeInDown {
-                        from {
-                            opacity: 0;
-                            transform: translateY(-30px);
-                        }
-                        to {
-                            opacity: 1;
-                            transform: translateY(0);
-                        }
-                    }
-
-                    @keyframes slideInLeft {
-                        from {
-                            opacity: 0;
-                            transform: translateX(-30px);
-                        }
-                        to {
-                            opacity: 1;
-                            transform: translateX(0);
-                        }
-                    }
-
-                    @keyframes slideInRight {
-                        from {
-                            opacity: 0;
-                            transform: translateX(30px);
-                        }
-                        to {
-                            opacity: 1;
-                            transform: translateX(0);
-                        }
-                    }
-
-                    @keyframes fadeIn {
-                        from {
-                            opacity: 0;
-                        }
-                        to {
-                            opacity: 1;
-                        }
-                    }
-
-                    @keyframes questionEnter {
-                        from {
-                            opacity: 0;
-                            transform: translateY(50px) scale(0.95);
-                        }
-                        to {
-                            opacity: 1;
-                            transform: translateY(0) scale(1);
-                        }
-                    }
-
-                    @keyframes optionEnter {
-                        from {
-                            opacity: 0;
-                            transform: translateX(-20px);
-                        }
-                        to {
-                            opacity: 1;
-                            transform: translateX(0);
-                        }
-                    }
-
-                    @keyframes correctAnswer {
-                        0% {
-                            transform: scale(1);
-                        }
-                        50% {
-                            transform: scale(1.05);
-                        }
-                        100% {
-                            transform: scale(1);
-                        }
-                    }
-
-                    @keyframes wrongAnswer {
-                        0%, 100% {
-                            transform: translateX(0);
-                        }
-                        25% {
-                            transform: translateX(-5px);
-                        }
-                        75% {
-                            transform: translateX(5px);
-                        }
-                    }
-
-                    @keyframes revealCorrect {
-                        from {
-                            background-color: rgba(55, 65, 81, 0.5);
-                        }
-                        to {
-                            background-color: rgba(22, 163, 74, 0.9);
-                        }
-                    }
-
-                    @keyframes explanationEnter {
-                        from {
-                            opacity: 0;
-                            transform: translateY(20px);
-                            max-height: 0;
-                        }
-                        to {
-                            opacity: 1;
-                            transform: translateY(0);
-                            max-height: 500px;
-                        }
-                    }
-
-                    @keyframes fadeInUp {
-                        from {
-                            opacity: 0;
-                            transform: translateY(20px);
-                        }
-                        to {
-                            opacity: 1;
-                            transform: translateY(0);
-                        }
-                    }
-
-                    @keyframes bounceIn {
-                        0% {
-                            opacity: 0;
-                            transform: scale(0.3);
-                        }
-                        50% {
-                            transform: scale(1.05);
-                        }
-                        70% {
-                            transform: scale(0.9);
-                        }
-                        100% {
-                            opacity: 1;
-                            transform: scale(1);
-                        }
-                    }
-
-                    @keyframes pulseSlow {
-                        0%, 100% {
-                            transform: scale(1);
-                        }
-                        50% {
-                            transform: scale(1.05);
-                        }
-                    }
-
-                    @keyframes floatSlow {
-                        0%, 100% {
-                            transform: translateY(0px) rotate(0deg);
-                        }
-                        50% {
-                            transform: translateY(-20px) rotate(5deg);
-                        }
-                    }
-
-                    @keyframes floatSlowDelayed {
-                        0%, 100% {
-                            transform: translateY(0px) rotate(0deg);
-                        }
-                        50% {
-                            transform: translateY(-15px) rotate(-3deg);
-                        }
-                    }
-
-                    @keyframes floatReverse {
-                        0%, 100% {
-                            transform: translateY(-10px) rotate(0deg);
-                        }
-                        50% {
-                            transform: translateY(10px) rotate(2deg);
-                        }
-                    }
-
-                    @keyframes celebrationBadge {
-                        0% {
-                            transform: scale(0) rotate(0deg);
-                        }
-                        50% {
-                            transform: scale(1.2) rotate(180deg);
-                        }
-                        100% {
-                            transform: scale(1) rotate(360deg);
-                        }
-                    }
-
-                    @keyframes bounceCelebration {
-                        0%, 20%, 50%, 80%, 100% {
-                            transform: translateY(0);
-                        }
-                        40% {
-                            transform: translateY(-10px);
-                        }
-                        60% {
-                            transform: translateY(-5px);
-                        }
-                    }
-
-                    .animate-float-1 {
-                        animation: float1 4s ease-in-out infinite;
-                    }
-
-                    .animate-float-2 {
-                        animation: float2 5s ease-in-out infinite;
-                    }
-
-                    .animate-float-3 {
-                        animation: float3 3.5s ease-in-out infinite;
-                    }
-
-                    .animate-float-4 {
-                        animation: float4 6s ease-in-out infinite;
-                    }
-
-                    .animate-shimmer {
-                        animation: shimmer 2s ease-in-out infinite;
-                    }
-
-                    .animate-fade-in-down {
-                        animation: fadeInDown 0.6s ease-out forwards;
-                    }
-
-                    .animate-slide-in-left {
-                        animation: slideInLeft 0.5s ease-out forwards;
-                    }
-
-                    .animate-slide-in-right {
-                        animation: slideInRight 0.5s ease-out forwards;
-                    }
-
-                    .animate-fade-in {
-                        animation: fadeIn 0.8s ease-out forwards;
-                    }
-
-                    .animate-question-enter {
-                        animation: questionEnter 0.7s ease-out forwards;
-                    }
-
-                    .animate-option-enter {
-                        animation: optionEnter 0.5s ease-out forwards;
-                        opacity: 0;
-                    }
-
-                    .animate-correct-answer {
-                        animation: correctAnswer 0.6s ease-in-out;
-                    }
-
-                    .animate-wrong-answer {
-                        animation: wrongAnswer 0.5s ease-in-out;
-                    }
-
-                    .animate-reveal-correct {
-                        animation: revealCorrect 0.8s ease-out forwards;
-                    }
-
-                    .animate-explanation-enter {
-                        animation: explanationEnter 0.5s ease-out forwards;
-                    }
-
-                    .animate-fade-in-up {
-                        animation: fadeInUp 0.5s ease-out forwards;
-                    }
-
-                    .animate-bounce-in {
-                        animation: bounceIn 0.6s ease-out forwards;
-                    }
-
-                    .animate-pulse-slow {
-                        animation: pulseSlow 2s ease-in-out infinite;
-                    }
-
-                    .animate-float-slow {
-                        animation: floatSlow 4s ease-in-out infinite;
-                    }
-
-                    .animate-float-slow-delayed {
-                        animation: floatSlowDelayed 5s ease-in-out infinite;
-                    }
-
-                    .animate-float-reverse {
-                        animation: floatReverse 3.5s ease-in-out infinite;
-                    }
-
-                    .animate-celebration-badge {
-                        animation: celebrationBadge 1s ease-out forwards;
-                    }
-
-                    .animate-bounce-celebration {
-                        animation: bounceCelebration 2s ease-in-out infinite;
-                    }
-
-                    /* Mobile-specific adjustments */
-                    @media (max-width: 639px) {
-                        .hover\\:scale-105:hover {
-                            transform: none;
-                        }
-                    }
-                `}</style>
             </div>
         </div>
     );

@@ -41,7 +41,7 @@ const GridBackground = () => (
 const TabButton = ({ active, onClick, children, count, icon: Icon }) => (
   <button
     onClick={onClick}
-    className={`relative px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-300 flex items-center gap-2 sm:gap-3 font-medium text-sm sm:text-base ${active
+    className={`relative px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all cursor-pointer duration-300 flex items-center gap-2 sm:gap-3 font-medium text-sm sm:text-base ${active
       ? "bg-green-500/20 text-green-300 border border-green-500/30"
       : "bg-white/5 text-gray-400 border border-gray-700/50 hover:bg-white/10 hover:text-green-400 hover:border-green-500/20"
       }`}
@@ -417,7 +417,7 @@ const Hackathons = () => {
       const matchesDifficulty = !selectedDifficulty || hackathon.difficulty === selectedDifficulty
 
       return matchesSearch && matchesCategory && matchesDifficulty
-    })  
+    })
   }
 
   // Get unique categories and difficulties from all hackathons

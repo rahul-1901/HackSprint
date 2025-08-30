@@ -36,20 +36,20 @@ export const HeroSection = ({
   const [leaderValue, setLeaderValue] = useState("")
 
   const navigate = useNavigate();
-    useEffect(() => {
-      const checkLeader = async () => {
-        if (localStorage.getItem('teamDetails_code')) {
-          setLeaderValue(localStorage.getItem('teamDetails_code'))
-          setLeaderButton(true)
-        } else {
-          setLeaderButton(false)
-          setLeaderValue('')
-        }
+  useEffect(() => {
+    const checkLeader = async () => {
+      if (localStorage.getItem('teamDetails_code')) {
+        setLeaderValue(localStorage.getItem('teamDetails_code'))
+        setLeaderButton(true)
+      } else {
+        setLeaderButton(false)
+        setLeaderValue('')
       }
+    }
 
-      checkLeader()
-    }, [])
-  
+    checkLeader()
+  }, [])
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -216,7 +216,7 @@ export const HeroSection = ({
   return (
     <>
       <div className="border-b border-green-500/20">
-        <div className="w-full h-48 md:h-64 bg-gray-900">
+        <div className="w-full h-full bg-gray-900">
           <img
             src={imageError ? fallbackImage : imageUrl}
             alt="Hackathon Banner"
@@ -252,16 +252,16 @@ export const HeroSection = ({
             </div>
             <div className="flex gap-5 w-full lg:w-auto text-center lg:text-left">
               {/* --- CHANGE 5: Render the action button using the new logic --- */}
-              {leaderButton ? 
-              <Button
-              onClick={handleLeader}
-                className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
-              >
-                <span className="flex items-center gap-2">
-                  Leader DashBoard
-                  <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                </span>
-              </Button> : <></>}
+              {leaderButton ?
+                <Button
+                  onClick={handleLeader}
+                  className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+                >
+                  <span className="flex items-center gap-2">
+                    Leader DashBoard
+                    <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
+                </Button> : <></>}
               {renderActionButton()}
             </div>
             {/* <div className="flex-shrink-0 w-full lg:w-auto text-center lg:text-left">
@@ -295,7 +295,7 @@ export const HeroSection = ({
               icon={Users}
             />
             <StatCard
-              value={`$${prizeMoney?.toLocaleString()}`}
+              value={`₹${prizeMoney?.toLocaleString("en-IN")}`}
               label="Prize Pool"
               icon={Trophy}
             />
