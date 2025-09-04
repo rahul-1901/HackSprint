@@ -85,7 +85,12 @@ const hackathonSchema = new mongoose.Schema({
     },
     registeredParticipants: [
         { type: mongoose.Schema.Types.ObjectId, ref: "registeredParticipants" }
-    ]
+    ],
+    allowedFileTypes: {
+        docs: { type: [String], default: ["pdf", "docx"] },   // default docs
+        images: { type: [String], default: ["jpg", "jpeg", "png"] }, // default images
+        videos: { type: [String], default: ["mp4"] }, // default videos
+    }
 })
 
 hackathonSchema.pre(/^find/, async function (next) {

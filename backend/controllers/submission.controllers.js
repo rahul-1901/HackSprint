@@ -4,6 +4,9 @@ import TeamModel from "../models/team.js";
 import UserModel from "../models/user.models.js";
 import cloudinary from "../config/cloudinary.js";
 
+function getFileExtension(filename) {
+  return path.extname(filename).slice(1).toLowerCase(); // e.g. ".pdf" → "pdf"
+}
 // ✅ helper: upload files to Cloudinary
 const uploadFiles = async (files, resourceType, hackathonId) => {
   if (!files || files.length === 0) return [];
@@ -61,6 +64,20 @@ export const submitHackathonSolution = async (req, res) => {
       $or: [{ leader: userId }, { members: userId }],
     });
 
+    if (req.files) {
+      for (const [field, files] of Object.entries(req.files)) {
+        const allowed = hackathon.allowedFileTypes[field] || [];
+        for (const file of files) {
+          const ext = getFileExtension(file.originalname);
+
+          if (!allowed.includes(ext)) {
+            return res.status(400).json({
+              message: `File type .${ext} is not allowed for ${field}. Allowed: ${allowed.join(", ")}`,
+            });
+          }
+        }
+      }
+    }
     // ✅ upload files (if any)
     const docs = await uploadFiles(req.files?.docs || [], "raw", hackathonId);
     const images = await uploadFiles(
