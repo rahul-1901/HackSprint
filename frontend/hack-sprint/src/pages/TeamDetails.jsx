@@ -2,14 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { getDashboard } from '../backendApis/api'; // To get current user
+import { getDashboard } from '../backendApis/api';
 import {
   Users, Crown, Mail, Check, X, Copy,
   User, Clock, Shield, Link as LinkIcon
 } from 'lucide-react';
 import { Button } from '../components/Button';
 
-// Consistent grid background from other pages
 const GridBackground = () => (
   <div className="absolute inset-0 opacity-10 pointer-events-none">
     <div
@@ -36,7 +35,6 @@ const TeamDetails = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [copiedItem, setCopiedItem] = useState(null);
 
-  // Gets just the secret code string from localStorage
   const getStoredTeamCode = useCallback(() => {
     return localStorage.getItem(`teamDetails_code`);
   }, [teamId]);
@@ -47,19 +45,13 @@ const TeamDetails = () => {
     const secretCode = getStoredTeamCode();
 
     try {
-
       if (secretCode) {
-        // Use the secretCode string directly in the API URL
         const teamSearchResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/team/search/${secretCode}`);
         const basicTeamData = teamSearchResponse.data.team;
-        console.log(basicTeamData);
 
         const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: basicTeamData.leader._id });
-        console.log("Pending requests:", pendingResponse.data);
-        setTeamData(basicTeamData);
+        setTeamData({ ...basicTeamData, pendingMembers: pendingResponse.data });
       } else {
-        // Fallback method if no invite code is found in storage
-        console.warn("No secret code found in storage. Using fallback data fetching.");
         try {
           const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: user._id });
 
@@ -75,8 +67,6 @@ const TeamDetails = () => {
           };
           setTeamData(partialTeamData);
         } catch (fallbackError) {
-          // If even the pending requests fail, create minimal team data
-          console.error("Fallback data fetching failed:", fallbackError);
           const minimalTeamData = {
             name: "Your Team",
             leader: user,
@@ -90,28 +80,23 @@ const TeamDetails = () => {
           setTeamData(minimalTeamData);
         }
       }
-
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error fetching team data.');
-      console.error('Error fetching team data:', error);
     } finally {
       setLoading(false);
     }
   }, [teamId, hackathonId, getStoredTeamCode]);
 
   useEffect(() => {
-    // Store only the secret code string in localStorage
     if (location.state?.secretCode) {
       localStorage.setItem(`teamDetails_code`, location.state.secretCode);
     }
 
     const fetchInitialData = async () => {
-
       try {
         const res = await getDashboard();
         const user = res.data.userData;
         setCurrentUser(user);
-        console.log("Current user:", user);
         fetchTeamData(user);
       } catch (err) {
         toast.error("You must be logged in to view this page.");
@@ -122,14 +107,24 @@ const TeamDetails = () => {
     fetchInitialData();
   }, [hackathonId, teamId, navigate, fetchTeamData, location.state]);
 
-  // FIXED: Update isLeader whenever currentUser or teamData changes
   useEffect(() => {
     if (currentUser && teamData) {
       const leaderStatus = currentUser._id === teamData.leader._id;
       setIsLeader(leaderStatus);
-      console.log("Leader status updated:", leaderStatus);
     }
   }, [currentUser, teamData]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    fetchTeamData(currentUser);
+
+    const interval = setInterval(() => {
+      fetchTeamData(currentUser);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [currentUser, fetchTeamData]);
 
   const handleCopy = (text, type) => {
     if (!text) return;
@@ -152,12 +147,9 @@ const TeamDetails = () => {
       const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/handleRequest`, payload);
       toast.success(response.data.message);
 
-      // Refresh data to show updated member/request list
       fetchTeamData(currentUser);
-
     } catch (error) {
       toast.error(error.response?.data?.message || `Error ${action}ing request.`);
-      console.error(`Error ${action}ing request:`, error);
     } finally {
       setActionLoading(false);
     }
@@ -252,12 +244,11 @@ const TeamDetails = () => {
   const currentMembers = [teamData.leader, ...teamData.members];
   const spotsRemaining = teamData.maxMembers - currentMembers.length;
   const showInviteSection = teamData.secretCode && teamData.secretLink;
-  
+
   return (
     <div className="min-h-screen bg-gray-900 relative">
       <GridBackground />
       <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{teamData.name}</h1>
           <p className="text-gray-400">
@@ -265,10 +256,8 @@ const TeamDetails = () => {
           </p>
         </div>
 
-        {/* Leader-only sections */}
         {isLeader && (
           <>
-            {/* Invite Section */}
             {spotsRemaining > 0 && (
               <div className="bg-gray-800/30 border border-green-500/20 rounded-lg p-6 mb-8">
                 <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
@@ -298,7 +287,6 @@ const TeamDetails = () => {
               </div>
             )}
 
-            {/* Pending Requests */}
             <div>
               <h2 className="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
                 <Clock className="w-6 h-6 text-yellow-400" />
@@ -319,7 +307,6 @@ const TeamDetails = () => {
           </>
         )}
 
-        {/* Current Team Members */}
         <div>
           <h2 className="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
             <Users className="w-6 h-6 text-green-400" />
