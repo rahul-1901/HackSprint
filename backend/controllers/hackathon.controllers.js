@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import express from "express";
 import hackathonModel from "../models/hackathon.models.js";
+import cloudinary from "../config/cloudinary.js"  // your cloudinary config file
 import UserModel from "../models/user.models.js";
 
 export const sendHackathons = async (req, res) => {
@@ -51,18 +52,34 @@ export const sendExpiredHackathons = async (req, res) => {
 
 export const addhackathons = async (req, res) => {
   try {
-    const hackathonsdata = new hackathonModel(req.body);
-    await hackathonsdata.save();
+    let imageUrl = ""
+
+    // if file is uploaded, push to Cloudinary
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "hackathons"  // optional: creates folder in Cloudinary
+      })
+      imageUrl = result.secure_url
+    }
+
+    // create hackathon document
+    const hackathonsdata = new hackathonModel({
+      ...req.body,
+      image: imageUrl   // 👈 store Cloudinary URL
+    })
+
+    await hackathonsdata.save()
+
     res.status(201).json({
       message: "Hackathon Added Successfully",
       data: hackathonsdata,
-    });
+    })
   } catch (err) {
     res.status(400).json({
       error: err.message,
-    });
+    })
   }
-};
+}
 
 
 export const sendUpcomingHackathons = async (req, res) => {

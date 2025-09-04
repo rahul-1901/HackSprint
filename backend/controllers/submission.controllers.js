@@ -1,64 +1,130 @@
-// controllers/submission.controller.js
 import SubmissionModel from "../models/submission.js";
 import hackathonModel from "../models/hackathon.models.js";
 import TeamModel from "../models/team.js";
 import UserModel from "../models/user.models.js";
+import cloudinary from "../config/cloudinary.js";
+
+// ✅ helper: upload files to Cloudinary
+const uploadFiles = async (files, resourceType, hackathonId) => {
+  if (!files || files.length === 0) return [];
+
+  const uploads = await Promise.all(
+    files.map(
+      (file) =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            {
+              resource_type: resourceType,
+              folder: `hackathons/${hackathonId}`,
+            },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve({
+                public_id: result.public_id,
+                url: result.secure_url,
+                resource_type: result.resource_type,
+                format: result.format,
+                original_filename: result.original_filename,
+                size: result.bytes,
+              });
+            }
+          );
+          stream.end(file.buffer); // 👈 Multer memoryStorage buffer
+        })
+    )
+  );
+
+  return uploads;
+};
 
 export const submitHackathonSolution = async (req, res) => {
   try {
-    const { hackathonId, repoUrl,userId } = req.body;
-    // const userId = req.user._id; // coming from auth middleware
+    const { hackathonId, repoUrl, userId } = req.body || {};
+    console.log("req.body =>", req.body);
+    console.log("req.files =>", req.files);
 
     if (!hackathonId || !repoUrl) {
-      return res.status(400).json({ message: "Hackathon ID and repo URL are required" });
+      return res
+        .status(400)
+        .json({ message: "Hackathon ID and repo URL are required" });
     }
 
-    // check hackathon exists
+    // ✅ check hackathon exists
     const hackathon = await hackathonModel.findById(hackathonId);
     if (!hackathon) {
       return res.status(404).json({ message: "Hackathon not found" });
     }
 
-    // check if user has a team for this hackathon
-    const team = await TeamModel.findOne({ hackathon: hackathonId, $or: [{ leader: userId }, { members: userId }] });
+    // ✅ check if user is in a team
+    const team = await TeamModel.findOne({
+      hackathon: hackathonId,
+      $or: [{ leader: userId }, { members: userId }],
+    });
+
+    // ✅ upload files (if any)
+    const docs = await uploadFiles(req.files?.docs || [], "raw", hackathonId);
+    const images = await uploadFiles(
+      req.files?.images || [],
+      "image",
+      hackathonId
+    );
+    const videos = await uploadFiles(
+      req.files?.videos || [],
+      "video",
+      hackathonId
+    );
 
     let submission;
 
     if (team) {
-      // if team, only leader can submit
+      // Only leader can submit
       if (team.leader.toString() !== userId.toString()) {
-        return res.status(403).json({ message: "Only the team leader can submit solution" });
+        return res
+          .status(403)
+          .json({ message: "Only the team leader can submit solution" });
       }
 
-      // check if already submitted
-      submission = await SubmissionModel.findOne({ hackathon: hackathonId, team: team._id });
+      // Prevent duplicate submission
+      submission = await SubmissionModel.findOne({
+        hackathon: hackathonId,
+        team: team._id,
+      });
       if (submission) {
-        return res.status(400).json({ message: "Team already submitted solution" });
+        return res
+          .status(400)
+          .json({ message: "Team already submitted solution" });
       }
 
-      // create submission
+      // Save submission
       submission = await SubmissionModel.create({
         team: team._id,
         hackathon: hackathonId,
         repoUrl,
         submittedBy: userId,
+        docs,
+        images,
+        videos,
       });
 
-      // update hackathon
       hackathon.submissions.push(submission._id);
       await hackathon.save();
 
-      // update all team members (including leader)
+      // Update all team members
       const allMembers = [team.leader, ...team.members];
       await UserModel.updateMany(
         { _id: { $in: allMembers } },
         { $push: { submittedHackathons: submission._id } }
       );
     } else {
-      // individual submission
-      submission = await SubmissionModel.findOne({ hackathon: hackathonId, participant: userId });
+      // Individual submission
+      submission = await SubmissionModel.findOne({
+        hackathon: hackathonId,
+        participant: userId,
+      });
       if (submission) {
-        return res.status(400).json({ message: "You already submitted solution" });
+        return res
+          .status(400)
+          .json({ message: "You already submitted solution" });
       }
 
       submission = await SubmissionModel.create({
@@ -66,14 +132,17 @@ export const submitHackathonSolution = async (req, res) => {
         hackathon: hackathonId,
         repoUrl,
         submittedBy: userId,
+        docs,
+        images,
+        videos,
       });
 
-      // update hackathon
       hackathon.submissions.push(submission._id);
       await hackathon.save();
 
-      // update user
-      await UserModel.findByIdAndUpdate(userId, { $push: { submissions: submission._id } });
+      await UserModel.findByIdAndUpdate(userId, {
+        $push: { submissions: submission._id },
+      });
     }
 
     res.status(201).json({

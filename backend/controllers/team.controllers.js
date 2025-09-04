@@ -228,7 +228,8 @@ export const searchTeamByCode = async (req, res) => {
         pendingRequestsCount: team.pendingMembers.length,
         createdAt: team.createdAt,
         updatedAt: team.updatedAt,
-        secretLink : team.secretLink
+        secretLink : team.secretLink,
+        maxTeamSize : team.maxTeamSize
       },
     });
   } catch (error) {
