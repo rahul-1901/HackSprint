@@ -44,7 +44,7 @@ function Signup() {
         });
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message, {
+      toast.error("Something went wrong, try again...", {
         className: "text-sm max-w-xs",
       });
     }

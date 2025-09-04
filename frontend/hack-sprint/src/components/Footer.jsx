@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import HackSprint from '/hackSprint.webp'
 import { Mail, MapPin, SendIcon, Github, Instagram, Linkedin, Twitter, Facebook } from 'lucide-react';
-
 const Footer = () => {
-
     const [email, setEmail] = useState('');
     const canvasRef = useRef(null);
     useEffect(() => {
@@ -17,13 +16,11 @@ const Footer = () => {
         const columns = Math.floor(canvas.width / fontSize);
         const chars = "01".split("");
         const drops = Array(columns).fill().map(() => Math.random() * -100);
-
         const draw = () => {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#0f0';
             ctx.font = `${fontSize}px monospace`;
-
             for (let i = 0; i < drops.length; i++) {
                 const text = chars[Math.floor(Math.random() * chars.length)];
                 ctx.fillText(text, i * fontSize, drops[i] * fontSize);
@@ -33,20 +30,17 @@ const Footer = () => {
                 drops[i]++;
             }
         };
-
         const interval = setInterval(draw, 50);
         const handleResize = () => {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
         };
-
         window.addEventListener('resize', handleResize);
         return () => {
             clearInterval(interval);
             window.removeEventListener('resize', handleResize);
         };
     }, []);
-
     const navSections = [
         {
             title: 'Resources',
@@ -60,15 +54,14 @@ const Footer = () => {
         {
             title: 'Quick Links',
             links: [
-                { name: 'Home', url: '#' },
-                { name: 'About Us', url: '#' },
-                { name: 'Dev Quest', url: '#' },
-                { name: 'Hackathons', url: '#' },
-                { name: 'LeaderBoard', url: '#' }
+                { name: 'Home', url: '/' },
+                // { name: 'About Us', url: '/about' },
+                { name: 'Dev Quest', url: '/quest' },
+                { name: 'Hackathons', url: '/hackathons' },
+                { name: 'LeaderBoard', url: '/leaderboard' }
             ]
         }
     ];
-
     const socialLinks = [
         { name: 'GitHub', icon: <Github size={20} />, url: 'https://github.com/devlup-labs/' },
         { name: 'Instagram', icon: <Instagram size={20} />, url: 'https://www.instagram.com/devluplabs/' },
@@ -76,11 +69,9 @@ const Footer = () => {
         { name: 'Twitter', icon: <Twitter size={20} />, url: 'https://x.com/devluplabs' },
         { name: 'Facebook', icon: <Facebook size={20} />, url: 'https://www.facebook.com/devluplabs/' }
     ];
-
     return (
         <footer className="relative bg-gray-900 text-gray-300 overflow-hidden">
             <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" />
-
             <div className="container mx-auto px-4 py-12 relative z-10">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12 pb-12 border-b border-gray-800">
                     <div className="lg:col-span-3">
@@ -104,56 +95,62 @@ const Footer = () => {
                             </div>
                         </div>
                     </div>
-
-                    <div className="lg:col-span-6 grid grid-cols-2  md:ml-10 lg:ml-20 md:grid-cols-2 gap-8">
+                    <div className="lg:col-span-6 grid grid-cols-2 md:ml-10 lg:ml-20 md:grid-cols-2 gap-8">
                         {navSections.map((section) => (
                             <div key={section.title}>
                                 <h3 className="text-white font-medium text-lg mb-4">{section.title}</h3>
                                 <ul className="space-y-2">
                                     {section.links.map((items) => (
                                         <li key={items.name}>
-                                            <a
-                                                href={items.url}
-                                                target='_blank'
-                                                className="text-gray-400 hover:text-green-400 transition duration-300 text-sm block font-light"
-                                            >
-                                                {items.name}
-                                            </a>
+                                            {section.title === 'Quick Links' ? (
+                                                <Link
+                                                    to={items.url}
+                                                    className="text-gray-400 hover:text-green-400 transition duration-300 text-sm block font-light"
+                                                >
+                                                    {items.name}
+                                                </Link>
+                                            ) : (
+                                                <a
+                                                    href={items.url}
+                                                    target='_blank'
+                                                    rel="noopener noreferrer"
+                                                    className="text-gray-400 hover:text-green-400 transition duration-300 text-sm block font-light"
+                                                >
+                                                    {items.name}
+                                                </a>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>
                             </div>
                         ))}
                     </div>
-
                     <div className="lg:col-span-3">
                         <h3 className="text-white font-medium text-lg mb-3">Join our community</h3>
-                            <form className="flex flex-col space-y-2">
-                                <div className="relative">
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="participant@email.com"
-                                        className="w-full bg-gray-900 border border-gray-700 focus:border-green-500 focus:ring-1 focus:ring-green-500 rounded py-2 px-3 text-gray-300 placeholder-gray-500 font-mono text-sm transition duration-300"
-                                        required
-                                    />
-                                    <a
-                                        href="https://discord.com/invite/5kKqzGdhPP"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="absolute right-1 top-1 mt-[2px] bg-gray-800 hover:bg-gray-700 text-green-500 p-1 rounded transition duration-300 inline-flex items-center justify-center"
-                                        aria-label="Subscribe"
-                                    >
-                                        <SendIcon size={18} />
-                                    </a>
-
-                                </div>
-                                <p className="text-gray-500 text-xs">
-                                    Stay updated with our latest tutorials and resources.
-                                </p>
-                            </form>
-
+                        <form className="flex flex-col space-y-2">
+                            <div className="relative">
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="participant@email.com"
+                                    className="w-full bg-gray-900 border border-gray-700 focus:border-green-500 focus:ring-1 focus:ring-green-500 rounded py-2 px-3 text-gray-300 placeholder-gray-500 font-mono text-sm transition duration-300"
+                                    required
+                                />
+                                <a
+                                    href="https://discord.com/invite/5kKqzGdhPP"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="absolute right-1 top-1 mt-[2px] bg-gray-800 hover:bg-gray-700 text-green-500 p-1 rounded transition duration-300 inline-flex items-center justify-center"
+                                    aria-label="Subscribe"
+                                >
+                                    <SendIcon size={18} />
+                                </a>
+                            </div>
+                            <p className="text-gray-500 text-xs">
+                                Stay updated with our latest tutorials and resources.
+                            </p>
+                        </form>
                         <div className="mt-8">
                             <h3 className="text-white font-medium text-lg mb-2">Connect With Us</h3>
                             <div className="flex space-x-3">
@@ -172,7 +169,6 @@ const Footer = () => {
                         </div>
                     </div>
                 </div>
-
                 <div className="flex flex-col md:flex-row justify-between items-center">
                     <div className="mb-4 md:mb-0">
                         <p className="text-sm text-gray-500">
@@ -194,5 +190,4 @@ const Footer = () => {
         </footer>
     );
 };
-
 export default Footer;

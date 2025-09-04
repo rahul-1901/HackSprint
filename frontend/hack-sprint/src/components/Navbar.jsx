@@ -47,7 +47,8 @@ const Navbar = () => {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("token")
+    localStorage.removeItem("token");
+    localStorage.removeItem("email");
     setUserInfo(null)
     setIsLoggedIn(false)
     navigate("/")
@@ -57,11 +58,10 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled
           ? 'bg-gray-900/95 backdrop-blur-md shadow-2xl border-b border-green-500/30'
           : 'bg-gray-900/80 backdrop-blur-sm border-b border-green-900/50'
-      }`}>
+        }`}>
 
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-60" />
 
@@ -69,8 +69,8 @@ const Navbar = () => {
           <div className="flex items-center justify-between h-14 sm:h-16">
 
             {/* Logo */}
-            <button 
-              onClick={() => handleNavigate('/')} 
+            <button
+              onClick={() => handleNavigate('/')}
               className="flex items-center space-x-2 sm:space-x-3 cursor-pointer"
             >
               <div className="w-8 h-8 sm:w-10 sm:h-10">
@@ -130,11 +130,11 @@ const Navbar = () => {
                             <User size={20} className="mb-1 text-green-400" />
                             <span className="text-xs">Profile</span>
                           </button>
-                          
+
                           {/* Coins Display (non-clickable) */}
                           <div className="flex flex-col items-center p-3 bg-gray-800 rounded-lg text-gray-200 select-none">
                             <Coins size={20} className="mb-1 text-yellow-400" />
-                            <span className="text-xs">{userInfo?.coins || 0} Coins</span>
+                            <span className="text-xs">{userInfo?.coins || 10} Coins</span>
                           </div>
                         </div>
 
@@ -210,7 +210,7 @@ const Navbar = () => {
                     </div>
                     <div className="flex items-center space-x-1 text-yellow-400">
                       <Coins size={16} />
-                      <span className="text-sm font-semibold">{userInfo?.coins || 0}</span>
+                      <span className="text-sm font-semibold">{userInfo?.coins || 10}</span>
                     </div>
                   </div>
 
@@ -223,7 +223,7 @@ const Navbar = () => {
                       <User size={18} className="text-green-400" />
                       <span>Profile</span>
                     </button>
-                    
+
                     <button
                       onClick={handleLogout}
                       className="flex items-center space-x-3 w-full px-4 py-3 text-red-400 hover:bg-red-500/20 rounded-lg transition cursor-pointer"
