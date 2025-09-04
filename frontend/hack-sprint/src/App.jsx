@@ -47,7 +47,7 @@ function App() {
 
   return (
     <>
-      {/* <Router>
+      <Router>
         <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} />
         <ScrollToTop />
         <Loader />
@@ -87,8 +87,8 @@ function App() {
         <HideRoute>
           <Footer />
         </HideRoute>
-      </Router> */}
-      <UnderConstruction />
+      </Router>
+      {/* <UnderConstruction /> */}
     </>
   );
 }

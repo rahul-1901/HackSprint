@@ -243,6 +243,21 @@ const Quest = () => {
     },
   }
 
+  const containerVariantsforCount = {
+    hover: {
+      y: -5,
+      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+    },
+  };
+
+  const countVariants = {
+    hover: {
+      rotate: [0, -5, 5, 0],
+      transition: { duration: 0.5 },
+    },
+  };
+
+
   const modalVariants = {
     hidden: {
       opacity: 0,
@@ -280,24 +295,6 @@ const Quest = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800"></div>
         {/* Geometric patterns */}
         <GridBackground />
-
-        {/* Large typography watermark */}
-        <motion.div
-          className="absolute top-20 left-8 text-green-500/[0.03] text-[140px] font-black select-none tracking-wider transform -rotate-3"
-          initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-          animate={{ opacity: 1, scale: 1, rotate: -3 }}
-          transition={{ delay: 0.5, duration: 1.5, ease: "easeOut" }}
-        >
-          DEV
-        </motion.div>
-        <motion.div
-          className="absolute bottom-20 right-8 text-green-500/[0.02] text-[100px] font-black select-none tracking-wider"
-          initial={{ opacity: 0, scale: 0.8, rotate: 3 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={{ delay: 0.7, duration: 1.3, ease: "easeOut" }}
-        >
-          QUEST
-        </motion.div>
       </div>
 
       <div className="relative z-10 px-4 sm:px-6 lg:px-8">
@@ -432,6 +429,7 @@ const Quest = () => {
             <motion.div className="lg:col-span-7" variants={fadeInRight}>
               <motion.div
                 className="bg-gray-800/20 backdrop-blur-sm border border-gray-700/40 rounded-2xl p-8 shadow-2xl"
+                variants={containerVariantsforCount}
                 whileHover={{ y: -5, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)" }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
@@ -441,6 +439,7 @@ const Quest = () => {
                     <div className="relative">
                       <motion.div
                         className="w-36 h-36 rounded-xl bg-gradient-to-br from-gray-800 to-gray-700 border border-gray-600 flex items-center justify-center shadow-xl"
+                        variants={countVariants}
                         whileHover={{
                           rotate: [0, -5, 5, 0],
                           transition: { duration: 0.5 },
@@ -453,8 +452,7 @@ const Quest = () => {
                             animate={{ scale: 1 }}
                             transition={{ delay: 0.8, type: "spring", stiffness: 300 }}
                           >
-                            {/* {todayCount} */}
-                            8
+                            {todayCount}
                           </motion.div>
                           <motion.div
                             className="text-sm font-mono text-gray-300 tracking-wide"
@@ -562,7 +560,7 @@ const Quest = () => {
                           <CornerDownRight className="w-4 h-4" />
                         </motion.div>
                       </motion.button>
-                      {/* <motion.button
+                      <motion.button
                         onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}
                         className="px-6 py-3 text-sm font-medium text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-400/50 rounded-xl transition-all duration-300 hover:bg-green-500/5"
                         whileHover={{
@@ -572,7 +570,7 @@ const Quest = () => {
                         whileTap={{ scale: 0.98 }}
                       >
                         Previous DevQuests
-                      </motion.button> */}
+                      </motion.button>
                     </motion.div>
                   </div>
                 </div>
@@ -593,7 +591,7 @@ const Quest = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.3, duration: 0.6 }}
             >
-              {/* <motion.div
+              <motion.div
                 className="w-8 h-px bg-green-500"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
@@ -605,10 +603,10 @@ const Quest = () => {
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ delay: 1.6, duration: 1 }}
-              ></motion.div> */}
+              ></motion.div>
             </motion.div>
 
-            {/* <motion.div
+            <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6"
               variants={staggerContainer}
               initial="hidden"
@@ -648,7 +646,7 @@ const Quest = () => {
                   </div>
                 </motion.button>
               ))}
-            </motion.div> */}
+            </motion.div>
           </motion.section>
         </motion.main>
       </div>
@@ -715,7 +713,7 @@ const Quest = () => {
                           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
                         }}
                         variants={{
-                          ...fadeInUp,
+                          // ...fadeInUp,
                           visible: {
                             ...fadeInUp.visible,
                             opacity: isLoggedIn ? 1 : 1 - idx * 0.35, // 👈 overrides only for options
