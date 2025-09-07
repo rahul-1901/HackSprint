@@ -1,6 +1,6 @@
 import express from 'express';
 const githubDataRoutes = express.Router();
-import { getRepoDetails, getRepoContributors, getRepoLanguages, validateSubmission } from '../utils/githubService.js';
+import { getRepoDetails, getRepoContributors, getRepoLanguages, validateSubmission, getRepoReadme } from '../utils/githubService.js';
 import  Hackathon  from '../models/hackathon.models.js';
 
 const parseRepoUrl = (url) => {
@@ -31,10 +31,11 @@ githubDataRoutes.post('/validate-repo', async (req, res) => {
 
     const { owner, repo } = parseRepoUrl(repo_url);
 
-    const [repoDetails, contributors, languages] = await Promise.all([
+    const [repoDetails, contributors, languages, readme] = await Promise.all([
       getRepoDetails(owner, repo),
       getRepoContributors(owner, repo),
-      getRepoLanguages(owner, repo)
+      getRepoLanguages(owner, repo),
+      getRepoReadme(owner, repo),
     ]);
 
     const { isForkValid, isSubmissionLate } = validateSubmission({
@@ -60,7 +61,8 @@ githubDataRoutes.post('/validate-repo', async (req, res) => {
       contributors: contributors,
       last_updated: repoDetails.pushed_at, 
       license: repoDetails.license ? repoDetails.license.name : null,
-      submitted_before_deadline: !isSubmissionLate
+      submitted_before_deadline: !isSubmissionLate,
+      readme: readme
     };
 
     return res.status(200).json(finalData);
