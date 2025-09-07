@@ -36,6 +36,17 @@ const getRepoContributors = async (owner, repo) => {
   }
 };
 
+const getRepoReadme = async (owner, repo) => {
+  try {
+    const res = await axios.get(`${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/readme`, {
+      headers: { Accept: "application/vnd.github.v3.raw" } 
+    });
+    return res.data;
+  } catch (error) {
+    console.error(`Error fetching README for ${owner}/${repo}:`, error.message);
+    return null;
+  }
+};
 
 const getRepoLanguages = async (owner, repo) => {
   try {
@@ -77,5 +88,6 @@ export {
   getRepoDetails,
   getRepoContributors,
   getRepoLanguages,
-  validateSubmission
+  validateSubmission,
+  getRepoReadme
 };
