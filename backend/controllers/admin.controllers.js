@@ -6,7 +6,7 @@ import Admin from "../models/admin.model.js";
 // Get all hackathons created by logged-in admin
 export const getAllHackathons = async(req,res)=>{
   try{
-    const {adminId} = req.body;
+    const {adminId} = await req.body;
     const hackathons = await hackathonModel.find({ "createdBy" : adminId});
     res.json(hackathons);
   }catch(err){
