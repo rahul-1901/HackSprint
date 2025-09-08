@@ -2,8 +2,8 @@
 import mongoose from 'mongoose'
 
 const hackathonSchema = new mongoose.Schema({
-    image : {
-        type : String
+    image: {
+        type: String
     },
     title: {
         type: String,
@@ -24,6 +24,12 @@ const hackathonSchema = new mongoose.Schema({
     },
     endDate: {
         type: Date
+    },
+    submissionStartDate : {
+        type : Date
+    },
+    submissionEndDate : {
+        type : Date
     },
     refMaterial: {
         type: String
@@ -90,6 +96,10 @@ const hackathonSchema = new mongoose.Schema({
         docs: { type: [String], default: ["pdf", "docx"] },   // default docs
         images: { type: [String], default: ["jpg", "jpeg", "png"] }, // default images
         videos: { type: [String], default: ["mp4"] }, // default videos
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Admin"
     }
 })
 

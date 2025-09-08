@@ -65,7 +65,8 @@ export const addhackathons = async (req, res) => {
     // create hackathon document
     const hackathonsdata = new hackathonModel({
       ...req.body,
-      image: imageUrl   // 👈 store Cloudinary URL
+      image: imageUrl,
+      createdBy: req.admin._id  // 👈 store Cloudinary URL
     })
 
     await hackathonsdata.save()
