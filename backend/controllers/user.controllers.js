@@ -361,7 +361,7 @@ export const checkAndUpdateGitHubStatus = async (req, res) => {
 
   export const increaseStreak = async (req, res) => {
       try {
-          const { userId ,questionId} = req.body;
+          const { userId , questionId} = req.body;
 
           if (!userId  || !questionId) {
               return res.status(400).json({ message: "userId or questionId is required" });
@@ -376,7 +376,7 @@ export const checkAndUpdateGitHubStatus = async (req, res) => {
               return res.status(400).json({message : "Question not found"});
           }
           user.points += question.points;
-          user.currentQuizPoints+=question.points;
+          user.currentQuizPoints += question.points;
           user.currentQuizTotalPoints+=question.points;
           // user.streaks+=1; // Increment streak by 1
           user.devQuestionsCorrectlyAnswered+=1;

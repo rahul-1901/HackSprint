@@ -343,7 +343,7 @@ const Hackathons = () => {
         const [activeRes, expiredRes, upcomingRes] = await Promise.all([
           axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons`),
           axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/expiredHackathons`),
-          // axios.get("http://localhost:3000/api/hackathons/upcomingHackathons"), // Assuming this endpoint exists
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/upcomingHackathons`), // Assuming this endpoint exists
         ])
 
         const mapData = (data, status) =>
