@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-// MODIFICATION: Import useNavigate
-import { useNavigate } from 'react-router-dom';
+// MODIFICATION: Import Link
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Code, Calendar, Users, CheckCircle, User, Shield, Activity, Play, Square, ArrowRight } from 'lucide-react';
 
 const GridBackground = () => (
@@ -96,11 +96,24 @@ const HackathonCard = ({ hackathon }) => {
   );
 };
 
-const AdminProfile = () => {
-  // MODIFICATION: Initialize navigate hook
-  const navigate = useNavigate();
+// MODIFICATION: Hackathon data is now defined in this file.
+const allHackathons = [
+    // Live Hackathons
+    { id: 'live-01', slug: "ai-innovators-hackathon", title: "AI Innovators Hackathon", participants: 194, startDate: "2025-09-05T00:00:00Z", endDate: "2025-09-12T23:59:59Z", image: "https://placehold.co/600x400/0D1117/22C55E?text=AI+Live", status: 'live' },
+    { id: 'live-02', slug: "quantumverse-challenge", title: "QuantumVerse Challenge", participants: 78, startDate: "2025-09-04T00:00:00Z", endDate: "2025-09-11T23:59:59Z", image: "https://placehold.co/600x400/0D1117/F97316?text=QuantumVerse", status: 'live' },
+    { id: 'live-03', slug: "cloud-native-sprint", title: "Cloud Native Sprint", participants: 132, startDate: "2025-09-06T00:00:00Z", endDate: "2025-09-10T23:59:59Z", image: "https://placehold.co/600x400/0D1117/0EA5E9?text=Cloud+Sprint", status: 'live'},
+    // Recently Started Hackathons
+    { id: 'recent-01', slug: "gamedev-gauntlet", title: "GameDev Gauntlet", participants: 250, startDate: "2025-09-08T00:00:00Z", endDate: "2025-09-10T23:59:59Z", image: "https://placehold.co/600x400/0D1117/8B5CF6?text=GameDev", status: 'recent' },
+    { id: 'recent-02', slug: "cyber-sentinel-showdown", title: "Cyber Sentinel Showdown", participants: 155, startDate: "2025-09-07T00:00:00Z", endDate: "2025-09-10T23:59:59Z", image: "https://placehold.co/600x400/0D1117/3B82F6?text=Cyber+Sentinel", status: 'recent' },
+    { id: 'recent-03', slug: "healthtech-nexus", title: "HealthTech Nexus", participants: 95, startDate: "2025-09-06T00:00:00Z", endDate: "2025-09-12T23:59:59Z", image: "https://placehold.co/600x400/0D1117/EC4899?text=HealthTech", status: 'recent'},
+    // Ended Hackathons
+    { id: 'ended-01', slug: "decentralized-future-hack", title: "Decentralized Future Hack", participants: 120, startDate: "2025-09-01T00:00:00Z", endDate: "2025-09-05T23:59:59Z", image: "https://placehold.co/600x400/0D1117/F59E0B?text=Blockchain", status: 'ended' },
+    { id: 'ended-02', slug: "eco-coders-challenge", title: "Eco-Coders Challenge", participants: 85, startDate: "2025-08-01T00:00:00Z", endDate: "2025-08-05T23:59:59Z", image: "https://placehold.co/600x400/0D1117/10B981?text=Eco+Challenge", status: 'ended' },
+    { id: 'ended-03', slug: "sustainable-cities-jam", title: "Sustainable Cities Jam", participants: 110, startDate: "2025-07-15T00:00:00Z", endDate: "2025-07-20T23:59:59Z", image: "https://placehold.co/600x400/0D1117/65A30D?text=Smart+City", status: 'ended'}
+];
 
-  // MODIFICATION: Define the navigation handler function
+const AdminProfile = () => {
+  const navigate = useNavigate();
   const handleNavigate = (link) => {
     navigate(link);
   };
@@ -114,40 +127,32 @@ const AdminProfile = () => {
     permissions: ["Full Access", "User Management", "Event Creation"]
   };
   
-  const liveHackathons = [
-    { title: "AI Innovators Hackathon", participants: 194, startDate: "2025-09-05T00:00:00Z", endDate: "2025-09-12T23:59:59Z", image: "https://placehold.co/600x400/0D1117/22C55E?text=AI+Live"},
-    { title: "QuantumVerse Challenge", participants: 78, startDate: "2025-09-04T00:00:00Z", endDate: "2025-09-11T23:59:59Z", image: "https://placehold.co/600x400/0D1117/F97316?text=QuantumVerse"},
-    { title: "Cloud Native Sprint", participants: 132, startDate: "2025-09-06T00:00:00Z", endDate: "2025-09-10T23:59:59Z", image: "https://placehold.co/600x400/0D1117/0EA5E9?text=Cloud+Sprint"}
-  ];
+  // Data is now filtered from the single source above
+  const liveHackathons = allHackathons.filter(h => h.status === 'live');
+  const recentlyStartedHackathons = allHackathons.filter(h => h.status === 'recent');
+  const endedHackathons = allHackathons.filter(h => h.status === 'ended');
 
-  const recentlyStartedHackathons = [
-    { title: "GameDev Gauntlet", participants: 250, startDate: "2025-09-08T00:00:00Z", endDate: "2025-09-10T23:59:59Z", image: "https://placehold.co/600x400/0D1117/8B5CF6?text=GameDev"},
-    { title: "Cyber Sentinel Showdown", participants: 155, startDate: "2025-09-07T00:00:00Z", endDate: "2025-09-10T23:59:59Z", image: "https://placehold.co/600x400/0D1117/3B82F6?text=Cyber+Sentinel"},
-    { title: "HealthTech Nexus", participants: 95, startDate: "2025-09-06T00:00:00Z", endDate: "2025-09-12T23:59:59Z", image: "https://placehold.co/600x400/0D1117/EC4899?text=HealthTech"}
-  ];
-
-  const endedHackathons = [
-    { title: "Decentralized Future Hack", participants: 120, startDate: "2025-09-01T00:00:00Z", endDate: "2025-09-05T23:59:59Z", image: "https://placehold.co/600x400/0D1117/F59E0B?text=Blockchain"},
-    { title: "Eco-Coders Challenge", participants: 85, startDate: "2025-08-01T00:00:00Z", endDate: "2025-08-05T23:59:59Z", image: "https://placehold.co/600x400/0D1117/10B981?text=Eco+Challenge"},
-    { title: "Sustainable Cities Jam", participants: 110, startDate: "2025-07-15T00:00:00Z", endDate: "2025-07-20T23:59:59Z", image: "https://placehold.co/600x400/0D1117/65A30D?text=Smart+City"}
-  ];
-
-  // MODIFICATION: The component now accepts a 'viewMoreLink' prop.
+  // MODIFICATION: This component now wraps cards in a Link to the users page
   const HackathonList = ({ hackathons, viewMoreLink }) => (
     <div className="space-y-6">
       {hackathons.slice(0, 3).map((hackathon, index) => {
+        // The first two cards are simple links
         if (index < 2) {
-          return <HackathonCard key={index} hackathon={hackathon} />;
+          return (
+            <Link key={hackathon.id} to={`/Hacksprintkaadminprofile/${hackathon.slug}/usersubmissions`} className="block">
+              <HackathonCard hackathon={hackathon} />
+            </Link>
+          );
         }
+        // The third card has the "View More" button overlay
         if (index === 2) {
           return (
-            <div key={index} className="relative">
-              <div className="pointer-events-none">
+            <div key={hackathon.id} className="relative">
+              <Link to={`/Hacksprintkaadminprofile/${hackathon.slug}/users`} className="block pointer-events-none" tabIndex="-1">
                 <HackathonCard hackathon={hackathon} />
-              </div>
+              </Link>
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                {/* MODIFICATION: Added onClick handler to the button */}
                 <button
                   onClick={() => handleNavigate(viewMoreLink)}
                   className="bg-gray-800/50 hover:bg-gray-700/60 text-gray-200 font-semibold py-3 px-6 rounded-lg border border-gray-600 backdrop-blur-sm transition-all duration-300 flex items-center gap-2 group hover:border-green-400 hover:text-white"
@@ -246,7 +251,6 @@ const AdminProfile = () => {
                 <Play className="w-8 h-8 text-green-400" />
                 Live Hackathons
             </h2>
-            {/* MODIFICATION: Pass the navigation link as a prop */}
             <HackathonList hackathons={liveHackathons} viewMoreLink="/Hacksprintkaadminprofile/livehackathons" />
         </div>
 
@@ -255,7 +259,6 @@ const AdminProfile = () => {
                 <Activity className="w-8 h-8 text-blue-400" />
                 Recently Started Hackathons
             </h2>
-            {/* MODIFICATION: Pass the navigation link as a prop */}
             <HackathonList hackathons={recentlyStartedHackathons} viewMoreLink="/Hacksprintkaadminprofile/recentlystarted" />
         </div>
 
@@ -264,7 +267,6 @@ const AdminProfile = () => {
                 <Square className="w-8 h-8 text-red-400" />
                 Ended Hackathons
             </h2>
-            {/* MODIFICATION: Pass the navigation link as a prop */}
             <HackathonList hackathons={endedHackathons} viewMoreLink="/Hacksprintkaadminprofile/endedhackathons" />
         </div>
 
