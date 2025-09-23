@@ -50,6 +50,10 @@ const teamSchema = new mongoose.Schema({
   },
   teamSize : {
     type : Number
+  },
+  maxTeamSize : {
+    type: Number,
+    default : 4
   }
 });
 

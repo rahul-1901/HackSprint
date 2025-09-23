@@ -35,6 +35,12 @@ import Studenthome from './pages/Studenthome.jsx';
 import Adminhome from './pages/Adminhome.jsx'
 import AdminLogin from './pages/AdminLogin.jsx'
 
+import AdminProfile from './pages/AdminProfile.jsx';
+import RecentlyStartedPage from './admin/recenthackathon.jsx';
+import LiveHackathonsPage from './admin/livehackathon.jsx';
+import EndedHackathonsPage from './admin/endedhackathon.jsx';
+import HackathonUsersPage from './admin/userlist.jsx';
+import UserSubmissionDetailPage from './admin/usersubmission.jsx';
 function App() {
 
 
@@ -75,6 +81,11 @@ function App() {
           <Route path="/hackathons" element={<AllHackathons />} caseSensitive />
           
           <Route path="/admin" element={<Admin />} caseSensitive />
+          <Route path="/hacksprintTeraBaap" element={<Admin />} caseSensitive />
+          <Route path="/Hacksprintkaadminprofile" element={<AuthenticateRoute element={<AdminProfile />} />} caseSensitive />
+          <Route path="/Hacksprintkaadminprofile/recentlystarted" element={<RecentlyStartedPage />} caseSensitive />
+          <Route path="/Hacksprintkaadminprofile/livehackathons" element={<LiveHackathonsPage />} caseSensitive />
+          <Route path="/Hacksprintkaadminprofile/endedhackathons" element={<EndedHackathonsPage />} caseSensitive />
           <Route path="/questions" element={<AuthenticateRoute element={<Questions />} />} caseSensitive />
           <Route path="/account/login" element={<Login />} caseSensitive></Route>
           <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
@@ -90,6 +101,8 @@ function App() {
           <Route path="/verify" element={<VerifyEmail />} />
           <Route path="/account/forgot-password" element={<ForgotPassword />} caseSensitive></Route>
           <Route path='/leaderboard' element={<Leaderboard />} />
+          <Route path='/Hacksprintkaadminprofile/:slug/usersubmissions' element={<HackathonUsersPage />} />
+          <Route path='/hackathon/:slug/submission/:id' element={<AuthenticateRoute element={<UserSubmissionDetailPage />} />} />
         </Routes>
 
         <HideRouteFooter>
