@@ -235,7 +235,7 @@ const Questions = () => {
 
         const timer = setInterval(() => {
             updateMidnightTimer();
-            
+
             // Check if it's a new day
             if (!isQuizFromToday()) {
                 window.location.reload();
@@ -277,7 +277,7 @@ const Questions = () => {
         }
     }, [explanationTimer, showExplanation]);
 
-    const handleTimeUp = () => {
+    const handleTimeUp = async () => {
         const newAnswers = [...userAnswers];
         newAnswers[currentQuestionIndex] = null;
         setUserAnswers(newAnswers);
@@ -287,6 +287,14 @@ const Questions = () => {
             setTimeLeft(10);
             setSelectedAnswer(null);
         } else {
+            // Last question, complete the quiz
+            const payload = { userId, quizId };
+            try {
+                await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/finishquiz`, payload);
+                console.log("Quiz completion logged due to timer running out");
+            } catch (err) {
+                console.error("Error logging quiz completion on timeout:", err);
+            }
             setQuizCompleted(true);
         }
     };
@@ -540,15 +548,15 @@ const Questions = () => {
                                 <div className="border-t border-slate-700/50 pt-8">
                                     <div className="mb-6">
                                         <div className={`inline-flex items-center px-8 py-4 rounded-2xl relative overflow-hidden transition-all duration-500 ${stats.percentage >= 80
-                                                ? "bg-gradient-to-r from-emerald-600/20 via-green-600/20 to-teal-600/20 border border-emerald-400/40"
-                                                : stats.percentage >= 60
-                                                    ? "bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 border border-blue-400/40"
-                                                    : "bg-gradient-to-r from-orange-600/20 via-red-600/20 to-pink-600/20 border border-orange-400/40"
+                                            ? "bg-gradient-to-r from-emerald-600/20 via-green-600/20 to-teal-600/20 border border-emerald-400/40"
+                                            : stats.percentage >= 60
+                                                ? "bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 border border-blue-400/40"
+                                                : "bg-gradient-to-r from-orange-600/20 via-red-600/20 to-pink-600/20 border border-orange-400/40"
                                             }`}>
                                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer"></div>
                                             <span className={`font-bold text-xl relative z-10 ${stats.percentage >= 80 ? "text-emerald-400" :
-                                                    stats.percentage >= 60 ? "text-blue-400" :
-                                                        "text-orange-400"
+                                                stats.percentage >= 60 ? "text-blue-400" :
+                                                    "text-orange-400"
                                                 }`}>
                                                 {stats.percentage >= 80 ? "Outstanding Performance!" :
                                                     stats.percentage >= 60 ? "Great Job!" :
@@ -581,7 +589,7 @@ const Questions = () => {
                                         <span>View Leaderboard</span>
                                         <span className="text-2xl group-hover:animate-bounce">🏆</span>
                                     </div>
-                                </button> 
+                                </button>
                             </div>
 
                             {/* Progress Bar Visualization */}
