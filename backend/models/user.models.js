@@ -135,6 +135,10 @@ const userSchema = new mongoose.Schema(
         appURL: { type: String, required: true }
       }
     ],
+    coins : {
+      type : Number,
+      default : 0
+    },
     verificationTokenExpiresAt: Date,
     // Submissions
   },

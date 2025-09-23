@@ -38,7 +38,7 @@ export const sendExpiredHackathons = async (req, res) => {
     const currentTime = new Date(Date.now());
     const expiredHackathons = await hackathonModel.find({
       status: false,
-      endDate: { $lt: currentTime },
+      submissionEndDate: { $lt: currentTime },
     });
     res.status(200).json({
       expiredHackathons,
@@ -65,7 +65,8 @@ export const addhackathons = async (req, res) => {
     // create hackathon document
     const hackathonsdata = new hackathonModel({
       ...req.body,
-      image: imageUrl   // 👈 store Cloudinary URL
+      image: imageUrl, // storing Cloudinary URL
+      createdBy: req.body.adminId
     })
 
     await hackathonsdata.save()
