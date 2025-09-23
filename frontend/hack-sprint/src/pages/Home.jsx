@@ -422,6 +422,46 @@ const Home = () => {
 
   return (
     <div className="bg-gray-900 relative overflow-hidden min-h-screen -mt-16">
+
+      {/* Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-sm border-b border-gray-800/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => handleNavigate('/')}
+              className="flex items-center space-x-2 sm:space-x-3 cursor-pointer"
+            >
+              <div className="w-8 h-8 sm:w-10 sm:h-10">
+                <img src='hackSprint.webp' className="w-full h-full object-contain" alt="HackSprint Logo" />
+              </div>
+              <span className="text-lg sm:text-xl lg:text-2xl font-bold text-white font-mono tracking-wide">
+                HackSprint
+              </span>
+            </button>
+            <div className="flex items-center gap-4">
+              <a href="/about" className="text-gray-300 hover:text-green-400 text-sm font-medium transition-colors duration-300">About Us</a>
+              <a href="/blogs" className="text-gray-300 hover:text-green-400 text-sm font-medium transition-colors duration-300">Blogs</a>
+              <a href="/events" className="text-gray-300 hover:text-green-400 text-sm font-medium transition-colors duration-300">Events</a>
+              <a href="/contact" className="text-gray-300 hover:text-green-400 text-sm font-medium transition-colors duration-300">Contact</a>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/studenthome")}
+              className="bg-green-400/10 hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105"
+            >
+              Student
+            </button>
+            <button
+              onClick={() => navigate("/adminhome")}
+              className="bg-green-400/10 hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105"
+            >
+              Admin
+            </button>
+          </div>
+        </div>
+      </nav>
+
       <GridBackground />
       <FloatingParticles />
 
@@ -1012,7 +1052,7 @@ const Home = () => {
       </section> */}
 
       {/* Call to Action Section */}
-     <section className="fade-section py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 relative bg-gray-900/30 backdrop-blur-sm">
+      <section className="fade-section py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 relative bg-gray-900/30 backdrop-blur-sm">
         <div className="max-w-full mx-auto text-center">
           <div className="relative bg-gray-900/70 backdrop-blur-sm py-16 sm:py-24 px-6 text-center">
             {/* <div className="absolute inset-0 bg-gradient-to-br from-green-400/10 to-green-600/10 blur-2xl"></div> */}

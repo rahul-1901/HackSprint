@@ -14,11 +14,12 @@ const Questions = () => {
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [questions, setQuestions] = useState([]);
     const [userAnswers, setUserAnswers] = useState([]);
-    const [quizResetTimer, setQuizResetTimer] = useState(86400);
+    const [timeUntilMidnight, setTimeUntilMidnight] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [quizId, setQuizId] = useState(null);
     const [userId, setUserId] = useState('');
     const navigate = useNavigate();
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -39,18 +40,27 @@ const Questions = () => {
         USER_ANSWERS: 'devquest_user_answers',
         QUIZ_STARTED: 'devquest_quiz_started',
         QUIZ_COMPLETED: 'devquest_quiz_completed',
-        QUIZ_START_TIME: 'devquest_quiz_start_time',
-        RESET_TIMER: 'devquest_reset_timer'
+        QUIZ_DATE: 'devquest_quiz_date'
     };
 
-    const checkQuizExpiry = () => {
-        const startTime = localStorage.getItem(STORAGE_KEYS.QUIZ_START_TIME);
-        if (startTime) {
-            const currentTime = Date.now();
-            const elapsedTime = Math.floor((currentTime - parseInt(startTime)) / 1000);
-            return elapsedTime >= 86400;
-        }
-        return false;
+    // Get seconds until next midnight
+    const getSecondsUntilMidnight = () => {
+        const now = new Date();
+        const midnight = new Date();
+        midnight.setHours(24, 0, 0, 0); // Set to next midnight
+        return Math.floor((midnight.getTime() - now.getTime()) / 1000);
+    };
+
+    // Get current date in YYYY-MM-DD format
+    const getCurrentDate = () => {
+        return new Date().toISOString().split('T')[0];
+    };
+
+    // Check if quiz is from today
+    const isQuizFromToday = () => {
+        const savedDate = localStorage.getItem(STORAGE_KEYS.QUIZ_DATE);
+        const currentDate = getCurrentDate();
+        return savedDate === currentDate;
     };
 
     const clearProgress = () => {
@@ -73,13 +83,13 @@ const Questions = () => {
         setIsCorrect(false);
         setQuizCompleted(false);
         setUserAnswers([]);
-        setQuizResetTimer(86400);
         clearProgress();
     };
 
     const loadProgress = () => {
         try {
-            if (checkQuizExpiry()) {
+            // Check if quiz is from today, if not reset everything
+            if (!isQuizFromToday()) {
                 resetQuizState();
                 return;
             }
@@ -89,8 +99,6 @@ const Questions = () => {
             const savedAnswers = localStorage.getItem(STORAGE_KEYS.USER_ANSWERS);
             const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
             const savedQuizCompleted = localStorage.getItem(STORAGE_KEYS.QUIZ_COMPLETED);
-            const savedResetTimer = localStorage.getItem(STORAGE_KEYS.RESET_TIMER);
-            const startTime = localStorage.getItem(STORAGE_KEYS.QUIZ_START_TIME);
 
             if (savedIndex !== null) {
                 setCurrentQuestionIndex(parseInt(savedIndex, 10));
@@ -107,15 +115,6 @@ const Questions = () => {
             if (savedQuizCompleted !== null) {
                 setQuizCompleted(JSON.parse(savedQuizCompleted));
             }
-
-            if (startTime && savedResetTimer) {
-                const currentTime = Date.now();
-                const elapsedTime = Math.floor((currentTime - parseInt(startTime)) / 1000);
-                const remainingTime = Math.max(0, 86400 - elapsedTime);
-                setQuizResetTimer(remainingTime);
-            } else if (savedResetTimer !== null) {
-                setQuizResetTimer(parseInt(savedResetTimer, 10));
-            }
         } catch (error) {
             console.error('Error loading progress from localStorage:', error);
         }
@@ -128,11 +127,7 @@ const Questions = () => {
             localStorage.setItem(STORAGE_KEYS.USER_ANSWERS, JSON.stringify(userAnswers));
             localStorage.setItem(STORAGE_KEYS.QUIZ_STARTED, JSON.stringify(quizStarted));
             localStorage.setItem(STORAGE_KEYS.QUIZ_COMPLETED, JSON.stringify(quizCompleted));
-            localStorage.setItem(STORAGE_KEYS.RESET_TIMER, quizResetTimer.toString());
-
-            if (!localStorage.getItem(STORAGE_KEYS.QUIZ_START_TIME)) {
-                localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
-            }
+            localStorage.setItem(STORAGE_KEYS.QUIZ_DATE, getCurrentDate());
         } catch (error) {
             console.error('Error saving progress to localStorage:', error);
         }
@@ -180,7 +175,6 @@ const Questions = () => {
         }
     ];
 
-
     const fetchQuestions = async () => {
         try {
             setIsLoading(true);
@@ -215,47 +209,51 @@ const Questions = () => {
             setIsLoading(false);
             loadProgress();
 
-            const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
-            if (savedQuizStarted === null && !checkQuizExpiry()) {
+            // Auto-start quiz if it's a new day and not yet started
+            if (isQuizFromToday()) {
+                const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
+                if (savedQuizStarted === null) {
+                    setQuizStarted(true);
+                    setTimeLeft(10);
+                }
+            } else {
+                // New day, start fresh
                 setQuizStarted(true);
                 setTimeLeft(10);
-                localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
+                localStorage.setItem(STORAGE_KEYS.QUIZ_DATE, getCurrentDate());
             }
         }
     };
 
+    // Midnight countdown timer effect
+    useEffect(() => {
+        const updateMidnightTimer = () => {
+            setTimeUntilMidnight(getSecondsUntilMidnight());
+        };
+
+        updateMidnightTimer(); // Initial call
+
+        const timer = setInterval(() => {
+            updateMidnightTimer();
+            
+            // Check if it's a new day
+            if (!isQuizFromToday()) {
+                window.location.reload();
+            }
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         fetchQuestions();
     }, []);
 
     useEffect(() => {
-        if (quizStarted && quizResetTimer > 0) {
-            const timer = setTimeout(() => {
-                setQuizResetTimer(quizResetTimer - 1);
-            }, 1000);
-            return () => clearTimeout(timer);
-        } else if (quizResetTimer === 0 && quizStarted) {
-            window.location.reload();
-        }
-    }, [quizResetTimer, quizStarted]);
-
-    useEffect(() => {
-        if (quizCompleted && quizResetTimer > 0) {
-            const timer = setTimeout(() => {
-                setQuizResetTimer(quizResetTimer - 1);
-            }, 1000);
-            return () => clearTimeout(timer);
-        } else if (quizCompleted && quizResetTimer === 0) {
-            window.location.reload();
-        }
-    }, [quizResetTimer, quizCompleted]);
-
-    useEffect(() => {
         if (questions.length > 0 && quizStarted) {
             saveProgress();
         }
-    }, [currentQuestionIndex, timeLeft, userAnswers, quizStarted, quizCompleted, quizResetTimer, questions.length]);
+    }, [currentQuestionIndex, timeLeft, userAnswers, quizStarted, quizCompleted, questions.length]);
 
     useEffect(() => {
         if (quizStarted && !showExplanation && !quizCompleted && timeLeft > 0) {
@@ -366,8 +364,7 @@ const Questions = () => {
         setExplanationTimer(0);
         setQuizCompleted(false);
         setUserAnswers([]);
-        setQuizResetTimer(86400);
-        localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
+        localStorage.setItem(STORAGE_KEYS.QUIZ_DATE, getCurrentDate());
     };
 
     const resetQuiz = () => {
@@ -402,7 +399,6 @@ const Questions = () => {
                 <div className="text-center space-y-8">
                     <div className="relative">
                         <div className="w-24 h-24 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin mx-auto"></div>
-
                     </div>
                     <div className="space-y-4">
                         <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
@@ -419,79 +415,6 @@ const Questions = () => {
             </div>
         );
     }
-
-    // Start Screen
-    // if (!quizStarted) {
-    //     return (
-    //         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 text-white relative overflow-hidden">
-    //             {/* Animated Background Elements */}
-    //             <div className="absolute inset-0">
-    //                 <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
-    //                 <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-    //                 <div className="absolute top-3/4 left-1/3 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
-    //             </div>
-
-    //             {/* Grid Pattern */}
-    //             <div className="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.03)_1px,transparent_1px)] bg-[size:64px_64px]"></div>
-
-    //             <div className="relative z-10 min-h-screen flex items-center justify-center px-6">
-    //                 <div className="text-center max-w-4xl">
-    //                     {/* Logo/Title Section */}
-    //                     <div className="mb-12 space-y-6">
-    //                         <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl mb-6 shadow-2xl">
-    //                             <div className="text-3xl font-bold text-white">DQ</div>
-    //                         </div>
-
-    //                         <h1 className="text-6xl md:text-7xl font-black bg-gradient-to-r from-emerald-300 via-green-400 to-teal-300 bg-clip-text text-transparent leading-tight">
-    //                             DevQuest
-    //                         </h1>
-
-    //                         <div className="space-y-2">
-    //                             <p className="text-2xl font-medium text-slate-300">Professional Developer Assessment</p>
-    //                             <div className="w-24 h-1 bg-gradient-to-r from-emerald-500 to-green-500 mx-auto rounded-full"></div>
-    //                         </div>
-    //                     </div>
-
-    //                     {/* Feature Cards */}
-    //                     <div className="grid md:grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto">
-    //                         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/70 transition-all duration-300">
-    //                             <div className="text-emerald-500 text-3xl mb-3">⚡</div>
-    //                             <h3 className="font-semibold text-white mb-2">Daily Challenges</h3>
-    //                             <p className="text-slate-400 text-sm">Fresh questions every 24 hours</p>
-    //                         </div>
-
-    //                         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/70 transition-all duration-300">
-    //                             <div className="text-green-500 text-3xl mb-3">🎯</div>
-    //                             <h3 className="font-semibold text-white mb-2">Instant Feedback</h3>
-    //                             <p className="text-slate-400 text-sm">Learn with detailed explanations</p>
-    //                         </div>
-
-    //                         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/70 transition-all duration-300">
-    //                             <div className="text-teal-500 text-3xl mb-3">📊</div>
-    //                             <h3 className="font-semibold text-white mb-2">Track Progress</h3>
-    //                             <p className="text-slate-400 text-sm">Monitor your skill development</p>
-    //                         </div>
-    //                     </div>
-
-    //                     {/* CTA Section */}
-    //                     <div className="space-y-6">
-    //                         <button
-    //                             onClick={startQuiz}
-    //                             className="group relative px-12 py-5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold text-xl rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-emerald-500/25"
-    //                         >
-    //                             <span className="relative z-10">Begin Assessment</span>
-    //                             <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-green-400 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-    //                         </button>
-
-    //                         <p className="text-slate-400 text-lg">
-    //                             Ready to test your development expertise?
-    //                         </p>
-    //                     </div>
-    //                 </div>
-    //             </div>
-    //         </div>
-    //     );
-    // }
 
     // Quiz Completed Screen
     if (quizCompleted) {
@@ -678,6 +601,21 @@ const Questions = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Next Quiz Timer */}
+                            <div className="mt-8 max-w-lg mx-auto">
+                                <div className="bg-slate-900/60 rounded-2xl p-6 border border-slate-600/40 backdrop-blur-sm">
+                                    <div className="text-center">
+                                        <h3 className="text-lg font-semibold text-white mb-2">Next Quiz Available In</h3>
+                                        <div className="text-3xl font-mono font-bold text-emerald-400 mb-2">
+                                            {formatTime(timeUntilMidnight)}
+                                        </div>
+                                        <p className="text-slate-400 text-sm">
+                                            New challenges refresh daily at midnight
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -742,9 +680,6 @@ const Questions = () => {
                     <div className="max-w-6xl mx-auto px-6 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
-                                {/* <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
-                                    <span className="text-white font-bold text-sm">DQ</span>
-                                </div> */}
                                 <div>
                                     <h1 className="text-xl font-bold text-white">DevQuest Assessment</h1>
                                     <p className="text-sm text-slate-400">Question {currentQuestionIndex + 1} of {questions.length}</p>

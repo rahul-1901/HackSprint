@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, matchPath } from 'react-router-dom';
 
-const HideRoute = ({ children }) => {
+const HideRouteFooter = ({ children }) => {
     const location = useLocation();
     const [showNavbar, setShowNavbar] = useState(true);
 
-    const navVisible = ["/studenthome","/dashboard", "/quest", "/about", "/hackathons","/hackathon/:id","/hackathon/RegistrationForm/:id","/leaderboard","/hackathon/:hackathonId/team/:teamId"];
+    const footerVisible = ["/","/studenthome","/adminhome","/dashboard", "/quest", "/about", "/hackathons","/hackathon/:id","/hackathon/RegistrationForm/:id","/leaderboard","/hackathon/:hackathonId/team/:teamId"];
 
     useEffect(() => {
         const isHackathonDynamic = matchPath({ path: "/hackathon/:id", exact: true }, location.pathname);
@@ -13,7 +13,7 @@ const HideRoute = ({ children }) => {
         const isTeamDynamic = matchPath({ path: "/hackathon/:hackathonId/team/:teamId", exact: true }, location.pathname);
 
         if (
-            !navVisible.includes(location.pathname) &&
+            !footerVisible.includes(location.pathname) &&
             !isHackathonDynamic &&
             !isRegistrationDynamic &&
             !isTeamDynamic
@@ -22,9 +22,9 @@ const HideRoute = ({ children }) => {
         } else {
             setShowNavbar(true);
         }
-    }, [location, navVisible]);
+    }, [location, footerVisible]);
 
     return <div>{showNavbar && children}</div>;
 };
 
-export default HideRoute;
+export default HideRouteFooter;

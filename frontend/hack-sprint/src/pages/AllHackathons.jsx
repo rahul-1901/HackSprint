@@ -343,7 +343,7 @@ const Hackathons = () => {
         const [activeRes, expiredRes, upcomingRes] = await Promise.all([
           axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons`),
           axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/expiredHackathons`),
-          // axios.get("http://localhost:3000/api/hackathons/upcomingHackathons"), // Assuming this endpoint exists
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/upcomingHackathons`), 
         ])
 
         const mapData = (data, status) =>
@@ -360,7 +360,7 @@ const Hackathons = () => {
 
         setActiveHackathons(mapData(activeRes.data.allHackathons, "active"))
         setExpiredHackathons(mapData(expiredRes.data.expiredHackathons, "expired"))
-        // setUpcomingHackathons(mapData(upcomingRes.data.upcomingHackathons || [], 'upcoming')); // Handle if endpoint doesn't exist yet
+        setUpcomingHackathons(mapData(upcomingRes.data.upcomingHackathonsdata, 'upcoming')); 
       } catch (error) {
         console.error("Error fetching hackathons:", error)
         // Handle the case where upcoming endpoint doesn't exist yet

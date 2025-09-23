@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import HideRoute from './components/HideRoute';
+import HideRouteFooter from './components/HideRouteFooter';
 import Loader from './components/Loader';
 import Quest from './pages/Quest';
 import About from './pages/About';
@@ -30,6 +31,9 @@ import VerifyEmail from './components/verifyEmail.jsx';
 import ForgotPassword from './components/forgotPassword.jsx';
 import ScrollToTop from './components/ScrollToTop.jsx';
 import UnderConstruction from './pages/Devlopment.jsx'
+import Studenthome from './pages/Studenthome.jsx';
+import Adminhome from './pages/Adminhome.jsx'
+import AdminLogin from './pages/AdminLogin.jsx'
 
 function App() {
 
@@ -58,6 +62,10 @@ function App() {
         <Routes>
 
           <Route path="/" element={<Home />} caseSensitive />
+          <Route path="/studenthome" element={<Studenthome />} caseSensitive />
+          <Route path="/adminhome" element={<Adminhome />} caseSensitive />
+          <Route path="/adminlogin" element={<AdminLogin />} caseSensitive />
+          
           <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
           <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
           <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
@@ -66,7 +74,7 @@ function App() {
           <Route path="/about" element={<About />} caseSensitive />
           <Route path="/hackathons" element={<AllHackathons />} caseSensitive />
           
-          <Route path="/hacksprintTeraBaap" element={<Admin />} caseSensitive />
+          <Route path="/admin" element={<Admin />} caseSensitive />
           <Route path="/questions" element={<AuthenticateRoute element={<Questions />} />} caseSensitive />
           <Route path="/account/login" element={<Login />} caseSensitive></Route>
           <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
@@ -84,9 +92,9 @@ function App() {
           <Route path='/leaderboard' element={<Leaderboard />} />
         </Routes>
 
-        <HideRoute>
+        <HideRouteFooter>
           <Footer />
-        </HideRoute>
+        </HideRouteFooter>
       </Router>
       {/* <UnderConstruction /> */}
     </>
