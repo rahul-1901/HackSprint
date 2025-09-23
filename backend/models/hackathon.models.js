@@ -110,7 +110,7 @@ hackathonSchema.pre(/^find/, async function (next) {
     await this.model.updateMany(
         {
             startDate: { $lte: currentTime },
-            endDate: { $gte: currentTime }
+            submissionEndDate: { $gte: currentTime }
         },
         {
             status: true
@@ -120,7 +120,7 @@ hackathonSchema.pre(/^find/, async function (next) {
     //mark status : false for inactive hackathons
     await this.model.updateMany(
         {
-            endDate: { $lt: currentTime }
+            submissionEndDate: { $lt: currentTime }
         },
         { status: false }
     )
