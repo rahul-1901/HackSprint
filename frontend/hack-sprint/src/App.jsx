@@ -35,6 +35,7 @@ import RecentlyStartedPage from './admin/recenthackathon.jsx';
 import LiveHackathonsPage from './admin/livehackathon.jsx';
 import EndedHackathonsPage from './admin/endedhackathon.jsx';
 import HackathonUsersPage from './admin/userlist.jsx';
+import UserSubmissionDetailPage from './admin/usersubmission.jsx';
 function App() {
 
 
@@ -91,6 +92,7 @@ function App() {
           <Route path="/account/forgot-password" element={<ForgotPassword />} caseSensitive></Route>
           <Route path='/leaderboard' element={<Leaderboard />} />
           <Route path='/Hacksprintkaadminprofile/:slug/usersubmissions' element={<HackathonUsersPage />} />
+          <Route path='/hackathon/:slug/submission/:id' element={<AuthenticateRoute element={<UserSubmissionDetailPage />} />} />
         </Routes>
 
         <HideRoute>

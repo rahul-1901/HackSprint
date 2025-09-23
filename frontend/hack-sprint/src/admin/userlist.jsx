@@ -1,43 +1,17 @@
+// HackathonUsersPage.jsx
+
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Users, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import { allHackathons, hackathonUsers } from './data.js'; // --- IMPORT DATA ---
 
-// --- HACKATHON & USER DUMMY DATA ---
-const allHackathons = [
-    { id: 'live-01', slug: "ai-innovators-hackathon", title: "AI Innovators Hackathon", status: 'live' },
-    { id: 'live-02', slug: "quantumverse-challenge", title: "QuantumVerse Challenge", status: 'live' },
-    { id: 'recent-01', slug: "gamedev-gauntlet", title: "GameDev Gauntlet", status: 'recent' },
-    { id: 'recent-02', slug: "cyber-sentinel-showdown", title: "Cyber Sentinel Showdown", status: 'recent' },
-    { id: 'ended-01', slug: "decentralized-future-hack", title: "Decentralized Future Hack", status: 'ended' },
-    { id: 'ended-02', slug: "eco-coders-challenge", title: "Eco-Coders Challenge", status: 'ended' },
-];
-
-const hackathonUsers = {
-  "ai-innovators-hackathon": [
-    { id: 1, name: "Alice Johnson", email: "alice.j@example.com", registered: "2025-09-02", hasSubmission: true },
-    { id: 2, name: "Bob Williams", email: "bob.w@example.com", registered: "2025-09-03", hasSubmission: false },
-    { id: 3, name: "Charlie Brown", email: "charlie.b@example.com", registered: "2025-09-03", hasSubmission: true },
-    { id: 4, name: "Diana Miller", email: "diana.m@example.com", registered: "2025-09-04", hasSubmission: false },
-  ],
-  "gamedev-gauntlet": [
-    { id: 5, name: "Ethan Hunt", email: "ethan.h@example.com", registered: "2025-09-06", hasSubmission: true },
-    { id: 6, name: "Fiona Gallagher", email: "fiona.g@example.com", registered: "2025-09-07", hasSubmission: true },
-  ],
-  "decentralized-future-hack": [
-    { id: 7, name: "George Costanza", email: "george.c@example.com", registered: "2025-08-25", hasSubmission: true },
-    { id: 8, name: "Helen Troy", email: "helen.t@example.com", registered: "2025-08-28", hasSubmission: false },
-    { id: 9, name: "Ian Wright", email: "ian.w@example.com", registered: "2025-08-30", hasSubmission: true },
-  ]
-};
-
-// A placeholder for GridBackground if it's not imported from a shared file.
 const GridBackground = () => (
   <div className="absolute inset-0 h-full w-full bg-gray-900 bg-grid-white/[0.05] -z-20" />
 );
 
-// --- COMPONENT ---
 const HackathonUsersPage = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const hackathon = allHackathons.find(h => h.slug === slug);
   const users = hackathonUsers[slug] || [];
 
@@ -53,6 +27,12 @@ const HackathonUsersPage = () => {
       </div>
     );
   }
+
+  const handleUserClick = (user) => {
+    if (user.hasSubmission) {
+      navigate(`/hackathon/${slug}/submission/${user.id}`);
+    }
+  };
 
   return (
     <div className="relative min-h-screen bg-gray-900 text-white overflow-hidden">
@@ -81,7 +61,11 @@ const HackathonUsersPage = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-800">
                   {users.map(user => (
-                    <tr key={user.id} className="hover:bg-gray-800/40 transition-colors">
+                    <tr 
+                      key={user.id} 
+                      onClick={() => handleUserClick(user)}
+                      className={`transition-colors ${user.hasSubmission ? 'hover:bg-gray-800/40 cursor-pointer' : ''}`}
+                    >
                       <td className="p-4 font-medium text-white">{user.name}</td>
                       <td className="p-4 text-gray-400">{user.email}</td>
                       <td className="p-4 text-gray-400">{user.registered}</td>
