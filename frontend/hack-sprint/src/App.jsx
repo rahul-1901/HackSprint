@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import HideRoute from './components/HideRoute';
+import HideRouteFooter from './components/HideRouteFooter';
 import Loader from './components/Loader';
 import Quest from './pages/Quest';
 import About from './pages/About';
@@ -30,6 +31,10 @@ import VerifyEmail from './components/verifyEmail.jsx';
 import ForgotPassword from './components/forgotPassword.jsx';
 import ScrollToTop from './components/ScrollToTop.jsx';
 import UnderConstruction from './pages/Devlopment.jsx'
+import Studenthome from './pages/Studenthome.jsx';
+import Adminhome from './pages/Adminhome.jsx'
+import AdminLogin from './pages/AdminLogin.jsx'
+
 import AdminProfile from './pages/AdminProfile.jsx';
 import RecentlyStartedPage from './admin/recenthackathon.jsx';
 import LiveHackathonsPage from './admin/livehackathon.jsx';
@@ -63,6 +68,10 @@ function App() {
         <Routes>
 
           <Route path="/" element={<Home />} caseSensitive />
+          <Route path="/studenthome" element={<Studenthome />} caseSensitive />
+          <Route path="/adminhome" element={<Adminhome />} caseSensitive />
+          <Route path="/adminlogin" element={<AdminLogin />} caseSensitive />
+          
           <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
           <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
           <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
@@ -71,6 +80,7 @@ function App() {
           <Route path="/about" element={<About />} caseSensitive />
           <Route path="/hackathons" element={<AllHackathons />} caseSensitive />
           
+          <Route path="/admin" element={<Admin />} caseSensitive />
           <Route path="/hacksprintTeraBaap" element={<Admin />} caseSensitive />
           <Route path="/Hacksprintkaadminprofile" element={<AuthenticateRoute element={<AdminProfile />} />} caseSensitive />
           <Route path="/Hacksprintkaadminprofile/recentlystarted" element={<RecentlyStartedPage />} caseSensitive />
@@ -95,9 +105,9 @@ function App() {
           <Route path='/hackathon/:slug/submission/:id' element={<AuthenticateRoute element={<UserSubmissionDetailPage />} />} />
         </Routes>
 
-        <HideRoute>
+        <HideRouteFooter>
           <Footer />
-        </HideRoute>
+        </HideRouteFooter>
       </Router>
       {/* <UnderConstruction /> */}
     </>
