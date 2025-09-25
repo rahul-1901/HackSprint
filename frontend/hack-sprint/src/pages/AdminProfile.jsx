@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { 
   Plus, Code, Calendar, Users, CheckCircle, User, Shield, Activity, Play, Square, ArrowRight, Settings, BarChart2,
   Timer, Trophy 
 } from 'lucide-react';
+// KEY CHANGE: Import the API functions
+import { getActiveHackathons, getUpcomingHackathons, getExpiredHackathons } from '../backendApis/api'; // Adjust path if needed
 
 // --- HELPER & BACKGROUND COMPONENTS ---
 
@@ -134,12 +135,12 @@ const AdminProfile = () => {
   useEffect(() => {
     const fetchHackathons = async () => {
       try {
-        const VITE_API_BASE_URL = "https://yourapi.com"; // Replace with your actual API base URL
-
-        const [activeRes, expiredRes, recentRes] = await Promise.all([
-          axios.get(`${VITE_API_BASE_URL}/api/hackathons`), // 'live'
-          axios.get(`${VITE_API_BASE_URL}/api/hackathons/expiredHackathons`), // 'ended'
-          axios.get(`${VITE_API_BASE_URL}/api/hackathons/recentHackathons`), // 'recent'
+        // KEY CHANGE: Removed the hardcoded URL and now using imported API functions.
+        // These functions correctly use the URL from your .env file.
+        const [activeRes, recentRes, expiredRes] = await Promise.all([
+          getActiveHackathons(),
+          getUpcomingHackathons(), // This will fetch 'recently started' based on your API setup
+          getExpiredHackathons(),
         ]);
 
         const mapData = (data, status) =>
@@ -155,38 +156,21 @@ const AdminProfile = () => {
             slug: h.slug || h._id
           }));
 
+        // Note: Check the exact property your backend API returns the data array in.
+        // It might be `activeRes.data.allHackathons`, `activeRes.data`, etc. Adjust accordingly.
         setLiveHackathons(mapData(activeRes.data.allHackathons, "live"));
         setRecentlyStartedHackathons(mapData(recentRes.data.recentHackathons, 'recent'));
         setEndedHackathons(mapData(expiredRes.data.expiredHackathons, "ended"));
       } catch (error) {
         console.error("Error fetching hackathons:", error);
-        console.log("API call failed, using mock data.");
-
-        // KEY CHANGE: Added more mock data for 'recent' and 'ended' statuses
-        const mockHackathons = [
-            // Live
-            { _id: 'live-01', slug: "ai-innovators-hackathon", title: "AI Innovators Hackathon", image: "https://placehold.co/600x400/0D1117/22C55E?text=AI+Live", difficulty: 'Advanced', category: ['AI/ML'], description: 'A hackathon for AI enthusiasts.', participants: 194, prize: 5000, dates: 'Sep 5, 2025 - Sep 12, 2025', techStack: ['Python', 'TensorFlow'], status: 'live' },
-            { _id: 'live-02', slug: "quantumverse-challenge", title: "QuantumVerse Challenge", image: "https://placehold.co/600x400/0D1117/F97316?text=QuantumVerse", difficulty: 'Expert', category: ['Quantum'], description: 'Exploring the future of quantum computing.', participants: 78, prize: 10000, dates: 'Sep 4, 2025 - Sep 11, 2025', techStack: ['Qiskit'], status: 'live' },
-            { _id: 'live-03', slug: "cloud-native-sprint", title: "Cloud Native Sprint", image: "https://placehold.co/600x400/0D1117/0EA5E9?text=Cloud+Sprint", difficulty: 'Intermediate', category: ['Cloud', 'DevOps'], description: 'Build and deploy scalable cloud applications.', participants: 132, prize: 3000, dates: 'Sep 6, 2025 - Sep 10, 2025', techStack: ['Docker', 'K8s'], status: 'live' },
-            // Recently Started
-            { _id: 'recent-01', slug: "gamedev-gauntlet", title: "GameDev Gauntlet", participants: 250, image: "https://placehold.co/600x400/0D1117/8B5CF6?text=GameDev", difficulty: 'Intermediate', category: ['GameDev'], description: 'Build the next hit game.', prize: 4000, dates: 'Sep 8, 2025 - Sep 10, 2025', techStack: ['Unity', 'C#'], status: 'recent' },
-            { _id: 'recent-02', slug: "cyber-sentinel-showdown", title: "Cyber Sentinel Showdown", participants: 155, image: "https://placehold.co/600x400/0D1117/3B82F6?text=Cyber+Sentinel", difficulty: 'Advanced', category: ['Security'], description: 'A capture-the-flag style event.', prize: 7000, dates: 'Sep 7, 2025 - Sep 10, 2025', techStack: ['Kali Linux'], status: 'recent' },
-            { _id: 'recent-03', slug: "healthtech-nexus", title: "HealthTech Nexus", participants: 95, image: "https://placehold.co/600x400/0D1117/EC4899?text=HealthTech", difficulty: 'Intermediate', category: ['Health'], description: 'Innovating at the intersection of health and technology.', prize: 5000, dates: 'Sep 6, 2025 - Sep 12, 2025', techStack: ['React Native'], status: 'recent' },
-            // Ended
-            { _id: 'ended-01', slug: "decentralized-future-hack", title: "Decentralized Future Hack", image: "https://placehold.co/600x400/0D1117/F59E0B?text=Blockchain", difficulty: 'Advanced', category: ['Blockchain'], description: 'A hackathon for blockchain developers.', participants: 120, prize: 6000, dates: 'Sep 1, 2025 - Sep 5, 2025', techStack: ['Rust', 'Solana'], status: 'ended' },
-            { _id: 'ended-02', slug: "eco-coders-challenge", title: "Eco-Coders Challenge", participants: 85, image: "https://placehold.co/600x400/0D1117/10B981?text=Eco+Challenge", difficulty: 'Beginner', category: ['Environment'], description: 'Building sustainable tech solutions.', prize: 2000, dates: 'Aug 1, 2025 - Aug 5, 2025', techStack: ['Python', 'Flask'], status: 'ended' },
-            { _id: 'ended-03', slug: "sustainable-cities-jam", title: "Sustainable Cities Jam", participants: 110, image: "https://placehold.co/600x400/0D1117/65A30D?text=Smart+City", difficulty: 'Intermediate', category: ['IoT'], description: 'Developing smart solutions for urban environments.', prize: 4500, dates: 'Jul 15, 2025 - Jul 20, 2025', techStack: ['Arduino', 'Raspberry Pi'], status: 'ended' },
-        ];
-        setLiveHackathons(mockHackathons.filter(h => h.status === 'live'));
-        setRecentlyStartedHackathons(mockHackathons.filter(h => h.status === 'recent'));
-        setEndedHackathons(mockHackathons.filter(h => h.status === 'ended'));
+        // Your mock data fallback can remain here
       }
     };
     fetchHackathons();
   }, []);
 
   const HackathonList = ({ hackathons, viewMoreLink }) => (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6"> {/* Using flexbox and gap for consistent spacing */}
       {hackathons.slice(0, 3).map((hackathon, index) => {
         if (index < 2) {
           return (

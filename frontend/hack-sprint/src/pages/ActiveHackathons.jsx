@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react'
-import { activeHackathons } from '../backendApis/api'
+ import React, { useEffect, useState } from 'react';
+// KEY CHANGE: Use the correct exported function name
+import { getActiveHackathons } from '../backendApis/api';
 
 function ActiveHackathons() {
     const [livehackathon, setLivehackathon] = useState([]);
 
     useEffect(() => {
         async function fetchData() {
-            const result = await activeHackathons();
+            // KEY CHANGE: Call the function with its correct name
+            const result = await getActiveHackathons();
             console.log("activehackatons list = ", result.data.allHackathons);
-            setLivehackathon(result.data.allHackathons)
+            setLivehackathon(result.data.allHackathons);
         }
         fetchData();
-    }, [])
+    }, []);
 
     return (
         <>
@@ -23,10 +25,9 @@ function ActiveHackathons() {
                         </div>
                     ))}
                 </div>
-
             </div>
         </>
-    )
+    );
 }
 
-export default ActiveHackathons
+export default ActiveHackathons;
