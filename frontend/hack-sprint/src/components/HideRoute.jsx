@@ -5,25 +5,30 @@ const HideRoute = ({ children }) => {
     const location = useLocation();
     const [showNavbar, setShowNavbar] = useState(true);
 
-    // const navVisible = ["/studenthome","/dashboard", "/quest", "/about", "/hackathons","/hackathon/:id","/hackathon/RegistrationForm/:id","/leaderboard","/hackathon/:hackathonId/team/:teamId"];
-    const navVisible = ["/","/Hacksprintkaadminprofile","/Hacksprintkaadminprofile/activehackathons","/Hacksprintkaadminprofile/endedhackathons","/Hacksprintkaadminprofile/recentlystarted", "/studenthome", "/dashboard", "/quest", "/about", "/hackathons","/hackathon/:id","/hackathon/RegistrationForm/:id","/leaderboard","/hackathon/:hackathonId/team/:teamId"];
+    const navVisible = ["/","/Hacksprintkaadminprofile","/Hacksprintkaadminprofile/endedhackathons","/Hacksprintkaadminprofile/recentlystarted", "/studenthome", "/dashboard", "/quest", "/about", "/hackathons","/hackathon/:id","/hackathon/RegistrationForm/:id","/leaderboard","/hackathon/:hackathonId/team/:teamId","/Hacksprintkaadminprofile/livehackathons"];
 
     useEffect(() => {
         const isHackathonDynamic = matchPath({ path: "/hackathon/:id", exact: true }, location.pathname);
         const isRegistrationDynamic = matchPath({ path: "/hackathon/RegistrationForm/:id", exact: true }, location.pathname);
         const isTeamDynamic = matchPath({ path: "/hackathon/:hackathonId/team/:teamId", exact: true }, location.pathname);
+        const isAdminSubmissionsDynamic = matchPath({ path: "/Hacksprintkaadminprofile/:slug/usersubmissions", exact: true }, location.pathname);
+        
+        // --- KEY CHANGE: Added a new matchPath for the user submission route ---
+        const isUserSubmissionDynamic = matchPath({ path: "/hackathon/:slug/submission/:userId", exact: true }, location.pathname);
 
         if (
             !navVisible.includes(location.pathname) &&
             !isHackathonDynamic &&
             !isRegistrationDynamic &&
-            !isTeamDynamic
+            !isTeamDynamic &&
+            !isAdminSubmissionsDynamic &&
+            !isUserSubmissionDynamic // --- KEY CHANGE: Added the new check to the condition ---
         ) {
             setShowNavbar(false);
         } else {
             setShowNavbar(true);
         }
-    }, [location, navVisible]);
+    }, [location]);
 
     return <div>{showNavbar && children}</div>;
 };
