@@ -5,20 +5,17 @@ import Admin from "../models/admin.model.js";
 // Admin Signup
 export const adminSignup = async (req, res) => {
   try {
-    // const {name , email , password} = req.body;
-    const { email, password } = req.body;
+    const { adminName, email, password } = req.body;
 
-    // Check if admin already exists
     const existingAdmin = await Admin.findOne({ email });
     if (existingAdmin) {
       return res.status(400).json({ error: "Admin already exists" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newAdmin = new Admin({
-      // name,
+      adminName,
       email,
       password: hashedPassword,
     });
@@ -42,14 +39,22 @@ export const adminLogin = async (req, res) => {
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-    // Create JWT with role = admin
+    // KEY CHANGE: Using the correct environment variable name from your .env file
     const token = jwt.sign(
       { id: admin._id, role: "admin" },
-      process.env.JWT_SECRET,
+      process.env.SECRET_KEY,
       { expiresIn: "1d" }
     );
 
-    res.json({ message: "Login successful", token, admin: { id: admin._id, name: admin.name, email: admin.email } });
+    res.json({ 
+        message: "Login successful", 
+        token, 
+        admin: { 
+            id: admin._id, 
+            name: admin.adminName, 
+            email: admin.email 
+        } 
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

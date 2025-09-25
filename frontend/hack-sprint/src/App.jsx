@@ -21,12 +21,11 @@ import Verification from './components/Verification.jsx';
 import ResetPassword from './components/ResetPassword.jsx';
 import RouteHandler from './components/RouteHandler.jsx'
 import AllHackathons from './pages/AllHackathons.jsx'
-// import Hackathons from './pages/Hackathon.jsx';
 import { ToastContainer } from 'react-toastify';
 import HackathonDetails from './pages/Hackathon.jsx';
 import { RegistrationForm } from './hackathon/RegistrationForm.jsx';
 import Leaderboard from './pages/LeaderBoard.jsx';
-import TeamDetails from './pages/TeamDetails.jsx'; // Import the new component
+import TeamDetails from './pages/TeamDetails.jsx';
 import VerifyEmail from './components/verifyEmail.jsx';
 import ForgotPassword from './components/forgotPassword.jsx';
 import ScrollToTop from './components/ScrollToTop.jsx';
@@ -34,16 +33,15 @@ import UnderConstruction from './pages/Devlopment.jsx'
 import Studenthome from './pages/Studenthome.jsx';
 import Adminhome from './pages/Adminhome.jsx'
 import AdminLogin from './pages/AdminLogin.jsx'
-
+import AdminSignup from './pages/AdminSignup.jsx'; // --- IMPORT THE NEW PAGE ---
 import AdminProfile from './pages/AdminProfile.jsx';
 import RecentlyStartedPage from './admin/recenthackathon.jsx';
 import LiveHackathonsPage from './admin/livehackathon.jsx';
 import EndedHackathonsPage from './admin/endedhackathon.jsx';
 import HackathonUsersPage from './admin/userlist.jsx';
 import UserSubmissionDetailPage from './admin/usersubmission.jsx';
+
 function App() {
-
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authWait, setAuthWait] = useState(false)
 
@@ -51,7 +49,6 @@ function App() {
     if (!authWait) {
       return null
     }
-
     return isAuthenticated ? element : <Navigate to="/account/login" />
   }
 
@@ -66,14 +63,12 @@ function App() {
         </HideRoute>
         <ToastContainer />
         <Routes>
-
           <Route path="/" element={<Home />} caseSensitive />
           <Route path="/studenthome" element={<Studenthome />} caseSensitive />
           <Route path="/adminhome" element={<Adminhome />} caseSensitive />
           <Route path="/adminlogin" element={<AdminLogin />} caseSensitive />
+          <Route path="/admin/signup" element={<AdminSignup />} caseSensitive /> {/* --- ADD THE NEW ROUTE --- */}
           
-          <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
-          <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
           <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
           <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
           <Route path="/quest" element={<Quest />} caseSensitive />
@@ -109,7 +104,6 @@ function App() {
           <Footer />
         </HideRouteFooter>
       </Router>
-      {/* <UnderConstruction /> */}
     </>
   );
 }
