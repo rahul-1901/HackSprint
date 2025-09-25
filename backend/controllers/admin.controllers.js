@@ -56,7 +56,7 @@ export const getMyHackathon = async (req, res) => {
 
     // Fetch submissions
     const submissions = await SubmissionModel.find({ hackathon: hackathonId })
-      .select("repoUrl githubMetadata docs images videos submittedAt")
+      .select("_id repoUrl githubMetadata docs images videos submittedAt hackathonPoints")
       .lean();
 
     res.json({
@@ -205,4 +205,92 @@ export const displayPendingHackathon = async (req, res) => {
       error : err.message
     })
   }  
+}
+export const updateHackathonPoint = async (req, res) => {
+  try {
+    const {adminId ,submissionId, points} = req.body; // auth middleware must set this
+    if (!adminId) {
+      return res.status(401).json({ success: false, message: "Not authenticated" });
+    }
+
+    if (!submissionId || typeof points !== "number") {
+      return res.status(400).json({
+        success: false,
+        message: "Request body must include submissionId and points (number).",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(submissionId)) {
+      return res.status(400).json({ success: false, message: "Invalid submissionId" });
+    }
+
+    // fetch the submission
+    const submission = await SubmissionModel.findById(submissionId).lean();
+    if (!submission) {
+      return res.status(404).json({ success: false, message: "Submission not found" });
+    }
+
+    // fetch hackathon to verify admin is creator
+    const hackathonId = submission.hackathon;
+    if (!hackathonId || !mongoose.Types.ObjectId.isValid(hackathonId)) {
+      return res.status(500).json({ success: false, message: "Submission has invalid hackathon reference" });
+    }
+
+    const hackathon = await hackathonModel.findById(hackathonId).select("createdBy");
+    if (!hackathon) {
+      return res.status(404).json({ success: false, message: "Hackathon for this submission not found" });
+    }
+
+    // Only the hackathon creator can update points
+    if (!hackathon.createdBy || hackathon.createdBy.toString() !== adminId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to update points for submissions of this hackathon",
+      });
+    }
+
+    // perform the update and return updated doc
+    const updated = await SubmissionModel.findByIdAndUpdate(
+      submissionId,
+      { $set: { hackathonPoints: points } },
+      { new: true, runValidators: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "hackathonPoints updated",
+      submission: updated,
+    });
+  } catch (err) {
+    console.error("updateHackathonPoint error:", err);
+    return res.status(500).json({ success: false, message: "Server error", error: err.message });
+  }
+};
+export const getAdminDetails = async(req,res)=>{
+  try{
+    // const admin = req.admin;
+    const admin = req.body;
+    if (!admin) {
+      return res.status(401).json({ success: false, message: "Not authenticated" });
+    }
+    return res.status(200).json({
+      success: true,
+      admin: {
+        id: admin._id,
+        name: admin.adminName ?? admin.name ?? null,
+        email: admin.email,
+        avatar: admin.avatar,
+        contactNumber: admin.contactNumber,
+        isVerified: admin.isVerified,
+        controller: admin.controller,
+        lastLogin: admin.lastLogin,
+        createdAt: admin.createdAt,
+        updatedAt: admin.updatedAt,
+        // include any other non-sensitive fields you want to expose
+      },
+    });
+  }catch(err){
+    console.error("getAdminProfile error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
 }

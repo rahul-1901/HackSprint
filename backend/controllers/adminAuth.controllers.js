@@ -5,7 +5,8 @@ import Admin from "../models/admin.model.js";
 // Admin Signup
 export const adminSignup = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    // const {name , email , password} = req.body;
+    const { email, password } = req.body;
 
     // Check if admin already exists
     const existingAdmin = await Admin.findOne({ email });
@@ -17,7 +18,7 @@ export const adminSignup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newAdmin = new Admin({
-      name,
+      // name,
       email,
       password: hashedPassword,
     });
