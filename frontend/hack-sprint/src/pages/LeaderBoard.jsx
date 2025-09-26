@@ -59,8 +59,8 @@ const Leaderboard = () => {
             className="relative"
           >
             <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-cyan-400/20 to-emerald-400/20 rounded-full"></div>
-            <h1 className="relative text-4xl sm:text-5xl md:text-6xl font-black bg-gradient-to-r from-cyan-300 via-blue-400 to-emerald-400 bg-clip-text text-transparent">
-              <Trophy className="inline-block mr-3 text-yellow-400" size={40} />
+            <h1 className="relative text-4xl sm:text-5xl md:text-6xl font-black bg-clip-text bg-gradient-to-b from-green-400 to-green-700 text-transparent ZaptronFont">
+              {/* <Trophy className="inline-block mr-3 text-yellow-400" size={40} /> */}
               Leaderboard
             </h1>
           </motion.div>
@@ -109,9 +109,9 @@ const Leaderboard = () => {
           transition={{ duration: 0.8 }}
           className="relative"
         >
-          <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-cyan-400/20 to-emerald-400/20 rounded-full"></div>
-          <h1 className="relative text-4xl sm:text-5xl md:text-6xl font-black bg-gradient-to-r from-cyan-300 via-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            <Trophy className="inline-block mr-3 text-yellow-400" size={40} />
+          <div className="absolute inset-0 blur-3xl bg-clip-text bg-gradient-to-b from-green-400 to-green-700 rounded-full"></div>
+          <h1 className="relative text-6xl sm:text-7xl md:text-8xl font-black bg-clip-text bg-gradient-to-b from-green-400 to-green-700 text-transparent ZaptronFont">
+            {/* <Trophy className="inline-block mr-3 text-yellow-400" size={40} /> */}
             Leaderboard
           </h1>
         </motion.div>
@@ -119,7 +119,7 @@ const Leaderboard = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-slate-400 mt-4 text-base sm:text-lg font-medium"
+          className="text-slate-400 -mt-2 text-base sm:text-lg font-medium"
         >
           Compete with the best minds and claim your throne
         </motion.p>
@@ -148,23 +148,30 @@ const Leaderboard = () => {
 
         {/* Main Table */}
         <div className="bg-slate-800/20 backdrop-blur-2xl rounded-2xl md:rounded-3xl border border-slate-700/30 shadow-2xl shadow-slate-900/50 overflow-hidden">
-          <div className="bg-gradient-to-r from-slate-800/60 via-slate-700/60 to-slate-800/60 px-4 sm:px-8 py-6 sm:py-8 border-b border-slate-600/20">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-slate-800/60 via-slate-700/60 to-slate-800/60 px-4 sm:px-6 py-6 sm:py-6 border-b border-slate-600/20">
             <h2 className="text-2xl sm:text-3xl font-black text-center bg-gradient-to-r from-slate-200 to-slate-400 bg-clip-text text-transparent">
-             Quest Ranking
+              Quest Ranking
             </h2>
-            <p className="text-center text-slate-400 mt-2 font-medium text-sm sm:text-base">
+            <p className="text-center text-slate-400 mt-1 font-medium text-sm sm:text-base">
               Elite performers
             </p>
           </div>
 
-          {/* Desktop - No horizontal scroll, Mobile - Keep horizontal scroll */}
-          <div className="sm:overflow-visible overflow-x-auto">
-            <table className="w-full sm:min-w-0 min-w-[500px]">
+          {/* Table wrapper → scrollable only on small screens */}
+          <div className="overflow-x-auto sm:overflow-visible">
+            <table className="w-full min-w-[500px] sm:min-w-0">
               <thead>
                 <tr className="text-slate-300 text-xs sm:text-sm font-bold uppercase tracking-widest bg-slate-800/30 border-b border-slate-600/20">
-                  <th className="py-4 sm:py-6 px-4 text-left">Position</th>
-                  <th className="py-4 sm:py-6 px-10 text-left">Competitor</th>
-                  <th className="py-4 sm:py-6 px-15 text-left">Performance</th>
+                  <th className="py-4 sm:py-6 px-4 text-left whitespace-nowrap">
+                    Position
+                  </th>
+                  <th className="py-4 sm:py-6 px-6 sm:px-10 text-left whitespace-nowrap">
+                    Competitor
+                  </th>
+                  <th className="py-4 sm:py-6 px-6 sm:px-10 text-left whitespace-nowrap">
+                    Performance
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/20">
@@ -175,22 +182,24 @@ const Leaderboard = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.8 + idx * 0.05 }}
                     className={`group transition-all duration-500 cursor-pointer ${idx % 2 === 0
-                        ? "bg-slate-800/10 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10 hover:border-l-4 hover:border-l-cyan-400"
-                        : "bg-slate-700/5 hover:bg-gradient-to-r hover:from-emerald-500/10 hover:to-teal-500/10 hover:border-l-4 hover:border-l-emerald-400"
+                      ? "bg-slate-800/10 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10 hover:border-l-4 hover:border-l-cyan-400"
+                      : "bg-slate-700/5 hover:bg-gradient-to-r hover:from-emerald-500/10 hover:to-teal-500/10 hover:border-l-4 hover:border-l-emerald-400"
                       } hover:shadow-lg hover:shadow-slate-900/30 hover:translate-x-2`}
                   >
                     {/* Rank */}
-                    <td className="py-4 sm:py-6 px-4 sm:px-8">
+                    <td className="py-4 sm:py-6 px-4 sm:px-6">
                       <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-600/80 to-slate-700/80 flex items-center justify-center font-black text-white shadow-lg">
                         {idx + 4}
                       </div>
                     </td>
 
                     {/* Username */}
-                    <td className="py-3 sm:py-6 px-10 sm:px-8">
+                    <td className="py-3 sm:py-6 px-6 sm:px-10 max-w-[220px] sm:max-w-none">
                       <div className="flex items-center gap-3 sm:gap-5">
-                        <div className="max-w-[120px] sm:max-w-none">
-                          <span className="font-bold text-sm sm:text-xl truncate">{user.name}</span>
+                        <div className="w-full">
+                          <span className="font-bold text-sm sm:text-lg block truncate">
+                            {user.name}
+                          </span>
                           <div className="text-slate-400 text-xs sm:text-sm font-medium truncate">
                             {user.email}
                           </div>
@@ -199,8 +208,8 @@ const Leaderboard = () => {
                     </td>
 
                     {/* Points */}
-                    <td className="py-4 sm:py-6 px-15">
-                      <div className="font-black text-lg sm:text-2xl text-emerald-400">
+                    <td className="py-4 sm:py-6 px-6 sm:px-10 whitespace-nowrap">
+                      <div className="font-black text-lg sm:text-2xl text-emerald-400 truncate">
                         {user.points} pts
                       </div>
                     </td>
@@ -233,14 +242,14 @@ const PodiumCard = ({ user, place }) => (
         </div>
       )}
 
-      <div className="relative z-10">
+      <div className="relative z-10 mt-2">
         {/* Circle Rank Badge */}
         <div
           className={`w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full flex items-center justify-center shadow-lg ${place === 1
-              ? "bg-gradient-to-br from-yellow-400 to-amber-500 shadow-yellow-400/30"
-              : place === 2
-                ? "bg-gradient-to-br from-slate-400 to-slate-500 shadow-slate-400/30"
-                : "bg-gradient-to-br from-orange-400 to-orange-500 shadow-orange-400/30"
+            ? "bg-gradient-to-br from-yellow-400 to-amber-500 shadow-yellow-400/30"
+            : place === 2
+              ? "bg-gradient-to-br from-slate-400 to-slate-500 shadow-slate-400/30"
+              : "bg-gradient-to-br from-orange-400 to-orange-500 shadow-orange-400/30"
             }`}
         >
           <span className="text-white font-black text-lg sm:text-xl">{place}</span>

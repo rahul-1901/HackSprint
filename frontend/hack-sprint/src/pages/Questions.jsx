@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getDashboard } from "../backendApis/api";
 import { useNavigate } from "react-router-dom";
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 const Questions = () => {
     const [quizStarted, setQuizStarted] = useState(false);
@@ -428,243 +430,89 @@ const Questions = () => {
     if (quizCompleted) {
         const stats = getQuizStats();
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 text-white relative overflow-hidden">
-                {/* Enhanced Animated Background */}
-                <div className="absolute inset-0">
-                    {/* Floating orbs */}
-                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
-                    <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-                    <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-teal-500/8 rounded-full blur-3xl animate-pulse delay-500"></div>
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-white relative overflow-hidden">
+                {/* Background mesh overlay for subtle depth */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-slate-900 via-slate-800 to-gray-900/90"></div>
 
-                    {/* Animated particles */}
-                    <div className="absolute top-20 left-20 w-2 h-2 bg-emerald-400/40 rounded-full animate-ping"></div>
-                    <div className="absolute top-40 right-32 w-1 h-1 bg-green-400/60 rounded-full animate-ping delay-700"></div>
-                    <div className="absolute bottom-32 left-1/3 w-1.5 h-1.5 bg-teal-400/50 rounded-full animate-ping delay-300"></div>
-
-                    {/* Gradient mesh overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-slate-900/30"></div>
-                </div>
-
-                <div className="relative z-10 min-h-screen flex items-center justify-center px-6 py-12">
-                    <div className="text-center max-w-5xl w-full">
-                        {/* Hero Section with Trophy Animation */}
-                        <div className="mb-12 animate-fade-in-up">
-                            <div className="relative mb-8">
-                                {/* Trophy with glow effect */}
-                                <div className="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-br from-emerald-500 via-green-500 to-emerald-600 rounded-full shadow-2xl mb-6 relative">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full animate-ping opacity-20"></div>
-                                    <div className="text-6xl animate-bounce relative z-10">🏆</div>
-                                    {/* Sparkle effects */}
-                                    <div className="absolute -top-2 -right-2 text-yellow-400 text-2xl animate-pulse">✨</div>
-                                    <div className="absolute -bottom-2 -left-2 text-yellow-300 text-xl animate-pulse delay-500">⭐</div>
-                                </div>
+                <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 py-12 space-y-12">
+                    {/* Hero Section */}
+                    <div className="text-center max-w-4xl w-full">
+                        {/* <div className="flex items-center justify-center mb-4 relative w-32 h-32 mx-auto">
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-emerald-700 to-green-900 opacity-20 animate-pulse"></div>
+                            <div className="flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-emerald-900 to-green-600 shadow-lg">
+                                <span className="text-6xl">🏆</span>
                             </div>
+                        </div> */}
 
-                            <h1 className="text-6xl md:text-7xl lg:text-8xl font-black bg-gradient-to-r from-emerald-300 via-green-400 to-teal-300 bg-clip-text text-transparent mb-6 leading-tight">
-                                Mission
-                                <br />
-                                <span className="bg-gradient-to-r from-green-400 via-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-                                    Accomplished!
-                                </span>
-                            </h1>
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold bg-clip-text text-transparent ZaptronFont bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 leading-tight">
+                            Mission Accomplished
+                        </h1>
+                        <p className="text-lg md:text-xl text-slate-300 -mt-3">
+                            You've successfully completed the <span className="text-emerald-400 font-semibold">DevQuest</span> challenge.
+                        </p>
+                    </div>
 
-                            <div className="max-w-2xl mx-auto mb-8">
-                                <p className="text-xl md:text-2xl text-slate-300 font-light leading-relaxed">
-                                    You've successfully conquered the <span className="text-emerald-400 font-semibold">DevQuest</span> challenge
-                                </p>
-                                <div className="mt-4 flex items-center justify-center gap-2">
-                                    <div className="h-px bg-gradient-to-r from-transparent via-emerald-500 to-transparent w-24"></div>
-                                    <span className="text-emerald-400 text-lg">⚡</span>
-                                    <div className="h-px bg-gradient-to-r from-transparent via-emerald-500 to-transparent w-24"></div>
+                    <div className="bg-slate-800/60 backdrop-blur-md border border-slate-700/30 rounded-2xl p-6 max-w-3xl w-full space-y-6 shadow-md">
+                        <h2 className="text-xl md:text-2xl font-bold text-center text-white tracking-tight">
+                            Performance <span className="text-emerald-400">Analytics</span>
+                        </h2>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                                { label: "Total Questions", value: stats.total, color: "text-white", bg: "bg-slate-700" },
+                                { label: "Answered", value: stats.answered, color: "text-emerald-400", bg: "bg-emerald-800/20" },
+                                { label: "Correct", value: stats.correct, color: "text-green-400", bg: "bg-green-800/20" },
+                                { label: "Success Rate", value: `${stats.percentage}%`, color: "text-white", bg: "bg-emerald-700/20" },
+                            ].map((stat, i) => (
+                                <div key={i} className="flex flex-col items-center text-center space-y-1">
+                                    <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow ${stat.bg}`}>
+                                        <span className={`text-2xl md:text-3xl font-bold ${stat.color}`}>{stat.value}</span>
+                                    </div>
+                                    <p className="text-slate-300 text-sm font-medium">{stat.label}</p>
                                 </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-4 text-center">
+                            <div className={`inline-block px-4 py-2 rounded-xl w-auto md:w-auto border 
+      ${stats.percentage >= 80 ? "bg-emerald-700/20 border-emerald-400 text-emerald-400" :
+                                    stats.percentage >= 60 ? "bg-blue-700/20 border-blue-400 text-blue-400" :
+                                        "bg-orange-700/20 border-orange-400 text-orange-400"}`}>
+                                <span className="font-semibold text-sm">
+                                    {stats.percentage >= 80 ? "Outstanding Performance!" :
+                                        stats.percentage >= 60 ? "Great Job!" :
+                                            "Good Effort! Keep Learning!"}
+                                </span>
+                            </div>
+                            <p className="text-slate-300 text-xs mt-2">
+                                {stats.percentage >= 80 ? "Exceptional work! Your mastery is impressive." :
+                                    stats.percentage >= 60 ? "Well done! Keep building on this foundation." :
+                                        "Every expert was once a beginner. Keep practicing!"}
+                            </p>
+                        </div>
+
+                        <div className="mt-4 flex justify-center">
+                            <button
+                                onClick={() => navigate("/leaderboard")}
+                                className="px-4 py-2 bg-emerald-600 cursor-pointer hover:bg-green-600 text-white font-semibold rounded-lg shadow transition hover:scale-105 text-sm"
+                            >
+                                View Leaderboard 🏆
+                            </button>
+                        </div>
+
+                        <div className="mt-4">
+                            <div className="bg-slate-700 rounded-full h-2">
+                                <div className="bg-emerald-500 h-full rounded-full transition-all duration-1000" style={{ width: `${stats.percentage}%` }}></div>
                             </div>
                         </div>
 
-                        {/* Enhanced Results Dashboard */}
-                        <div className="bg-gradient-to-br from-slate-800/60 via-slate-800/40 to-slate-900/60 backdrop-blur-xl border border-slate-600/30 rounded-3xl p-8 md:p-10 mb-12 max-w-4xl mx-auto shadow-2xl relative overflow-hidden">
-                            {/* Background pattern */}
-                            <div className="absolute inset-0 opacity-5">
-                                <div className="absolute inset-0" style={{
-                                    backgroundImage: `radial-gradient(circle at 25% 25%, #10b981 0%, transparent 50%), 
-                                                radial-gradient(circle at 75% 75%, #059669 0%, transparent 50%)`
-                                }}></div>
-                            </div>
-
-                            <div className="relative z-10">
-                                <h2 className="text-3xl md:text-4xl font-bold text-white mb-12 tracking-tight">
-                                    Performance <span className="text-emerald-400">Analytics</span>
-                                </h2>
-
-                                {/* Stats Grid */}
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-                                    {/* Total Questions */}
-                                    <div className="group text-center transform hover:scale-105 transition-all duration-300">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-slate-700 to-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl group-hover:shadow-2xl transition-all duration-300 border border-slate-600/50">
-                                            <span className="text-3xl font-black text-white">{stats.total}</span>
-                                        </div>
-                                        <p className="text-slate-400 font-semibold text-lg">Total Questions</p>
-                                        <div className="w-8 h-0.5 bg-gradient-to-r from-transparent via-slate-500 to-transparent mx-auto mt-2 opacity-50"></div>
-                                    </div>
-
-                                    {/* Answered */}
-                                    <div className="group text-center transform hover:scale-105 transition-all duration-300">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-emerald-600/30 to-emerald-800/30 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl group-hover:shadow-2xl transition-all duration-300 border border-emerald-500/30 relative">
-                                            <div className="absolute inset-0 bg-emerald-500/10 rounded-3xl animate-pulse"></div>
-                                            <span className="text-3xl font-black text-emerald-400 relative z-10">{stats.answered}</span>
-                                        </div>
-                                        <p className="text-slate-400 font-semibold text-lg">Answered</p>
-                                        <div className="w-8 h-0.5 bg-gradient-to-r from-transparent via-emerald-500 to-transparent mx-auto mt-2"></div>
-                                    </div>
-
-                                    {/* Correct */}
-                                    <div className="group text-center transform hover:scale-105 transition-all duration-300">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-green-600/30 to-green-800/30 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl group-hover:shadow-2xl transition-all duration-300 border border-green-500/30 relative">
-                                            <div className="absolute inset-0 bg-green-500/10 rounded-3xl animate-pulse delay-200"></div>
-                                            <span className="text-3xl font-black text-green-400 relative z-10">{stats.correct}</span>
-                                        </div>
-                                        <p className="text-slate-400 font-semibold text-lg">Correct</p>
-                                        <div className="w-8 h-0.5 bg-gradient-to-r from-transparent via-green-500 to-transparent mx-auto mt-2"></div>
-                                    </div>
-
-                                    {/* Success Rate */}
-                                    <div className="group text-center transform hover:scale-105 transition-all duration-300">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-emerald-600 to-green-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl group-hover:shadow-2xl transition-all duration-300 border border-emerald-400/30 relative overflow-hidden">
-                                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-green-500/20 animate-pulse"></div>
-                                            <span className="text-2xl font-black text-white relative z-10">{stats.percentage}%</span>
-                                            {/* Celebration sparkles */}
-                                            {stats.percentage >= 80 && (
-                                                <>
-                                                    <div className="absolute -top-1 -right-1 text-yellow-400 text-sm animate-ping">✨</div>
-                                                    <div className="absolute -bottom-1 -left-1 text-yellow-300 text-xs animate-ping delay-300">⭐</div>
-                                                </>
-                                            )}
-                                        </div>
-                                        <p className="text-slate-400 font-semibold text-lg">Success Rate</p>
-                                        <div className="w-8 h-0.5 bg-gradient-to-r from-transparent via-emerald-500 to-transparent mx-auto mt-2"></div>
-                                    </div>
-                                </div>
-
-                                {/* Performance Badge Section */}
-                                <div className="border-t border-slate-700/50 pt-8">
-                                    <div className="mb-6">
-                                        <div className={`inline-flex items-center px-8 py-4 rounded-2xl relative overflow-hidden transition-all duration-500 ${stats.percentage >= 80
-                                            ? "bg-gradient-to-r from-emerald-600/20 via-green-600/20 to-teal-600/20 border border-emerald-400/40"
-                                            : stats.percentage >= 60
-                                                ? "bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 border border-blue-400/40"
-                                                : "bg-gradient-to-r from-orange-600/20 via-red-600/20 to-pink-600/20 border border-orange-400/40"
-                                            }`}>
-                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer"></div>
-                                            <span className={`font-bold text-xl relative z-10 ${stats.percentage >= 80 ? "text-emerald-400" :
-                                                stats.percentage >= 60 ? "text-blue-400" :
-                                                    "text-orange-400"
-                                                }`}>
-                                                {stats.percentage >= 80 ? "Outstanding Performance!" :
-                                                    stats.percentage >= 60 ? "Great Job!" :
-                                                        "Good Effort! Keep Learning!"}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Motivational Message */}
-                                    <div className="text-slate-300 text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
-                                        {stats.percentage >= 80 ?
-                                            "Exceptional work! Your mastery of the concepts is truly impressive. You're ready for the next level!" :
-                                            stats.percentage >= 60 ?
-                                                "Well done! You've demonstrated solid understanding. Continue building on this foundation!" :
-                                                "Every expert was once a beginner. Keep practicing and you'll see amazing progress!"
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center max-w-2xl mx-auto">
-                                {/* Primary CTA Button */}
-                                <button
-                                    onClick={() => navigate("/leaderboard")}
-                                    className="group relative px-10 py-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold text-xl rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-emerald-500/25 border border-emerald-400/20 overflow-hidden min-w-64"
-                                >
-                                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-emerald-400/20 to-emerald-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                                    <div className="relative z-10 flex items-center justify-center gap-3">
-                                        <span>View Leaderboard</span>
-                                        <span className="text-2xl group-hover:animate-bounce">🏆</span>
-                                    </div>
-                                </button>
-                            </div>
-
-                            {/* Progress Bar Visualization */}
-                            <div className="mt-12 max-w-2xl mx-auto">
-                                <div className="bg-slate-800/40 rounded-2xl p-6 border border-slate-600/30 backdrop-blur-sm">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <span className="text-slate-400 font-medium">Overall Progress</span>
-                                        <span className="text-emerald-400 font-bold text-lg">{stats.percentage}%</span>
-                                    </div>
-                                    <div className="relative h-3 bg-slate-700/50 rounded-full overflow-hidden">
-                                        <div
-                                            className="absolute left-0 top-0 h-full bg-gradient-to-r from-emerald-500 to-green-500 rounded-full transition-all duration-1000 ease-out shadow-lg"
-                                            style={{ width: `${stats.percentage}%` }}
-                                        >
-                                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/50 to-green-400/50 animate-pulse"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Next Quiz Timer */}
-                            <div className="mt-8 max-w-lg mx-auto">
-                                <div className="bg-slate-900/60 rounded-2xl p-6 border border-slate-600/40 backdrop-blur-sm">
-                                    <div className="text-center">
-                                        <h3 className="text-lg font-semibold text-white mb-2">Next Quiz Available In</h3>
-                                        <div className="text-3xl font-mono font-bold text-emerald-400 mb-2">
-                                            {formatTime(timeUntilMidnight)}
-                                        </div>
-                                        <p className="text-slate-400 text-sm">
-                                            New challenges refresh daily at midnight
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="mt-4 text-center max-w-md mx-auto text-sm">
+                            <h3 className="font-semibold text-white mb-1">Next Quiz Available In</h3>
+                            <div className="font-mono font-bold text-emerald-400">{formatTime(timeUntilMidnight)}</div>
+                            <p className="text-slate-400">New challenges refresh daily at midnight</p>
                         </div>
                     </div>
                 </div>
-
-                {/* Custom CSS for animations */}
-                <style jsx>{`
-                @keyframes fade-in-up {
-                    from {
-                        opacity: 0;
-                        transform: translateY(30px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                
-                @keyframes shimmer {
-                    0% { transform: translateX(-100%); }
-                    100% { transform: translateX(100%); }
-                }
-                
-                .animate-fade-in-up {
-                    animation: fade-in-up 0.8s ease-out;
-                }
-                
-                .animate-shimmer {
-                    animation: shimmer 3s ease-in-out infinite;
-                }
-                
-                .animate-ping {
-                    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-                }
-                
-                @keyframes ping {
-                    75%, 100% {
-                        transform: scale(2);
-                        opacity: 0;
-                    }
-                }
-            `}</style>
             </div>
         );
     }

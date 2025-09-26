@@ -46,7 +46,7 @@ const Footer = () => {
             title: 'Resources',
             links: [
                 { name: 'Sessions', url: 'https://www.youtube.com/@devluplabs1365' },
-                { name: 'Documentation', url: 'https://full-stack-development.readthedocs.io/en/latest/' },
+                { name: 'Documentation', url: 'https://about.readthedocs.com/' },
                 { name: 'Guides', url: 'https://github.com/aaltarazi98/fullstack-guide-2025?tab=readme-ov-file' },
                 { name: 'Explore Projects', url: 'https://github.com/devlup-labs/' }
             ]
@@ -127,7 +127,7 @@ const Footer = () => {
                     </div>
                     <div className="lg:col-span-3">
                         <h3 className="text-white font-medium text-lg mb-3">Join our community</h3>
-                        <form className="flex flex-col space-y-2">
+                        <form className="flex flex-col space-y-2" onSubmit={(e) => e.preventDefault()}>
                             <div className="relative">
                                 <input
                                     type="email"
@@ -138,11 +138,18 @@ const Footer = () => {
                                     required
                                 />
                                 <a
-                                    href="https://discord.com/invite/5kKqzGdhPP"
-                                    target="_blank"
+                                    href={email.includes('@') ? "https://discord.com/invite/5kKqzGdhPP" : "#"}
+                                    target={email.includes('@') ? "_blank" : undefined}
                                     rel="noopener noreferrer"
-                                    className="absolute right-1 top-1 mt-[2px] bg-gray-800 hover:bg-gray-700 text-green-500 p-1 rounded transition duration-300 inline-flex items-center justify-center"
+                                    className={`absolute right-1 top-1 mt-[2px] p-1 rounded transition duration-300 inline-flex items-center justify-center
+        ${email.includes('@')
+                                            ? "bg-gray-800 hover:bg-gray-700 text-green-500 cursor-pointer"
+                                            : "bg-gray-800 text-gray-600 cursor-not-allowed"
+                                        }`}
                                     aria-label="Subscribe"
+                                    onClick={(e) => {
+                                        if (!email.includes('@')) e.preventDefault(); // stop redirect if invalid
+                                    }}
                                 >
                                     <SendIcon size={18} />
                                 </a>
@@ -175,7 +182,7 @@ const Footer = () => {
                             &copy; {new Date().getFullYear()} HackSprint. All rights reserved.
                         </p>
                     </div>
-                    <div className="flex space-x-6">
+                    <div className="flex space-x-6 items-center">
                         {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((items) => (
                             <a
                                 key={items}
@@ -184,6 +191,15 @@ const Footer = () => {
                                 {items}
                             </a>
                         ))}
+
+                        <a
+                            href="https://forms.gle/g9a1sh3af9tFX7PD9"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ml-1 px-5 py-2 text-xs font-medium bg-gray-700 text-white rounded-xl hover:bg-gray-600 transition duration-300"
+                        >
+                            Feedback
+                        </a>
                     </div>
                 </div>
             </div>

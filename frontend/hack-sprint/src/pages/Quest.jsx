@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { CornerDownRight, X } from "lucide-react"
 import { useNavigate } from "react-router-dom";
@@ -59,6 +57,7 @@ const Quest = () => {
   const [redirectCountdown, setRedirectCountdown] = useState(null)
   const [dummyPreview, setDummyPreview] = useState({ question: "", options: [] });
   const [prevFive, setPrevFive] = useState([]);
+  const [todayQuiz, setTodayQuiz] = useState(null);
 
   const navigate = useNavigate();
 
@@ -125,8 +124,15 @@ const Quest = () => {
     fetchDailyQuizzes();
   }, []);
 
+  useEffect(() => {
+    const fetchTodayQuiz = async () => {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/dailyquiz/today`)
+      setTodayQuiz(response.data.dailyQuiz);
+      console.log(response.data.dailyQuiz);
+    }
 
-
+    fetchTodayQuiz();
+  }, [])
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -142,6 +148,7 @@ const Quest = () => {
           topic: item.topic,
         }))
         setQuestions(formattedQuestions)
+        console.log(response.data)
       } catch (err) {
         console.error("Error fetching questions:", err)
       }
@@ -172,8 +179,6 @@ const Quest = () => {
   //     "A system for storing and retrieving information on the internet",
   //   ],
   // }
-
-
 
   // Animation variants
   const containerVariants = {
@@ -311,7 +316,7 @@ const Quest = () => {
                 HackSprint · DevQuests
               </motion.p>
               <motion.h1
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-7xl ZaptronFont text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-700 tracking-tight leading-none"
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-7xl ZaptronFont text-transparent font-black bg-clip-text bg-gradient-to-b from-green-400 to-green-700 tracking-tight leading-none"
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
@@ -363,23 +368,23 @@ const Quest = () => {
             >
               {[
                 {
-                  title: "Revise Core Concepts",
-                  desc: "Strengthen your fundamentals daily with short, focused DevQuests.",
+                  title: "Stay Industry-Ready",
+                  desc: "Daily quizzes ensure you stay aligned with the latest in development, backend, and DevOps.",
                   accent: "top-0 left-0",
                 },
                 {
-                  title: "Build Your Streak",
-                  desc: "Attempt daily and maintain your streak while climbing the leaderboard.",
+                  title: "Micro-Learning, Big Impact",
+                  desc: "Spend just 5–10 minutes daily to sharpen your software engineering mindset.",
                   accent: "top-0 right-0",
                 },
                 {
-                  title: "New Daily Challenges",
-                  desc: "Hands-on problems covering MongoDB, Express, React, and Node.js.",
-                  accent: "bottom-0 left-0",
+                  title: "From Code to Cloud",
+                  desc: "Quizzes span full-stack, backend APIs, CI/CD, Docker, and cloud—so you grow beyond just coding.",
+                  accent: "top-0 left-0",
                 },
                 {
-                  title: "Sharpen Interview Skills",
-                  desc: "Curated from real-world coding interview patterns.",
+                  title: "Build Discipline & Streaks",
+                  desc: "Consistency is key. Challenge yourself daily and track your progress with streaks.",
                   accent: "bottom-0 right-0",
                 },
               ].map((card, index) => (
@@ -452,7 +457,7 @@ const Quest = () => {
                             animate={{ scale: 1 }}
                             transition={{ delay: 0.8, type: "spring", stiffness: 300 }}
                           >
-                            {todayCount}
+                            {todayQuiz?.questions.length}
                           </motion.div>
                           <motion.div
                             className="text-sm font-mono text-gray-300 tracking-wide"
@@ -493,7 +498,7 @@ const Quest = () => {
                         transition={{ delay: 0.6, duration: 0.5 }}
                       >
                         <p className="text-sm text-gray-400 font-mono mb-1">TODAY'S TOPIC</p>
-                        <h3 className="text-xl lg:text-2xl font-bold text-white">{todayTopic}</h3>
+                        <h3 className="text-xl lg:text-2xl font-bold text-white">{todayQuiz?.Title}</h3>
                       </motion.div>
                       <motion.div
                         className="text-left sm:text-right"
@@ -545,7 +550,7 @@ const Quest = () => {
                     >
                       <motion.button
                         onClick={() => navigate("/questions")}
-                        className="group inline-flex items-center justify-center gap-3 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-xl font-semibold text-white transition-all duration-300 hover:scale-[1.02] shadow-lg cursor-pointer"
+                        className="group inline-flex items-center cursor-pointer justify-center gap-3 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-xl font-semibold text-white transition-all duration-300 hover:scale-[1.02] shadow-lg cursor-pointer"
                         whileHover={{
                           scale: 1.05,
                           boxShadow: "0 10px 30px rgba(34, 197, 94, 0.3)",
@@ -562,7 +567,7 @@ const Quest = () => {
                       </motion.button>
                       <motion.button
                         onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}
-                        className="px-6 py-3 text-sm font-medium text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-400/50 rounded-xl transition-all duration-300 hover:bg-green-500/5"
+                        className="px-6 py-3 cursor-pointer text-sm font-medium text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-400/50 rounded-xl transition-all duration-300 hover:bg-green-500/5"
                         whileHover={{
                           scale: 1.02,
                           borderColor: "rgba(34, 197, 94, 0.5)",

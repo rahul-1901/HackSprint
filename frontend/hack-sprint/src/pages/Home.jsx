@@ -438,12 +438,7 @@ const Home = () => {
                 HackSprint
               </span>
             </button>
-            <div className="flex items-center gap-4">
-              <a href="/about" className="text-gray-300 hover:text-green-400 text-sm font-medium transition-colors duration-300">About Us</a>
-              <a href="/blogs" className="text-gray-300 hover:text-green-400 text-sm font-medium transition-colors duration-300">Blogs</a>
-              <a href="/events" className="text-gray-300 hover:text-green-400 text-sm font-medium transition-colors duration-300">Events</a>
-              <a href="/contact" className="text-gray-300 hover:text-green-400 text-sm font-medium transition-colors duration-300">Contact</a>
-            </div>
+
           </div>
           <div className="flex items-center gap-4">
             <button

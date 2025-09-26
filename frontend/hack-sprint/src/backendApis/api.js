@@ -14,30 +14,47 @@ export const getDashboard = () => {
     },
   });
 };
-export const activeHackathons = ()=>{
-    return axios.get('http://localhost:3000/api/hackathons/')
-    .then((result) => {
-        // console.log("data from DB = ",result.data.allHackathons);
-        console.log("data from DB = ",result);
-        // return result.data.allHackathons
-        return result;
 
-    }).catch((err) => {
-        console.log(err);
-    });
+export const addConnectedApp = (data) => {
+  API.post("/api/user/addConnectedApps", data)
+}  
+
+export const editConnectedApp = (data) => {
+  API.put("/api/user/editConnectedApps", data)
 }
 
-export const expiredHackathons = ()=>{
-    return axios.get('http://localhost:3000/api/hackathons/expiredHackathons')
-    .then((result)=>{
-        console.log("data from DB = ",result);
-        return result;
-    })
-    .catch((error)=>{
-        console.log(error);
-    })
+export const deleteConnectedApp = (data) => {
+  API.delete("/api/user/deleteConnectedApps", { data })
 }
-export const getHackathonById = (id) => {
-    // This endpoint fetches a specific hackathon. e.g., /api/hackathons/60d21b4667d0d8992e610c85
-    return axios.get(`http://localhost:3000/api/hackathons/${id}`);
+
+export const addEducation = (data) => {
+  API.post("/api/user/addEducation", data)
+}  
+
+export const editEducation = (data) => {
+  API.put("/api/user/editEducation", data)
 }
+
+export const deleteEducation = (data) => {
+  API.delete("/api/user/deleteEducation", { data })
+}
+
+export const addLanguages = ({ userId, language }) => {
+  return API.post("/api/user/addLanguages", { userId, language });
+};
+
+export const deleteLanguages = ({ userId, language }) => {
+  return API.delete("/api/user/deleteLanguages", {
+    data: { userId, language } 
+  });
+};
+
+export const addSkills = ({ userId, skill }) => {
+  return API.post("/api/user/addSkills", { userId, skill });
+};
+
+export const deleteSkills = ({ userId, skill }) => {
+  return API.delete("/api/user/deleteSkills", {
+    data: { userId, skill } 
+  });
+};
