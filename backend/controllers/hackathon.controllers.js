@@ -38,7 +38,7 @@ export const sendExpiredHackathons = async (req, res) => {
     const currentTime = new Date(Date.now());
     const expiredHackathons = await hackathonModel.find({
       status: false,
-      submissionEndDate: { $lt: currentTime },
+      // submissionEndDate: { $lt: currentTime },
     });
     res.status(200).json({
       expiredHackathons,
