@@ -1,5 +1,3 @@
-// HackathonUsersPage.jsx
-
 import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Users, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
@@ -55,7 +53,7 @@ const HackathonUsersPage = () => {
                   <tr>
                     <th className="p-4 font-semibold text-gray-300">Name</th>
                     <th className="p-4 font-semibold text-gray-300">Email</th>
-                    <th className="p-4 font-semibold text-gray-300">Registered On</th>
+                    {/* REMOVED: Registered On Header */}
                     <th className="p-4 font-semibold text-gray-300 text-center">Submission Status</th>
                   </tr>
                 </thead>
@@ -68,7 +66,7 @@ const HackathonUsersPage = () => {
                     >
                       <td className="p-4 font-medium text-white">{user.name}</td>
                       <td className="p-4 text-gray-400">{user.email}</td>
-                      <td className="p-4 text-gray-400">{user.registered}</td>
+                      {/* REMOVED: Registered On Data Cell */}
                       <td className="p-4 text-center">
                         {user.hasSubmission ? (
                           <span className="inline-flex items-center gap-2 bg-green-500/10 text-green-400 px-3 py-1 rounded-full text-sm">

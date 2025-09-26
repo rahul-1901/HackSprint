@@ -8,12 +8,12 @@ const dailyQuizSchema = new mongoose.Schema({
   date: {
     type: Date,
     required: true,
-    // unique: true,  // only one quiz per da
+    // unique: true,  // only one quiz per day
   },
   questions: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "devquest",   // reference to your devquest collection
+      ref: "devquest",   // reference to devquest collection
       required: true,
     }
   ],

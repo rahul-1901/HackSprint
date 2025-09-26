@@ -30,7 +30,10 @@ const submissionSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
- 
+  hackathonPoints : {
+    type : Number,
+    default : 0
+  },
   githubMetadata: {
     stars: { type: Number, default: 0 },
     forks: { type: Number, default: 0 },
