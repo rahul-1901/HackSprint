@@ -21,12 +21,11 @@ import Verification from './components/Verification.jsx';
 import ResetPassword from './components/ResetPassword.jsx';
 import RouteHandler from './components/RouteHandler.jsx'
 import AllHackathons from './pages/AllHackathons.jsx'
-// import Hackathons from './pages/Hackathon.jsx';
 import { ToastContainer } from 'react-toastify';
 import HackathonDetails from './pages/Hackathon.jsx';
 import { RegistrationForm } from './hackathon/RegistrationForm.jsx';
 import Leaderboard from './pages/LeaderBoard.jsx';
-import TeamDetails from './pages/TeamDetails.jsx'; // Import the new component
+import TeamDetails from './pages/TeamDetails.jsx';
 import VerifyEmail from './components/verifyEmail.jsx';
 import ForgotPassword from './components/forgotPassword.jsx';
 import ScrollToTop from './components/ScrollToTop.jsx';
@@ -34,16 +33,18 @@ import UnderConstruction from './pages/Devlopment.jsx'
 import Studenthome from './pages/Studenthome.jsx';
 import Adminhome from './pages/Adminhome.jsx'
 import AdminLogin from './pages/AdminLogin.jsx'
-
+import AdminSignup from './pages/AdminSignup.jsx'; // --- IMPORT THE NEW PAGE ---
 import AdminProfile from './pages/AdminProfile.jsx';
 import RecentlyStartedPage from './admin/recenthackathon.jsx';
 import LiveHackathonsPage from './admin/livehackathon.jsx';
 import EndedHackathonsPage from './admin/endedhackathon.jsx';
 import HackathonUsersPage from './admin/userlist.jsx';
 import UserSubmissionDetailPage from './admin/usersubmission.jsx';
+import ParticipantPoliciesPage from './pages/Participation.jsx';
+import OrganizerPlaybookPage from './pages/Organiser.jsx';
+import LegalSupportPage from './pages/TermsCond.jsx';
+
 function App() {
-
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authWait, setAuthWait] = useState(false)
 
@@ -51,7 +52,6 @@ function App() {
     if (!authWait) {
       return null
     }
-
     return isAuthenticated ? element : <Navigate to="/account/login" />
   }
 
@@ -66,20 +66,18 @@ function App() {
         </HideRoute>
         <ToastContainer />
         <Routes>
-
           <Route path="/" element={<Home />} caseSensitive />
           <Route path="/studenthome" element={<Studenthome />} caseSensitive />
           <Route path="/adminhome" element={<Adminhome />} caseSensitive />
           <Route path="/adminlogin" element={<AdminLogin />} caseSensitive />
-          
-          <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
-          <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
+          <Route path="/admin/signup" element={<AdminSignup />} caseSensitive /> {/* --- ADD THE NEW ROUTE --- */}
+
           <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
           <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
           <Route path="/quest" element={<Quest />} caseSensitive />
           <Route path="/about" element={<About />} caseSensitive />
           <Route path="/hackathons" element={<AllHackathons />} caseSensitive />
-          
+
           <Route path="/admin" element={<Admin />} caseSensitive />
           <Route path="/hacksprintTeraBaap" element={<Admin />} caseSensitive />
           <Route path="/Hacksprintkaadminprofile" element={<AuthenticateRoute element={<AdminProfile />} />} caseSensitive />
@@ -93,7 +91,7 @@ function App() {
 
           <Route path="/hackathon/:id" element={<HackathonDetails />} />
           <Route path="/hackathon/RegistrationForm/:id" element={<AuthenticateRoute element={<RegistrationForm />} />} />
-          
+
           <Route path="/hackathon/:hackathonId/team/:teamId" element={<AuthenticateRoute element={<TeamDetails />} />} />
 
           <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />} />} caseSensitive />
@@ -103,13 +101,17 @@ function App() {
           <Route path='/leaderboard' element={<Leaderboard />} />
           <Route path='/Hacksprintkaadminprofile/:slug/usersubmissions' element={<HackathonUsersPage />} />
           <Route path='/hackathon/:slug/submission/:id' element={<AuthenticateRoute element={<UserSubmissionDetailPage />} />} />
+
+          <Route path="/participation-policies" element={<ParticipantPoliciesPage />} caseSensitive />
+          <Route path="/organizer-ruleBook" element={<OrganizerPlaybookPage />} caseSensitive />
+          <Route path="/organizer-ruleBook" element={<OrganizerPlaybookPage />} caseSensitive />
+          <Route path="/terms-and-condition" element={<LegalSupportPage />} caseSensitive />
         </Routes>
 
         <HideRouteFooter>
           <Footer />
         </HideRouteFooter>
       </Router>
-      {/* <UnderConstruction /> */}
     </>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getDashboard } from "../backendApis/api";
+import { getDashboard, addEducation, editEducation, deleteEducation, deleteConnectedApp, addConnectedApp, editConnectedApp, addLanguages, deleteLanguages, addSkills, deleteSkills } from "../backendApis/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Eye, CheckCircle, MessageSquare, Star, Coins, User } from "lucide-react";
@@ -7,55 +7,43 @@ import { School, Clock, Laptop, MapPin, Edit } from "lucide-react";
 import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
 
-
-// Floating Particles (Background)
-const FloatingParticles = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    {[...Array(20)].map((_, i) => (
-      +
-      <div
-        key={i}
-        className="absolute w-1 h-1 bg-green-400 rounded-full opacity-30 animate-pulse"
-        style={{
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-          animationDelay: `${Math.random() * 5}s`,
-          animationDuration: `${3 + Math.random() * 4}s`,
-        }}
-      />
-    ))}
-  </div>
-);
-
-// Grid Background
-const GridBackground = () => (
-  <div className="absolute inset-0 opacity-10">
-    <div
-      className="absolute inset-0"
-      style={{
-        backgroundImage: `
-          linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px)
-        `,
-        backgroundSize: "50px 50px",
-      }}
-    />
-  </div>
-);
-
 export const UserDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [coins, setCoins] = useState(0);
   const [streak, setStreak] = useState(0);
   const [showReward, setShowReward] = useState(false);
-  const navigate = useNavigate();
   const [editEducation, setEditEducation] = useState(false);
-  const [educationData, setEducationData] = useState({
+  const [editEducationIndex, setEditEducationIndex] = useState(undefined);
+  const [educationForm, setEducationForm] = useState({
     institute: "",
-    passoutYear: "",
+    passOutYear: "",
     department: "",
+    location: "",
   });
+  const [userId, setUserId] = useState("");
+  const [editAppsIndex, setEditAppsIndex] = useState(undefined);
+  const [tempAppName, setTempAppName] = useState("");
+  const [tempAppUrl, setTempAppUrl] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("");
+  const [isAddingLanguage, setIsAddingLanguage] = useState(false);
+  const availableLanguages = [
+    "C++", "C", "Java", "Python", "JavaScript", "TypeScript", "Go", "Rust"
+  ];
+  const [selectedSkill, setSelectedSkill] = useState("");
+  const [isAddingSkill, setIsAddingSkill] = useState(false);
+  const availableSkills = [
+    "Frontend",
+    "Backend",
+    "DevOps",
+    "Websockets",
+    "Machine Learning",
+    "DSA",
+    "Cybersecurity",
+    "Operating Systems"
+  ];
+
+  const navigate = useNavigate();
 
   // Daily Coin + Streak System
   useEffect(() => {
@@ -92,45 +80,191 @@ export const UserDashboard = () => {
     setStreak(newStreak);
   }, []);
 
+  const fetchData = async () => {
+    try {
+      const res = await getDashboard();
+      setData(res.data.userData);
+      setUserId(res.data.userData._id)
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Fetch Dashboard Data
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await getDashboard();
-        setData(res.data.userData);
-      } catch (err) {
-        console.error("Dashboard fetch error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await getDashboard();
-        const userData = res.data.userData;
-        setData(userData);
 
-        // ✅ update education data once user info is fetched
-        setEducationData({
-          institute: userData.education?.institute || "",
-          passoutYear: userData.education?.passoutYear || "",
-          department: userData.education?.department || "",
+  const handleSaveApp = async () => {
+    if (!tempAppName || !tempAppUrl) return;
+
+    try {
+
+      if (editAppsIndex === "new") {
+        await addConnectedApp({ userId, appName: tempAppName, appURL: tempAppUrl });
+      } else {
+        const appId = data.connectedApps[editAppsIndex]._id;
+        await editConnectedApp({
+          userId,
+          appId,
+          appName: tempAppName,
+          appURL: tempAppUrl,
         });
-      } catch (err) {
-        console.error("Dashboard fetch error:", err);
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchData();
-  }, []);
+      await fetchData();
+      resetForm();
+    } catch (err) {
+      console.error("Error saving app:", err);
+    }
+  };
 
+  const handleDeleteApp = async (idx) => {
+    try {
+      const appId = data.connectedApps[idx]._id;
+      setData((prev) => ({
+        ...prev,
+        connectedApps: prev.connectedApps.filter((_, i) => i !== idx),
+      }));
+      await deleteConnectedApp({ userId, appId });
+      console.log("Deleted")
+
+    } catch (err) {
+      console.error("Error deleting app:", err);
+      await fetchData();
+    }
+  };
+
+  const resetForm = () => {
+    setEditAppsIndex(undefined);
+    setTempAppName("");
+    setTempAppUrl("");
+  };
+
+  const handleSaveEducation = async () => {
+    if (!educationForm.institute || !educationForm.passOutYear) return;
+
+    try {
+      if (editEducationIndex === "new") {
+        await addEducation({ userId, ...educationForm });
+      } else {
+        const eduId = data.education[editEducationIndex]._id;
+        await editEducation({ userId, eduId, ...educationForm });
+      }
+
+      await fetchData();
+      resetEducationForm();
+    } catch (err) {
+      console.error("Error saving education:", err);
+    }
+  };
+
+  const handleDeleteEducation = async (idx) => {
+    try {
+      const eduId = data.education[idx]._id;
+      setData((prev) => ({
+        ...prev,
+        education: prev.education.filter((_, i) => i !== idx),
+      }));
+      await deleteEducation({ userId, eduId });
+    } catch (err) {
+      console.error("Error deleting education:", err);
+      await fetchData();
+    }
+  };
+
+  const resetEducationForm = () => {
+    setEditEducationIndex(undefined);
+    setEducationForm({
+      institute: "",
+      timeline: "",
+      department: "",
+      location: "",
+    });
+  };
+
+  const handleSaveLanguage = async () => {
+    if (!selectedLanguage) return;
+
+    // Avoid duplicates
+    if (data.languages.some((lang) => lang.name === selectedLanguage)) {
+
+      return;
+    }
+
+    try {
+      // Call backend API
+      await addLanguages({ userId, language: selectedLanguage });
+
+      // Update frontend state after successful API call
+      const updated = [...(data.languages || []), { name: selectedLanguage }];
+      setData({ ...data, languages: updated });
+
+      setSelectedLanguage("");
+      setIsAddingLanguage(false);
+    } catch (err) {
+      console.error("Error adding language:", err);
+      toast.error(err.response?.data?.message || "Failed to add language");
+    }
+  };
+
+  const handleDeleteLanguage = async (langName) => {
+    try {
+      await deleteLanguages({ userId, language: langName });
+
+      setData({
+        ...data,
+        languages: data.languages.filter((lang) => lang.language !== langName),
+      });
+    } catch (err) {
+      console.error("Error deleting language:", err);
+      toast.error(err.response?.data?.message || "Failed to delete language");
+    }
+  };
+
+  const handleCancelLanguage = () => {
+    setSelectedLanguage("");
+    setIsAddingLanguage(false);
+  };
+
+  const handleSaveSkill = async () => {
+    if (!selectedSkill) return;
+
+    if (data.skills.some((s) => s.name === selectedSkill)) {
+      toast.error("Skill already added!");
+      return;
+    }
+
+    try {
+      await addSkills({ userId, skill: selectedSkill });
+      const updated = [...(data.skills || []), { name: selectedSkill }];
+      setData({ ...data, skills: updated });
+      setSelectedSkill("");
+      setIsAddingSkill(false);
+    } catch (err) {
+      console.error("Error adding skill:", err);
+    }
+  };
+
+  const handleCancelSkill = () => {
+    setSelectedSkill("");
+    setIsAddingSkill(false);
+  };
+
+  const handleDeleteSkill = async (skillName) => {
+    setData({
+      ...data,
+      skills: data.skills.filter((s) => s.skill !== skillName),
+    });
+
+    try {
+      await deleteSkills({ userId, skill: skillName });
+    } catch (err) {
+      console.error("Error deleting skill:", err);
+      toast.error(err.response?.data?.message || "Failed to delete skill");
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -141,7 +275,10 @@ export const UserDashboard = () => {
     }, 1700);
   };
 
-  // If still loading
+  useEffect(() => {
+    fetchData()
+  }, [tempAppName, tempAppUrl, editAppsIndex, editEducationIndex, educationForm, selectedLanguage, isAddingLanguage, selectedSkill, isAddingSkill])
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900 text-green-400 text-xl">
@@ -150,7 +287,6 @@ export const UserDashboard = () => {
     );
   }
 
-  // If no data
   if (!data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900 text-red-400 text-xl">
@@ -179,7 +315,7 @@ export const UserDashboard = () => {
             </div>
 
             <h2 className="mt-4 text-xl font-bold">{data.name || "Unnamed User"}</h2>
-            <p className="text-sm text-gray-400">{data.roll_no || "N/A"}</p>
+            {/* <p className="text-sm text-gray-400">{data.roll_no || "N/A"}</p> */}
             <p className="text-sm text-green-400 mt-1">
               Rank: #{data.rank || "N/A"}
             </p>
@@ -193,11 +329,10 @@ export const UserDashboard = () => {
 
           </div>
 
-
           {/* Coins + Streak */}
           <div className="bg-white/5 border border-yellow-500/20 rounded-xl p-4 flex flex-col items-center">
             <div className="flex items-center gap-2 text-yellow-400 font-bold">
-              <Coins /> <span>10 Coins</span>
+              <Coins /> <span>{coins} Coins</span>
             </div>
             <p className="text-sm text-gray-400 mt-1">🔥 Streak: {streak} days</p>
           </div>
@@ -224,45 +359,150 @@ export const UserDashboard = () => {
           </div>
 
           {/* Languages */}
-          <div className="bg-white/5 border border-green-500/20 rounded-xl p-4">
-            <h3 className="text-lg font-semibold text-green-400">Languages</h3>
-            {Array.isArray(data.languages) &&
-              data.languages.map((lang, i) => (
-                <div key={i} className="flex justify-between mt-2">
-                  <span>{lang.name}</span>
-                  <span className="text-gray-400">
-                    {lang.solved} problems solved
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-4 space-y-2">
+            <h3 className="text-lg font-semibold text-green-400 flex justify-between items-center">
+              Languages
+              {!isAddingLanguage && (
+                <button
+                  onClick={() => setIsAddingLanguage(true)}
+                  className="px-2 py-1 text-sm bg-green-500/20 border border-green-500/40 cursor-pointer rounded-lg text-green-400 hover:bg-green-600/30"
+                >
+                  + Add
+                </button>
+              )}
+            </h3>
+
+            {/* Existing Language Buttons */}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {Array.isArray(data.languages) && data.languages.length > 0 ? (
+                data.languages.map((lang, i) => (
+                  <span
+                    key={i}
+                    className="flex items-center gap-2 px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-full text-green-400 text-sm"
+                  >
+                    {lang.language}
+                    <button
+                      onClick={() => handleDeleteLanguage(lang.language)}
+                      className="ml-1 px-1 text-white rounded-full"
+                    >
+                      &times;
+                    </button>
                   </span>
+                ))
+              ) : (
+                <p className="text-gray-400 text-sm">No languages added yet.</p>
+              )}
+            </div>
+
+            {/* Add Language Form */}
+            {isAddingLanguage && (
+              <div className="mt-2 flex flex-col gap-2">
+                <select
+                  value={selectedLanguage}
+                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  className="px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+                >
+                  <option value="">Select Language</option>
+                  {availableLanguages
+                    .filter(
+                      (lang) => !data.languages.some((l) => l.name === lang)
+                    )
+                    .map((lang, i) => (
+                      <option key={i} value={lang}>
+                        {lang}
+                      </option>
+                    ))}
+                </select>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSaveLanguage}
+                    className="px-3 py-1 bg-green-500/20 border cursor-pointer border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancelLanguage}
+                    className="px-3 py-1 bg-red-500/20 border border-red-500/50 cursor-pointer rounded-lg text-red-400 hover:bg-red-600/40"
+                  >
+                    Cancel
+                  </button>
                 </div>
-              ))}
+              </div>
+            )}
           </div>
 
           {/* Skills */}
-          <div className="bg-white/5 border border-green-500/20 rounded-xl p-4 space-y-3">
-            <h3 className="text-lg font-semibold text-green-400">Skills</h3>
-            {data.skills &&
-              Object.entries(data.skills).map(([level, items], idx) => (
-                <div key={idx}>
-                  <div className="text-sm font-bold mb-2">{level}</div>
-                  <div className="flex flex-wrap gap-2">
-                    {items.map((item, i) => (
-                      <span
-                        key={i}
-                        className="px-2 py-1 bg-green-500/10 border border-green-500/20 rounded-lg text-sm"
-                      >
-                        {item.name} x{item.count}
-                      </span>
-                    ))}
-                  </div>
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-4 space-y-2">
+            <h3 className="text-lg font-semibold text-green-400 flex justify-between items-center">
+              Skills
+              {!isAddingSkill && (
+                <button
+                  onClick={() => setIsAddingSkill(true)}
+                  className="px-2 py-1 text-sm bg-green-500/20 border border-green-500/40 cursor-pointer rounded-lg text-green-400 hover:bg-green-600/30"
+                >
+                  + Add
+                </button>
+              )}
+            </h3>
+
+            {/* Skill Buttons */}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {Array.isArray(data.skills) &&
+                data.skills.map((skill, i) => (
+                  <span
+                    key={i}
+                    className="flex items-center gap-2 px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-full text-green-400 text-sm"
+                  >
+                    {skill.skill}
+                    <button
+                      onClick={() => handleDeleteSkill(skill.skill)}
+                      className="ml-1 px-1 text-white rounded-full"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+            </div>
+
+            {/* Add Skill Form */}
+            {isAddingSkill && (
+              <div className="mt-2 flex flex-col gap-2">
+                <select
+                  value={selectedSkill}
+                  onChange={(e) => setSelectedSkill(e.target.value)}
+                  className="px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
+                >
+                  <option value="">Select Skill</option>
+                  {availableSkills.map((skill, i) => (
+                    <option key={i} value={skill}>
+                      {skill}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSaveSkill}
+                    className="px-3 py-1 bg-green-500/20 border cursor-pointer border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancelSkill}
+                    className="px-3 py-1 bg-red-500/20 border border-red-500/50 cursor-pointer rounded-lg text-red-400 hover:bg-red-600/40"
+                  >
+                    Cancel
+                  </button>
                 </div>
-              ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* RIGHT COLUMN */}
         <div className="flex-1 space-y-6">
 
-          {/* Submissions Heatmap */}
           <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
             <h3 className="text-lg font-semibold text-green-400 mb-3">
               Get track of your submissions
@@ -277,7 +517,7 @@ export const UserDashboard = () => {
                     date: new Date(s.submitted_at).toISOString().split("T")[0],
                     count: 1,
                   }))
-                  : // Prefilled demo values
+                  :
                   []
               }
               classForValue={(value) => {
@@ -299,11 +539,11 @@ export const UserDashboard = () => {
             {/* Legend */}
             <div className="flex items-center gap-1 text-xs text-gray-400 mt-4">
               <span>Less</span>
-              <div className="w-3 h-3 rounded-sm bg-green-900/20" />
-              <div className="w-3 h-3 rounded-sm bg-green-400" />
-              <div className="w-3 h-3 rounded-sm bg-green-500" />
-              <div className="w-3 h-3 rounded-sm bg-green-600" />
+              <div className="w-3 h-3 rounded-sm bg-green-900" />
               <div className="w-3 h-3 rounded-sm bg-green-700" />
+              <div className="w-3 h-3 rounded-sm bg-green-600" />
+              <div className="w-3 h-3 rounded-sm bg-green-500" />
+              <div className="w-3 h-3 rounded-sm bg-green-400" />
               <span>More</span>
             </div>
 
@@ -327,27 +567,22 @@ export const UserDashboard = () => {
   `}</style>
           </div>
 
-
-
-          {/* Connected Apps */}
           <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
-            <h3 className="text-lg font-semibold text-green-400 mb-3">
-              Connected Apps
-            </h3>
+            <h3 className="text-lg font-semibold text-green-400 mb-3">Connected Apps</h3>
 
-            {data.editAppsIndex === undefined ? (
+            {editAppsIndex === undefined ? (
               <div>
                 {Array.isArray(data.connectedApps) && data.connectedApps.length > 0 ? (
                   <div className="space-y-3">
                     {data.connectedApps.map((app, idx) => (
                       <div
-                        key={idx}
+                        key={app._id}
                         className="flex justify-between items-center p-3 bg-gray-800/40 border border-green-500/20 rounded-lg"
                       >
-                        <span className="text-gray-200 font-medium">{app.name}</span>
+                        <span className="text-gray-200 font-medium">{app.appName}</span>
                         <div className="flex gap-2">
                           <a
-                            href={app.url}
+                            href={app.appURL}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-lg text-green-300 hover:bg-green-600/40 transition cursor-pointer"
@@ -355,17 +590,17 @@ export const UserDashboard = () => {
                             Visit
                           </a>
                           <button
-                            onClick={() => setData({ ...data, editAppsIndex: idx, tempAppName: app.name, tempAppUrl: app.url })}
+                            onClick={() => {
+                              setEditAppsIndex(idx);
+                              setTempAppName(app.appName);
+                              setTempAppUrl(app.appURL);
+                            }}
                             className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-yellow-400 hover:bg-yellow-600/40 cursor-pointer"
                           >
                             Edit
                           </button>
                           <button
-                            onClick={() => {
-                              const newApps = [...(data.connectedApps || [])];
-                              newApps.splice(idx, 1);
-                              setData({ ...data, connectedApps: newApps });
-                            }}
+                            onClick={() => handleDeleteApp(idx)}
                             className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
                           >
                             Delete
@@ -379,7 +614,11 @@ export const UserDashboard = () => {
                 )}
 
                 <button
-                  onClick={() => setData({ ...data, editAppsIndex: "new", tempAppName: "", tempAppUrl: "" })}
+                  onClick={() => {
+                    setEditAppsIndex("new");
+                    setTempAppName("");
+                    setTempAppUrl("");
+                  }}
                   className="mt-3 px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40 cursor-pointer"
                 >
                   Add App
@@ -390,49 +629,27 @@ export const UserDashboard = () => {
                 <input
                   type="text"
                   placeholder="App Name (e.g. GitHub, LinkedIn)"
-                  value={data.tempAppName || ""}
-                  onChange={(e) => setData({ ...data, tempAppName: e.target.value })}
+                  value={tempAppName}
+                  onChange={(e) => setTempAppName(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
                 />
                 <input
                   type="url"
                   placeholder="App URL (https://...)"
-                  value={data.tempAppUrl || ""}
-                  onChange={(e) => setData({ ...data, tempAppUrl: e.target.value })}
+                  value={tempAppUrl}
+                  onChange={(e) => setTempAppUrl(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
                 />
 
                 <div className="flex gap-3">
                   <button
-                    onClick={() => {
-                      if (data.tempAppName && data.tempAppUrl) {
-                        const newApps = [...(data.connectedApps || [])];
-
-                        if (data.editAppsIndex === "new") {
-                          // Adding a new app
-                          newApps.push({ name: data.tempAppName, url: data.tempAppUrl });
-                        } else {
-                          // Editing existing app
-                          newApps[data.editAppsIndex] = { name: data.tempAppName, url: data.tempAppUrl };
-                        }
-
-                        setData({
-                          ...data,
-                          connectedApps: newApps,
-                          editAppsIndex: undefined,
-                          tempAppName: "",
-                          tempAppUrl: "",
-                        });
-                      }
-                    }}
-                    className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40 cursor-pointer"
+                    onClick={handleSaveApp}
+                    className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40 cursor-pointer disabled:opacity-50"
                   >
                     Save
                   </button>
                   <button
-                    onClick={() =>
-                      setData({ ...data, editAppsIndex: undefined, tempAppName: "", tempAppUrl: "" })
-                    }
+                    onClick={resetForm}
                     className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
                   >
                     Cancel
@@ -442,187 +659,138 @@ export const UserDashboard = () => {
             )}
           </div>
 
-
           {/* Education */}
           <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
             <h3 className="text-lg font-semibold text-green-400 mb-4">Education</h3>
 
-            {/* Loop through multiple education entries */}
-            {(data?.education && data.education.length > 0) ? (
-              data.education.map((edu, idx) => {
-                // ✅ calculate opacity per card
-                const opacity = 1 - idx * 0.15; // decreases 15% each next card
-                const bgColor = `rgba(31, 41, 55, ${opacity})`; // gray-800 with decreasing intensity
+            {editEducationIndex === undefined ? (
+              <div>
+                {Array.isArray(data.education) && data.education.length > 0 ? (
+                  <div className="space-y-4">
+                    {data.education.map((edu, idx) => (
+                      <div
+                        key={edu._id || idx}
+                        className="p-5 border border-green-500/20 rounded-xl bg-gray-800/40 transition-all shadow-md"
+                      >
+                        <div className="flex justify-between items-center mb-2">
+                          <h4 className="text-xl font-bold text-white flex items-center gap-2">
+                            <School size={20} className="text-green-400" /> {edu.institute || "N/A"}
+                          </h4>
+                          {edu.passOutYear && (
+                            <span className="text-sm text-gray-300 flex items-center gap-1">
+                              <Clock size={14} className="text-green-400" /> {edu.passOutYear}
+                            </span>
+                          )}
+                        </div>
 
-                return (
-                  <div
-                    key={idx}
-                    className="p-4 mb-4 border border-green-500/20 rounded-lg shadow-md hover:scale-[1.01] transition-transform space-y-3 relative"
-                    style={{ backgroundColor: bgColor }}
-                  >
-                    {/* College Name + Timeline */}
-                    <div className="flex justify-between items-center">
-                      <h4 className="text-xl font-bold text-white flex items-center gap-2">
-                        <School size={20} /> {edu?.institute || "N/A"}
-                      </h4>
-                      {edu?.timeline && (
-                        <p className="text-sm text-gray-300 flex items-center gap-2">
-                          <Clock size={16} /> {edu.timeline}
-                        </p>
-                      )}
-                    </div>
+                        <div className="space-y-1 pl-1">
+                          {edu.department && (
+                            <p className="text-sm text-gray-300 flex items-center gap-2">
+                              <Laptop size={16} className="text-green-400" /> {edu.department}
+                            </p>
+                          )}
+                          {edu.grade && (
+                            <p className="text-sm text-yellow-400 flex items-center gap-2">
+                              <Star size={14} className="text-green-500" /> CGPA: {edu.grade}
+                            </p>
+                          )}
+                          {edu.location && (
+                            <p className="text-sm text-gray-400 flex items-center gap-2">
+                              <MapPin size={14} className="text-green-400" /> {edu.location}
+                            </p>
+                          )}
+                        </div>
 
-                    {/* Department + Grade */}
-                    {(edu?.department || edu?.grade) && (
-                      <div className="flex justify-between text-sm text-gray-400 mt-1">
-                        {edu.department && (
-                          <span className="flex items-center gap-2 font-medium text-white">
-                            <Laptop size={16} /> {edu.department}
-                          </span>
-                        )}
-                        {edu.grade && (
-                          <span className="flex items-center gap-2 font-medium">
-                            <span className="text-green-300">CGPA:</span> {edu.grade}
-                            <Star size={14} className="text-yellow-400" />
-                          </span>
-                        )}
+                        <div className="border-t border-green-500/20 my-3"></div>
+
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => {
+                              setEditEducationIndex(idx);
+                              setEducationForm(edu);
+                            }}
+                            className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-yellow-400 hover:bg-yellow-600/40 cursor-pointer"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteEducation(idx)}
+                            className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40 cursor-pointer"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
-                    )}
-
-                    {/* Location */}
-                    {edu?.location && (
-                      <p className="text-xs text-gray-400 flex items-center gap-2 mt-2">
-                        <MapPin size={14} /> {edu.location}
-                      </p>
-                    )}
-
-                    {/* Edit/Delete Buttons */}
-                    <div className="flex justify-end gap-3 mt-3">
-                      <button
-                        onClick={() => {
-                          setEducationData(edu);
-                          setEditEducation(true);
-                          setEditIndex(idx);
-                        }}
-                        className="px-3 py-1 rounded-lg bg-green-500/20 hover:bg-green-600/40 border border-green-500/40 text-green-400 cursor-pointer flex items-center gap-1"
-                      >
-                        <Edit size={16} /> Edit
-                      </button>
-                      <button
-                        onClick={() => {
-                          const updated = [...data.education];
-                          updated.splice(idx, 1);
-                          setData({ ...data, education: updated });
-                        }}
-                        className="px-3 py-1 rounded-lg bg-red-500/20 hover:bg-red-600/40 border border-red-500/40 text-red-400 cursor-pointer flex items-center gap-1"
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    ))}
                   </div>
-                );
-              })
-            ) : (
-              <p className="text-gray-400">No education data available.</p>
-            )}
 
-            {/* Add/Edit Form */}
-            {editEducation && (
-              <div className="space-y-3 mt-4">
+                ) : (
+                  <p className="text-gray-400">No education data available.</p>
+                )}
+
+                <button
+                  onClick={() => {
+                    setEditEducationIndex("new");
+                    setEducationForm({
+                      institute: "",
+                      passOutYear: "",
+                      department: "",
+                      location: "",
+                    });
+                  }}
+                  className="mt-3 px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40 cursor-pointer"
+                >
+                  Add Education
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3 mt-2">
                 <input
                   type="text"
                   placeholder="Institute"
-                  value={educationData?.institute || ""}
-                  onChange={(e) =>
-                    setEducationData({ ...educationData, institute: e.target.value })
-                  }
+                  value={educationForm.institute}
+                  onChange={(e) => setEducationForm({ ...educationForm, institute: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
                 />
                 <input
                   type="text"
-                  placeholder="Timeline (e.g., 2024–2028)"
-                  value={educationData?.timeline || ""}
-                  onChange={(e) =>
-                    setEducationData({ ...educationData, timeline: e.target.value })
-                  }
+                  placeholder="Department"
+                  value={educationForm.department}
+                  onChange={(e) => setEducationForm({ ...educationForm, department: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
                 />
                 <input
                   type="text"
-                  placeholder="Department / Branch (e.g., Computer Science)"
-                  value={educationData?.department || ""}
-                  onChange={(e) =>
-                    setEducationData({ ...educationData, department: e.target.value })
-                  }
+                  placeholder="Expected Year (e.g., 2024–2028)"
+                  value={educationForm.passOutYear}
+                  onChange={(e) => setEducationForm({ ...educationForm, passOutYear: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
                 />
                 <input
                   type="text"
-                  placeholder="CGPA/Percentage (e.g., 8.7/10)"
-                  value={educationData?.grade || ""}
-                  onChange={(e) =>
-                    setEducationData({ ...educationData, grade: e.target.value })
-                  }
-                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
-                />
-                <input
-                  type="text"
-                  placeholder="Location (e.g., New York, USA)"
-                  value={educationData?.location || ""}
-                  onChange={(e) =>
-                    setEducationData({ ...educationData, location: e.target.value })
-                  }
+                  placeholder="Location"
+                  value={educationForm.location}
+                  onChange={(e) => setEducationForm({ ...educationForm, location: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
                 />
 
                 <div className="flex gap-3">
                   <button
-                    onClick={() => {
-                      let updated = [...(data.education || [])];
-                      if (typeof editIndex === "number") {
-                        updated[editIndex] = educationData; // update existing
-                      } else {
-                        updated.push(educationData); // add new
-                      }
-                      setData({ ...data, education: updated });
-                      setEducationData({});
-                      setEditIndex(null);
-                      setEditEducation(false);
-                    }}
-                    className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40"
+                    onClick={handleSaveEducation}
+                    className="px-3 py-1 bg-green-500/20 border border-green-500/50 cursor-pointer rounded-lg text-green-400 hover:bg-green-600/40"
                   >
                     Save
                   </button>
                   <button
-                    onClick={() => {
-                      setEditEducation(false);
-                      setEducationData({});
-                      setEditIndex(null);
-                    }}
-                    className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 hover:bg-red-600/40"
+                    onClick={resetEducationForm}
+                    className="px-3 py-1 bg-red-500/20 border border-red-500/50 cursor-pointer rounded-lg text-red-400 hover:bg-red-600/40"
                   >
                     Cancel
                   </button>
                 </div>
               </div>
             )}
-
-            {/* Add New Education Button */}
-            {!editEducation && (
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={() => setEditEducation(true)}
-                  className="px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 hover:bg-green-600/40"
-                >
-                  + Add Education
-                </button>
-              </div>
-            )}
           </div>
-
-
-
-
 
           {/* Participated in Hackathons */}
           <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
@@ -630,15 +798,15 @@ export const UserDashboard = () => {
               Participated in Hackathons
             </h3>
             <ul className="mt-4 space-y-3">
-              {Array.isArray(data.submissions) && data.submissions.length > 0 ? (
-                data.submissions.map((hack, idx) => (
+              {Array.isArray(data.submittedHackathons) && data.submittedHackathons.length > 0 ? (
+                data.submittedHackathons.map((hack, idx) => (
                   <li
                     key={idx}
                     className="flex justify-between items-center text-gray-300"
                   >
-                    <span>{hack.title}</span>
+                    <span>{hack.hackathon}</span>
                     <a
-                      href={hack.repo_url || "#"}
+                      href={hack.repoUrl || "#"}
                       className="text-green-400 underline hover:text-green-300 cursor-pointer"
                       target="_blank"
                       rel="noreferrer"
@@ -653,11 +821,6 @@ export const UserDashboard = () => {
               )}
             </ul>
           </div>
-
-
-
-
-
 
           {/* Reward Popup */}
           {showReward && (

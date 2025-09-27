@@ -1,12 +1,11 @@
 import express from "express";
-import { submitHackathonSolution } from "../controllers/submission.controllers.js";
+import { submitHackathonSolution, getSubmissionStatus } from "../controllers/submission.controllers.js";
 import upload from "../middlewares/multer.js";
 
 const router = express.Router();
 
 // ✅ use upload.fields before controller
-router.post(
-  "/",
+router.post( "/",
   upload.fields([
     { name: "docs", maxCount: 5 },
     { name: "images", maxCount: 5 },
@@ -14,5 +13,7 @@ router.post(
   ]),
   submitHackathonSolution
 );
+
+router.get("/status", getSubmissionStatus);
 
 export default router;

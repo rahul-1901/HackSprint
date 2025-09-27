@@ -48,6 +48,7 @@ const TeamDetails = () => {
       if (secretCode) {
         const teamSearchResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/team/search/${secretCode}`);
         const basicTeamData = teamSearchResponse.data.team;
+        console.log(basicTeamData)
 
         const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: basicTeamData.leader._id });
         setTeamData({ ...basicTeamData, pendingMembers: pendingResponse.data });
@@ -119,9 +120,9 @@ const TeamDetails = () => {
 
     fetchTeamData(currentUser);
 
-    const interval = setInterval(() => {
+    const interval = (() => {
       fetchTeamData(currentUser);
-    }, 10000);
+    });
 
     return () => clearInterval(interval);
   }, [currentUser, fetchTeamData]);
@@ -252,7 +253,7 @@ const TeamDetails = () => {
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{teamData.name}</h1>
           <p className="text-gray-400">
-            Created on {formatDate(teamData.createdAt)} • {currentMembers.length}/{teamData.maxMembers} members
+            Created on {formatDate(teamData.createdAt)} • {currentMembers.length}/{teamData.maxTeamSize} members
           </p>
         </div>
 

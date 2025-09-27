@@ -214,12 +214,22 @@ export const getDailyQuiz = async (req, res) => {
 
 export const sendAllQuizData = async (req, res) => {
   try {
-    const quizData = await dailyQuizModel.find().populate("questions");
+    const allQuizzes = await dailyQuizModel.find()
+      .populate("questions")
+      .sort({ createdAt: -1 });
+
+    if (!allQuizzes || allQuizzes.length === 0) {
+      return res.status(404).json({ message: "No quizzes found" });
+    }
+    
+    const quizzesExcludingLatest = allQuizzes.slice(1);
+
     res.status(200).json({
-      message: "successfully retrieve the quiz data",
-      quizData,
+      message: "Successfully retrieved quiz data (excluding latest)",
+      quizData: quizzesExcludingLatest,
     });
   } catch (error) {
+    console.error("Error in sendAllQuizData:", error);
     res.status(500).json({
       message: error.message,
     });
