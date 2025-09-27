@@ -133,13 +133,23 @@ export default function OrganizerHome() {
           </nav> */}
 
           <div className="flex items-center space-x-4">
-            <Button
-              className="hidden md:inline-flex"
-              onClick={() => navigate("/adminlogin")}
-            >
-              Organize Now
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            {localStorage.getItem("adminToken") ? (
+              <Button
+                className="hidden md:inline-flex"
+                onClick={() => navigate("/Hacksprintkaadminprofile")}
+              >
+                Dashboard
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            ) : (
+              <Button
+                className="hidden md:inline-flex"
+                onClick={() => navigate("/adminlogin")}
+              >
+                Organize Now
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -183,8 +193,8 @@ export default function OrganizerHome() {
         <div className="container mx-auto px-6 text-center relative z-10">
           <div
             className={`transition-all duration-1000 transform ${isVisible
-                ? "translate-y-0 opacity-100"
-                : "translate-y-10 opacity-0"
+              ? "translate-y-0 opacity-100"
+              : "translate-y-10 opacity-0"
               }`}
           >
             <div className="flex justify-center mb-6">
@@ -321,7 +331,7 @@ export default function OrganizerHome() {
                 a: "Absolutely. You can define custom judging rubrics and invite external judges.",
               },
             ].map((faq, i) => (
-              <FAQItem key={i} {...faq} delay={i * 100} className=""/>
+              <FAQItem key={i} {...faq} delay={i * 100} className="" />
             ))}
           </div>
         </div>

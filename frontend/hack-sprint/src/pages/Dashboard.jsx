@@ -333,10 +333,11 @@ export const UserDashboard = () => {
           localStorage.removeItem("token");
           localStorage.removeItem("email");
           toast.success("Logout successfull...", { autoClose: 800, style: { backgroundColor: "#f3f4f6", color: "#000000" } })
-          setTimeout(() => {
-            navigate('/account/login');
-            window.location.reload();
-          }, 2000)
+            setTimeout(() => {
+              navigate('/account/login');
+              window.location.reload();
+            }, 2000)
+
         }
       }
     } catch (error) {

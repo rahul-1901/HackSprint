@@ -584,6 +584,7 @@ const Quest = () => {
           </div>
 
           {/* Previous DevQuests Section */}
+          {/* Previous DevQuests Section */}
           <motion.section
             className="mt-20 pb-16"
             initial={{ opacity: 0, y: 50 }}
@@ -611,47 +612,58 @@ const Quest = () => {
               ></motion.div>
             </motion.div>
 
-            <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6"
-              variants={staggerContainer}
-              initial="hidden"
-              animate="visible"
-            >
-              {prevFive.map((quest, index) => (
-                <motion.button
-                  key={quest.key}
-                  onClick={() => setPreviewQuest(quest)}
-                  className="group text-left p-6 bg-gray-800/20 border border-gray-700/40 rounded-xl transition-all duration-300 hover:bg-gray-800/40 hover:border-gray-600/60 hover:scale-[1.02]"
-                  variants={fadeInUp}
-                  whileHover={{
-                    y: -8,
-                    boxShadow: "0 15px 35px rgba(0, 0, 0, 0.3)",
-                    transition: { type: "spring", stiffness: 300 },
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-mono text-green-400 font-semibold">{quest.date}</span>
-                      <motion.div
-                        className="w-2 h-2 bg-gray-600 group-hover:bg-green-500/50 rounded-full transition-colors"
-                        whileHover={{ scale: 1.5 }}
-                      ></motion.div>
+            {prevFive.length > 0 ? (
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
+                {prevFive.map((quest, index) => (
+                  <motion.button
+                    key={quest.key}
+                    onClick={() => setPreviewQuest(quest)}
+                    className="group text-left p-6 bg-gray-800/20 border border-gray-700/40 rounded-xl transition-all duration-300 hover:bg-gray-800/40 hover:border-gray-600/60 hover:scale-[1.02]"
+                    variants={fadeInUp}
+                    whileHover={{
+                      y: -8,
+                      boxShadow: "0 15px 35px rgba(0, 0, 0, 0.3)",
+                      transition: { type: "spring", stiffness: 300 },
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-mono text-green-400 font-semibold">{quest.date}</span>
+                        <motion.div
+                          className="w-2 h-2 bg-gray-600 group-hover:bg-green-500/50 rounded-full transition-colors"
+                          whileHover={{ scale: 1.5 }}
+                        ></motion.div>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
+                          {quest.topic}
+                        </h3>
+                        <motion.div
+                          className="mt-2 w-8 h-px bg-green-500/20 group-hover:bg-green-500/40 transition-colors"
+                          whileHover={{ scaleX: 1.5 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                        ></motion.div>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
-                        {quest.topic}
-                      </h3>
-                      <motion.div
-                        className="mt-2 w-8 h-px bg-green-500/20 group-hover:bg-green-500/40 transition-colors"
-                        whileHover={{ scaleX: 1.5 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                      ></motion.div>
-                    </div>
-                  </div>
-                </motion.button>
-              ))}
-            </motion.div>
+                  </motion.button>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                className="p-8 bg-gray-800/30 border border-gray-700/40 rounded-xl text-center text-green-400 font-mono font-semibold"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                The first DevQuest is currently live!
+              </motion.div>
+            )}
           </motion.section>
         </motion.main>
       </div>

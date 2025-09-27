@@ -5,7 +5,7 @@ const HideRouteFooter = ({ children }) => {
     const location = useLocation();
     const [showNavbar, setShowNavbar] = useState(true);
 
-    const footerVisible = ["/","/studenthome","/adminhome","/dashboard", "/quest", "/about", "/hackathons","/hackathon/:id","/hackathon/RegistrationForm/:id","/leaderboard","/hackathon/:hackathonId/team/:teamId","/Hacksprintkaadminprofile","/Hacksprintkaadminprofile/livehackathons","/Hacksprintkaadminprofile/recentlystarted","/Hacksprintkaadminprofile/endedhackathons"];
+    const footerVisible = ["/createHackathon", "/", "/studenthome", "/adminhome", "/dashboard", "/quest", "/about", "/hackathons", "/hackathon/:id", "/hackathon/RegistrationForm/:id", "/leaderboard", "/hackathon/:hackathonId/team/:teamId", "/Hacksprintkaadminprofile", "/Hacksprintkaadminprofile/livehackathons", "/Hacksprintkaadminprofile/recentlystarted", "/Hacksprintkaadminprofile/endedhackathons"];
 
     useEffect(() => {
         const isHackathonDynamic = matchPath({ path: "/hackathon/:id", exact: true }, location.pathname);

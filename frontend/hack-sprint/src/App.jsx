@@ -45,17 +45,23 @@ import ParticipantPoliciesPage from './pages/Participation.jsx';
 import OrganizerPlaybookPage from './pages/Organiser.jsx';
 import LegalSupportPage from './pages/TermsCond.jsx';
 import CreateHackathonPage from './pages/CreateHackathonPage.jsx';
+import AdminNavbar from './components/AdminNavbar.jsx';
+import HideAdminRoutes from './components/HideAdminRoutes.jsx';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authWait, setAuthWait] = useState(false)
 
-  const AuthenticateRoute = ({ element }) => {
-    if (!authWait) {
-      return null
+  const AuthenticateRoute = ({ element, admin = false, authWait, isAuthenticated }) => {
+    if (!authWait) return null;
+
+    if (admin) {
+      const isAdminLoggedIn = !!localStorage.getItem("adminToken");
+      return isAdminLoggedIn ? element : <Navigate to="/adminlogin" />;
     }
-    return isAuthenticated ? element : <Navigate to="/account/login" />
-  }
+
+    return isAuthenticated ? element : <Navigate to="/account/login" />;
+  };
 
   return (
     <>
@@ -66,6 +72,9 @@ function App() {
         <HideRoute>
           <Navbar />
         </HideRoute>
+        <HideAdminRoutes>
+          <AdminNavbar />
+        </HideAdminRoutes>
         <ToastContainer />
         <Routes>
           <Route path="/" element={<Home />} caseSensitive />
@@ -82,30 +91,77 @@ function App() {
 
           <Route path="/admin" element={<Admin />} caseSensitive />
           <Route path="/hacksprintTeraBaap" element={<Admin />} caseSensitive />
-          <Route path="/Hacksprintkaadminprofile" element={<AuthenticateRoute element={<AdminProfile />} />} caseSensitive />
-          <Route path="/Hacksprintkaadminprofile/recentlystarted" element={<RecentlyStartedPage />} caseSensitive />
-          <Route path="/Hacksprintkaadminprofile/livehackathons" element={<LiveHackathonsPage />} caseSensitive />
-          <Route path="/Hacksprintkaadminprofile/endedhackathons" element={<EndedHackathonsPage />} caseSensitive />
-          <Route path="/questions" element={<AuthenticateRoute element={<Questions />} />} caseSensitive />
+          <Route path="/Hacksprintkaadminprofile" element={<AuthenticateRoute element={<AdminProfile />} admin={true} authWait={authWait} isAuthenticated={isAuthenticated} />} caseSensitive />
+          <Route path="/Hacksprintkaadminprofile/recentlystarted"
+            element={<AuthenticateRoute element={<RecentlyStartedPage />} admin={true} authWait={authWait} isAuthenticated={isAuthenticated} />}
+            caseSensitive
+          />
+          <Route path="/Hacksprintkaadminprofile/livehackathons"
+            element={<AuthenticateRoute element={<LiveHackathonsPage />} admin={true} authWait={authWait} isAuthenticated={isAuthenticated} />}
+            caseSensitive
+          />
+          <Route path="/Hacksprintkaadminprofile/endedhackathons"
+            element={<AuthenticateRoute element={<EndedHackathonsPage />} admin={true} authWait={authWait} isAuthenticated={isAuthenticated} />}
+            caseSensitive
+          />
+
+          <Route path="/questions" element={<AuthenticateRoute element={<Questions />} authWait={authWait}
+            isAuthenticated={isAuthenticated} />} caseSensitive />
           <Route path="/account/login" element={<Login />} caseSensitive></Route>
           <Route path="/github-auth-handler" element={<GithubAuthHandler />} caseSensitive></Route>
           <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
-          <Route path="/account/reset-password" element={<AuthenticateRoute element={<ResetPassword />} />} caseSensitive></Route>
+          <Route path="/account/reset-password" element={<AuthenticateRoute element={<ResetPassword />} authWait={authWait}
+            isAuthenticated={isAuthenticated} />} caseSensitive></Route>
 
           <Route path="/hackathon/:id" element={<HackathonDetails />} />
-          <Route path="/hackathon/RegistrationForm/:id" element={<AuthenticateRoute element={<RegistrationForm />} />} />
+          <Route path="/hackathon/RegistrationForm/:id" element={<AuthenticateRoute element={<RegistrationForm />} authWait={authWait}
+            isAuthenticated={isAuthenticated} />} />
 
-          <Route path="/hackathon/:hackathonId/team/:teamId" element={<AuthenticateRoute element={<TeamDetails />} />} />
+          <Route path="/hackathon/:hackathonId/team/:teamId" element={<AuthenticateRoute element={<TeamDetails />} authWait={authWait}
+            isAuthenticated={isAuthenticated} />} />
 
-          <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />} />} caseSensitive />
+          <Route
+            path="/dashboard"
+            element={
+              <AuthenticateRoute
+                element={<Dashboard />}
+                authWait={authWait}
+                isAuthenticated={isAuthenticated}
+              />
+            }
+          />
           <Route path="*" element={<NotFoundPage />} />
           <Route path="/verify" element={<VerifyEmail />} />
           <Route path="/account/forgot-password" element={<ForgotPassword />} caseSensitive></Route>
           <Route path='/leaderboard' element={<Leaderboard />} />
-          <Route path='/Hacksprintkaadminprofile/:slug/usersubmissions' element={<HackathonUsersPage />} />
-          <Route path='/hackathon/:slug/submission/:id' element={<AuthenticateRoute element={<UserSubmissionDetailPage />} />} />
-          <Route path="/createHackathon" element={<AuthenticateRoute element={<CreateHackathonPage />} />} caseSensitive />
+
+          <Route path='/hackathon/:slug/submission/:id' element={<AuthenticateRoute element={<UserSubmissionDetailPage />} authWait={authWait}
+            isAuthenticated={isAuthenticated} />} />
           <Route path="/participation-policies" element={<ParticipantPoliciesPage />} caseSensitive />
+          <Route
+            path="/createHackathon"
+            element={
+              <AuthenticateRoute
+                element={<CreateHackathonPage />}
+                admin={true}
+                authWait={authWait}
+                isAuthenticated={isAuthenticated}
+              />
+            }
+            caseSensitive
+          />
+          <Route
+            path="/Hacksprintkaadminprofile/:slug/usersubmissions"
+            element={
+              <AuthenticateRoute
+                element={<HackathonUsersPage />}
+                admin={true}
+                authWait={authWait}
+                isAuthenticated={isAuthenticated}
+              />
+            }
+          />
+
           <Route path="/organizer-ruleBook" element={<OrganizerPlaybookPage />} caseSensitive />
           <Route path="/organizer-ruleBook" element={<OrganizerPlaybookPage />} caseSensitive />
           <Route path="/terms-and-condition" element={<LegalSupportPage />} caseSensitive />
