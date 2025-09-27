@@ -4,13 +4,16 @@ import SubmissionModel from "../models/submission.js";
 import RegisteredParticipantsModel from "../models/registeredParticipants.js";
 import PendingHackathon from "../models/pendingHackathon.model.js";
 import Admin from "../models/admin.model.js";
-import TeamModel from "../models/team.js"; // KEY CHANGE: Corrected the filename
+import TeamModel from "../models/team.js";
 import cloudinary from "../config/cloudinary.js";
 
-// Get all hackathons created by logged-in admin
+// Get all hackathons created by a specific admin
 export const getAllHackathons = async (req, res) => {
   try {
-    const { adminId } = await req.body;
+    const { adminId } = req.body;
+    if (!adminId) {
+      return res.status(400).json({ error: "Admin ID is required." });
+    }
     const hackathons = await hackathonModel.find({ "createdBy": adminId });
     res.json(hackathons);
   } catch (err) {
@@ -18,57 +21,66 @@ export const getAllHackathons = async (req, res) => {
   }
 };
 
+// Get detailed information for a single hackathon created by an admin
 export const getMyHackathon = async (req, res) => {
   try {
     const { adminId, hackathonId } = req.body;
 
+    // 1. Fetch the main hackathon document
     const hackathon = await hackathonModel.findOne({
       _id: hackathonId,
       createdBy: adminId
     });
 
     if (!hackathon) {
-      return res.status(404).json({ error: "Hackathon not found" });
+      return res.status(404).json({ error: "Hackathon not found or you are not the creator." });
     }
 
-    const participants = await RegisteredParticipantsModel.find({
-      hackathon: hackathonId
-    });
+    // 2. Fetch all related data from the database in parallel
+    const [participants, teams, submissions] = await Promise.all([
+      RegisteredParticipantsModel.find({ hackathon: hackathonId }).populate('user', 'name email').lean(),
+      TeamModel.find({ hackathon: hackathonId }).populate("leader", "name email").populate("members", "name email").lean(),
+      SubmissionModel.find({ hackathon: hackathonId }).lean()
+    ]);
 
-    const withoutTeam = participants.filter(p => !p.team);
-    const withTeam = participants.filter(p => p.team);
-
-    const teams = await TeamModel.find({ hackathon: hackathonId })
-      .populate("leader", "name email")
-      .populate("members", "name email")
-      .lean();
-
-    const teamsWithMembers = teams.map(team => {
-      const teamMembers = withTeam.filter(p => p.team?.toString() === team._id.toString());
+    // 3. Manually link submissions to their corresponding teams
+    const teamsWithSubmissions = teams.map(team => {
+      // For each team, find its submission in the submissions array
+      const submission = submissions.find(s => s.team?.toString() === team._id.toString());
       return {
         ...team,
-        registeredMembers: teamMembers
+        submission: submission || null // Attach the submission object, or null if none exists
       };
     });
 
-    const submissions = await SubmissionModel.find({ hackathon: hackathonId })
-      .select("_id repoUrl githubMetadata docs images videos submittedAt hackathonPoints")
-      .lean();
+    // 4. Manually link submissions to their corresponding individual participants
+    const participantsWithSubmissions = participants.map(p => {
+        // For each participant, find their submission in the submissions array
+        // Note: We link by the user's ID (p.user._id)
+        const submission = submissions.find(s => s.participant?.toString() === p.user._id.toString());
+        return {
+            ...p,
+            submission: submission || null // Attach the submission object, or null if none exists
+        }
+    })
 
+    // 5. Send the final, combined data to the frontend
     res.json({
       hackathon,
-      participantsWithoutTeam: withoutTeam,
-      teams: teamsWithMembers,
-      submissions
+      participantsWithoutTeam: participantsWithSubmissions.filter(p => !p.team),
+      teams: teamsWithSubmissions,
     });
+    
   } catch (err) {
+    console.error("Error in getMyHackathon:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
+// Get a list of all admins
 export const getalladmin = async (req, res) => {
   try {
-    const admindetails = await Admin.find();
+    const admindetails = await Admin.find().select("-password"); // Exclude passwords
     res.status(200).json({
       admindetails
     });
@@ -79,18 +91,27 @@ export const getalladmin = async (req, res) => {
   }
 };
 
+// Create a new hackathon and place it in the pending queue
 export const createPendingHackathon = async (req, res) => {
   try {
     let imageUrl = "";
-
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "hackathons"
-      });
+      const result = await cloudinary.uploader.upload(req.file.path, { folder: "hackathons" });
       imageUrl = result.secure_url;
     }
 
     const data = req.body;
+
+    // ----- START of NECESSARY CHANGE -----
+    // This safely parses the fields that were sent as JSON strings from the frontend
+    const arrayFields = ['techStackUsed', 'category', 'themes', 'problems', 'TandCforHackathon', 'evaluationCriteria', 'FAQs'];
+    arrayFields.forEach(field => {
+      if (data[field] && typeof data[field] === 'string') {
+        data[field] = JSON.parse(data[field]);
+      }
+    });
+    // ----- END of NECESSARY CHANGE -----
+
     data.createdBy = req.body.adminId;
     delete data.adminId;
     data.image = imageUrl || "";
@@ -110,6 +131,7 @@ export const createPendingHackathon = async (req, res) => {
   }
 };
 
+// Approve a pending hackathon (controller-only)
 export const approveHackathon = async (req, res) => {
   try {
     const { pendingHackathonId, adminId } = req.body;
@@ -138,7 +160,7 @@ export const approveHackathon = async (req, res) => {
 
     if (allApproved) {
       const hackathon = new hackathonModel(pending.toObject());
-      delete hackathon._id;
+      delete hackathon._id; // Let MongoDB generate a new _id
       await hackathon.save();
 
       await PendingHackathon.findByIdAndDelete(pendingHackathonId);
@@ -160,6 +182,7 @@ export const approveHackathon = async (req, res) => {
   }
 };
 
+// Reject a pending hackathon (controller-only)
 export const rejectHackathon = async (req, res) => {
   try {
     const { pendingHackathonId, adminId } = req.body;
@@ -186,6 +209,7 @@ export const rejectHackathon = async (req, res) => {
   }
 };
 
+// Display all pending hackathons
 export const displayPendingHackathon = async (req, res) => {
   try {
     const pendingHackathonsData = await PendingHackathon.find();
@@ -199,6 +223,7 @@ export const displayPendingHackathon = async (req, res) => {
   }
 };
 
+// Update points for a hackathon submission
 export const updateHackathonPoint = async (req, res) => {
   try {
     const { adminId, submissionId, points } = req.body;
@@ -222,17 +247,12 @@ export const updateHackathonPoint = async (req, res) => {
       return res.status(404).json({ success: false, message: "Submission not found" });
     }
 
-    const hackathonId = submission.hackathon;
-    if (!hackathonId || !mongoose.Types.ObjectId.isValid(hackathonId)) {
-      return res.status(500).json({ success: false, message: "Submission has invalid hackathon reference" });
-    }
-
-    const hackathon = await hackathonModel.findById(hackathonId).select("createdBy");
+    const hackathon = await hackathonModel.findById(submission.hackathon).select("createdBy");
     if (!hackathon) {
       return res.status(404).json({ success: false, message: "Hackathon for this submission not found" });
     }
 
-    if (!hackathon.createdBy || hackathon.createdBy.toString() !== adminId.toString()) {
+    if (hackathon.createdBy.toString() !== adminId.toString()) {
       return res.status(403).json({
         success: false,
         message: "You are not authorized to update points for submissions of this hackathon",
@@ -256,17 +276,22 @@ export const updateHackathonPoint = async (req, res) => {
   }
 };
 
+// Get the profile details of the currently logged-in admin
 export const getAdminDetails = async (req, res) => {
   try {
+    // The admin object is attached to the request by the adminAuth middleware
     const admin = req.admin;
+    
     if (!admin) {
+      // This is a safeguard, but adminAuth should have already handled it
       return res.status(401).json({ success: false, message: "Not authenticated" });
     }
+
     return res.status(200).json({
       success: true,
       admin: {
         id: admin._id,
-        name: admin.adminName ?? admin.name ?? null,
+        name: admin.adminName,
         email: admin.email,
         avatar: admin.avatar,
         contactNumber: admin.contactNumber,
@@ -278,7 +303,7 @@ export const getAdminDetails = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("getAdminProfile error:", err);
+    console.error("getAdminDetails error:", err);
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };

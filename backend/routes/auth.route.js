@@ -1,5 +1,5 @@
 import express from 'express'
-import { googleLogin, login, resetPassword, sendResetLink, signup, verifyEmail } from '../controllers/auth.controller.js'
+import { googleLogin, githubLogin, login, resetPassword, sendResetLink, signup, verifyEmail } from '../controllers/auth.controller.js'
 import { loginValidation, signupValidation } from "../middlewares/authValidation.js"
 // import { verifyAuth } from '../middlewares/userAuth.js'
 
@@ -19,5 +19,7 @@ router.post("/reset-password", resetPassword);
 router.post("/login", loginValidation, login)
 
 router.get("/google", googleLogin)
+
+router.get("/auth/callback/github", githubLogin)
 
 export default router
