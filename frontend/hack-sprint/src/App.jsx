@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
+import GithubAuthHandler from './components/GithubAuthHandler.jsx';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import HideRoute from './components/HideRoute';
@@ -86,6 +87,7 @@ function App() {
           <Route path="/Hacksprintkaadminprofile/endedhackathons" element={<EndedHackathonsPage />} caseSensitive />
           <Route path="/questions" element={<AuthenticateRoute element={<Questions />} />} caseSensitive />
           <Route path="/account/login" element={<Login />} caseSensitive></Route>
+          <Route path="/github-auth-handler" element={<GithubAuthHandler />} caseSensitive></Route>
           <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
           <Route path="/account/reset-password" element={<AuthenticateRoute element={<ResetPassword />} />} caseSensitive></Route>
 
