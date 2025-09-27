@@ -5,24 +5,27 @@ const HideRoute = ({ children }) => {
     const location = useLocation();
     const [showNavbar, setShowNavbar] = useState(true);
 
-    const navVisible = ["/", "/dashboard", "/quest", "/about", "/hackathons","/hackathon/:id","/hackathon/RegistrationForm/:id","/leaderboard","/hackathon/:hackathonId/team/:teamId"];
+    const navVisible = ["/studenthome", "/dashboard", "/quest", "/about", "/hackathons","/hackathon/:id","/hackathon/RegistrationForm/:id","/leaderboard","/hackathon/:hackathonId/team/:teamId"];
 
     useEffect(() => {
         const isHackathonDynamic = matchPath({ path: "/hackathon/:id", exact: true }, location.pathname);
         const isRegistrationDynamic = matchPath({ path: "/hackathon/RegistrationForm/:id", exact: true }, location.pathname);
         const isTeamDynamic = matchPath({ path: "/hackathon/:hackathonId/team/:teamId", exact: true }, location.pathname);
+        
+        const isUserSubmissionDynamic = matchPath({ path: "/hackathon/:slug/submission/:userId", exact: true }, location.pathname);
 
         if (
             !navVisible.includes(location.pathname) &&
             !isHackathonDynamic &&
             !isRegistrationDynamic &&
-            !isTeamDynamic
+            !isTeamDynamic &&
+            !isUserSubmissionDynamic
         ) {
             setShowNavbar(false);
         } else {
             setShowNavbar(true);
         }
-    }, [location, navVisible]);
+    }, [location]);
 
     return <div>{showNavbar && children}</div>;
 };

@@ -90,7 +90,7 @@ export default function HackathonDetails() {
                     isActive={isHackathonActive}
                     startDate={hackathon.startDate}
                     endDate={hackathon.endDate}
-                    participantCount={hackathon.submissions?.length || 0}
+                    participantCount={hackathon.numParticipants || 0}
                     prizeMoney={hackathon.prizeMoney}
                     imageUrl="/assets/hackathon-banner.png"
                     hackathonId={hackathon._id}

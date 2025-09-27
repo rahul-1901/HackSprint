@@ -1,95 +1,94 @@
-import mongoose from "mongoose";
-import express from "express";
 import hackathonModel from "../models/hackathon.models.js";
-import UserModel from "../models/user.models.js";
+import cloudinary from "../config/cloudinary.js";
 
-export const sendHackathons = async (req, res) => {
+// --- GET ACTIVE HACKATHONS ---
+// Finds hackathons where the current date is between the start and end dates.
+export const getActiveHackathons = async (req, res) => {
   try {
+    const now = new Date();
     const allHackathons = await hackathonModel.find({
-      status: true,
-    });
-    res.status(200).json({
-      allHackathons,
-    });
+      startDate: { $lte: now },
+      endDate: { $gte: now },
+    }).sort({ endDate: 1 }); // Sort by ending soonest
+
+    res.status(200).json({ allHackathons });
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: "Error fetching active hackathons", error: error.message });
   }
 };
-export const sendInactiveHackathons = async (req, res) => {
+
+// --- GET EXPIRED HACKATHONS ---
+// Finds hackathons where the end date is in the past.
+export const getExpiredHackathons = async (req, res) => {
   try {
-    const allHackathons = await hackathonModel.find({
-      status: false,
-    });
-    res.status(200).json({
-      allHackathons,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-};
-// above code sent all inactive hackathons while below code sent only expired hackathons
-export const sendExpiredHackathons = async (req, res) => {
-  try {
-    const currentTime = new Date(Date.now());
+    const now = new Date();
     const expiredHackathons = await hackathonModel.find({
       status: false,
-      endDate: { $lt: currentTime },
+      // submissionEndDate: { $lt: currentTime },
     });
     res.status(200).json({
       expiredHackathons,
     });
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: "Error fetching expired hackathons", error: error.message });
   }
 };
 
-export const addhackathons = async (req, res) => {
+// --- GET UPCOMING HACKATHONS ---
+// Finds hackathons where the start date is in the future.
+export const getUpcomingHackathons = async (req, res) => {
   try {
-    const hackathonsdata = new hackathonModel(req.body);
-    await hackathonsdata.save();
+    const now = new Date();
+    const upcomingHackathons = await hackathonModel.find({
+      startDate: { $gt: now },
+    }).sort({ startDate: 1 }); // Sort by starting soonest
+
+    res.status(200).json({ upcomingHackathons });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching upcoming hackathons", error: error.message });
+  }
+};
+
+// --- GET HACKATHON BY ID ---
+export const getHackathonById = async (req, res) => {
+  try {
+    const hackathon = await hackathonModel.findById(req.params.id);
+    if (!hackathon) {
+      return res.status(404).json({ message: 'Hackathon not found' });
+    }
+    return res.json(hackathon);
+  } catch (err) {
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// --- CREATE HACKATHON (from your existing file) ---
+export const createHackathon = async (req, res) => {
+  try {
+    let imageUrl = "";
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "hackathons"
+      });
+      imageUrl = result.secure_url;
+    }
+
+    const hackathonData = new hackathonModel({
+      ...req.body,
+      image: imageUrl,
+      createdBy: req.body.adminId // Assuming adminId is passed
+    });
+
+    await hackathonData.save();
+
     res.status(201).json({
       message: "Hackathon Added Successfully",
-      data: hackathonsdata,
+      data: hackathonData,
     });
   } catch (err) {
     res.status(400).json({
       error: err.message,
     });
-  }
-};
-
-
-export const sendUpcomingHackathons = async (req, res) => {
-  try {
-    const currentTime = new Date(Date.now());
-    const upcomingHackathonsdata = await hackathonModel.find({
-      status: false,
-      startDate: { $gt: currentTime },
-    });
-
-    return res.status(200).json({
-      upcomingHackathonsdata,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: error.message,
-    });
-  }
-};
-export const sendDetailsOfId = async (req, res) => {
-  try {
-    const detailsOfId = await hackathonModel.findById(req.params.id);
-    if (!detailsOfId) {
-      return res.status(404).json({ message: 'Hackathon not there' });
-    }
-    return res.json(detailsOfId);
-  } catch (err) {
-    return res.status(500).json({ message: "Server error", err });
   }
 };

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getDashboard } from "../backendApis/api";
 import { useNavigate } from "react-router-dom";
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 const Questions = () => {
     const [quizStarted, setQuizStarted] = useState(false);
@@ -14,11 +16,12 @@ const Questions = () => {
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [questions, setQuestions] = useState([]);
     const [userAnswers, setUserAnswers] = useState([]);
-    const [quizResetTimer, setQuizResetTimer] = useState(86400);
+    const [timeUntilMidnight, setTimeUntilMidnight] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [quizId, setQuizId] = useState(null);
     const [userId, setUserId] = useState('');
     const navigate = useNavigate();
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -39,18 +42,27 @@ const Questions = () => {
         USER_ANSWERS: 'devquest_user_answers',
         QUIZ_STARTED: 'devquest_quiz_started',
         QUIZ_COMPLETED: 'devquest_quiz_completed',
-        QUIZ_START_TIME: 'devquest_quiz_start_time',
-        RESET_TIMER: 'devquest_reset_timer'
+        QUIZ_DATE: 'devquest_quiz_date'
     };
 
-    const checkQuizExpiry = () => {
-        const startTime = localStorage.getItem(STORAGE_KEYS.QUIZ_START_TIME);
-        if (startTime) {
-            const currentTime = Date.now();
-            const elapsedTime = Math.floor((currentTime - parseInt(startTime)) / 1000);
-            return elapsedTime >= 86400;
-        }
-        return false;
+    // Get seconds until next midnight
+    const getSecondsUntilMidnight = () => {
+        const now = new Date();
+        const midnight = new Date();
+        midnight.setHours(24, 0, 0, 0); // Set to next midnight
+        return Math.floor((midnight.getTime() - now.getTime()) / 1000);
+    };
+
+    // Get current date in YYYY-MM-DD format
+    const getCurrentDate = () => {
+        return new Date().toISOString().split('T')[0];
+    };
+
+    // Check if quiz is from today
+    const isQuizFromToday = () => {
+        const savedDate = localStorage.getItem(STORAGE_KEYS.QUIZ_DATE);
+        const currentDate = getCurrentDate();
+        return savedDate === currentDate;
     };
 
     const clearProgress = () => {
@@ -73,13 +85,13 @@ const Questions = () => {
         setIsCorrect(false);
         setQuizCompleted(false);
         setUserAnswers([]);
-        setQuizResetTimer(86400);
         clearProgress();
     };
 
     const loadProgress = () => {
         try {
-            if (checkQuizExpiry()) {
+            // Check if quiz is from today, if not reset everything
+            if (!isQuizFromToday()) {
                 resetQuizState();
                 return;
             }
@@ -89,8 +101,6 @@ const Questions = () => {
             const savedAnswers = localStorage.getItem(STORAGE_KEYS.USER_ANSWERS);
             const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
             const savedQuizCompleted = localStorage.getItem(STORAGE_KEYS.QUIZ_COMPLETED);
-            const savedResetTimer = localStorage.getItem(STORAGE_KEYS.RESET_TIMER);
-            const startTime = localStorage.getItem(STORAGE_KEYS.QUIZ_START_TIME);
 
             if (savedIndex !== null) {
                 setCurrentQuestionIndex(parseInt(savedIndex, 10));
@@ -107,15 +117,6 @@ const Questions = () => {
             if (savedQuizCompleted !== null) {
                 setQuizCompleted(JSON.parse(savedQuizCompleted));
             }
-
-            if (startTime && savedResetTimer) {
-                const currentTime = Date.now();
-                const elapsedTime = Math.floor((currentTime - parseInt(startTime)) / 1000);
-                const remainingTime = Math.max(0, 86400 - elapsedTime);
-                setQuizResetTimer(remainingTime);
-            } else if (savedResetTimer !== null) {
-                setQuizResetTimer(parseInt(savedResetTimer, 10));
-            }
         } catch (error) {
             console.error('Error loading progress from localStorage:', error);
         }
@@ -128,82 +129,133 @@ const Questions = () => {
             localStorage.setItem(STORAGE_KEYS.USER_ANSWERS, JSON.stringify(userAnswers));
             localStorage.setItem(STORAGE_KEYS.QUIZ_STARTED, JSON.stringify(quizStarted));
             localStorage.setItem(STORAGE_KEYS.QUIZ_COMPLETED, JSON.stringify(quizCompleted));
-            localStorage.setItem(STORAGE_KEYS.RESET_TIMER, quizResetTimer.toString());
-
-            if (!localStorage.getItem(STORAGE_KEYS.QUIZ_START_TIME)) {
-                localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
-            }
+            localStorage.setItem(STORAGE_KEYS.QUIZ_DATE, getCurrentDate());
         } catch (error) {
             console.error('Error saving progress to localStorage:', error);
         }
     };
+
+    const dummyQuestions = [
+        {
+            id: "q1",
+            question: "What does HTML stand for?",
+            options: [
+                "HyperText Markup Language",
+                "Hyperlink and Text Markup Language",
+                "Home Tool Markup Language",
+                "Hyper Transfer Markup Language"
+            ],
+            correctAnswer: 0,
+            explanation: "HTML stands for HyperText Markup Language. It's the standard language for creating web pages.",
+            points: 10
+        },
+        {
+            id: "q2",
+            question: "Which company developed JavaScript?",
+            options: [
+                "Microsoft",
+                "Netscape",
+                "Sun Microsystems",
+                "Oracle"
+            ],
+            correctAnswer: 1,
+            explanation: "JavaScript was developed by Netscape in the mid-1990s.",
+            points: 10
+        },
+        {
+            id: "q3",
+            question: "What is the time complexity of binary search?",
+            options: [
+                "O(n)",
+                "O(log n)",
+                "O(n log n)",
+                "O(1)"
+            ],
+            correctAnswer: 1,
+            explanation: "Binary search works in O(log n) time on sorted arrays.",
+            points: 10
+        }
+    ];
 
     const fetchQuestions = async () => {
         try {
             setIsLoading(true);
             const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/dailyquiz/today`);
 
-            const fetchedData = response.data.dailyQuiz.questions;
-            const quizId = response.data.dailyQuiz._id;
+            if (response.data?.dailyQuiz?.questions?.length > 0) {
+                const fetchedData = response.data.dailyQuiz.questions;
+                const quizId = response.data.dailyQuiz._id;
 
-            const formattedQuestions = fetchedData.map((item) => ({
-                id: item._id,
-                question: item.question,
-                options: item.options,
-                correctAnswer: item.correctAnswer,
-                explanation: item.explanation,
-                points: item.points || 10
-            }));
+                const formattedQuestions = fetchedData.map((item) => ({
+                    id: item._id,
+                    question: item.question,
+                    options: item.options,
+                    correctAnswer: item.correctAnswer,
+                    explanation: item.explanation,
+                    points: item.points || 10
+                }));
 
-            setQuestions(formattedQuestions);
-            setQuizId(quizId);
-            setIsLoading(false);
-
-            loadProgress();
-
-            const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
-            if (savedQuizStarted === null && !checkQuizExpiry()) {
-                setQuizStarted(true);
-                setTimeLeft(10);
-                localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
+                setQuestions(formattedQuestions);
+                setQuizId(quizId);
+            } else {
+                console.warn("No questions from backend, loading dummy questions...");
+                setQuestions(dummyQuestions);
+                setQuizId("dummyQuiz");
             }
         } catch (err) {
             console.error("Error fetching questions:", err);
+            console.warn("Loading dummy questions due to error...");
+            setQuestions(dummyQuestions);
+            setQuizId("dummyQuiz");
+        } finally {
             setIsLoading(false);
+            loadProgress();
+
+            // Auto-start quiz if it's a new day and not yet started
+            if (isQuizFromToday()) {
+                const savedQuizStarted = localStorage.getItem(STORAGE_KEYS.QUIZ_STARTED);
+                if (savedQuizStarted === null) {
+                    setQuizStarted(true);
+                    setTimeLeft(10);
+                }
+            } else {
+                // New day, start fresh
+                setQuizStarted(true);
+                setTimeLeft(10);
+                localStorage.setItem(STORAGE_KEYS.QUIZ_DATE, getCurrentDate());
+            }
         }
     };
+
+    // Midnight countdown timer effect
+    useEffect(() => {
+        const updateMidnightTimer = () => {
+            setTimeUntilMidnight(getSecondsUntilMidnight());
+        };
+
+        updateMidnightTimer(); // Initial call
+
+        const timer = setInterval(() => {
+            updateMidnightTimer();
+
+            // Check if it's a new day
+            if (!isQuizFromToday()) {
+                window.location.reload();
+            }
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         fetchQuestions();
     }, []);
 
     useEffect(() => {
-        if (quizStarted && quizResetTimer > 0) {
-            const timer = setTimeout(() => {
-                setQuizResetTimer(quizResetTimer - 1);
-            }, 1000);
-            return () => clearTimeout(timer);
-        } else if (quizResetTimer === 0 && quizStarted) {
-            window.location.reload();
-        }
-    }, [quizResetTimer, quizStarted]);
-
-    useEffect(() => {
-        if (quizCompleted && quizResetTimer > 0) {
-            const timer = setTimeout(() => {
-                setQuizResetTimer(quizResetTimer - 1);
-            }, 1000);
-            return () => clearTimeout(timer);
-        } else if (quizCompleted && quizResetTimer === 0) {
-            window.location.reload();
-        }
-    }, [quizResetTimer, quizCompleted]);
-
-    useEffect(() => {
         if (questions.length > 0 && quizStarted) {
             saveProgress();
         }
-    }, [currentQuestionIndex, timeLeft, userAnswers, quizStarted, quizCompleted, quizResetTimer, questions.length]);
+    }, [currentQuestionIndex, timeLeft, userAnswers, quizStarted, quizCompleted, questions.length]);
 
     useEffect(() => {
         if (quizStarted && !showExplanation && !quizCompleted && timeLeft > 0) {
@@ -227,7 +279,7 @@ const Questions = () => {
         }
     }, [explanationTimer, showExplanation]);
 
-    const handleTimeUp = () => {
+    const handleTimeUp = async () => {
         const newAnswers = [...userAnswers];
         newAnswers[currentQuestionIndex] = null;
         setUserAnswers(newAnswers);
@@ -237,6 +289,14 @@ const Questions = () => {
             setTimeLeft(10);
             setSelectedAnswer(null);
         } else {
+            // Last question, complete the quiz
+            const payload = { userId, quizId };
+            try {
+                await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/finishquiz`, payload);
+                console.log("Quiz completion logged due to timer running out");
+            } catch (err) {
+                console.error("Error logging quiz completion on timeout:", err);
+            }
             setQuizCompleted(true);
         }
     };
@@ -314,8 +374,7 @@ const Questions = () => {
         setExplanationTimer(0);
         setQuizCompleted(false);
         setUserAnswers([]);
-        setQuizResetTimer(86400);
-        localStorage.setItem(STORAGE_KEYS.QUIZ_START_TIME, Date.now().toString());
+        localStorage.setItem(STORAGE_KEYS.QUIZ_DATE, getCurrentDate());
     };
 
     const resetQuiz = () => {
@@ -350,7 +409,6 @@ const Questions = () => {
                 <div className="text-center space-y-8">
                     <div className="relative">
                         <div className="w-24 h-24 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin mx-auto"></div>
-
                     </div>
                     <div className="space-y-4">
                         <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
@@ -368,159 +426,90 @@ const Questions = () => {
         );
     }
 
-    // Start Screen
-    // if (!quizStarted) {
-    //     return (
-    //         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 text-white relative overflow-hidden">
-    //             {/* Animated Background Elements */}
-    //             <div className="absolute inset-0">
-    //                 <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
-    //                 <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-    //                 <div className="absolute top-3/4 left-1/3 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
-    //             </div>
-
-    //             {/* Grid Pattern */}
-    //             <div className="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.03)_1px,transparent_1px)] bg-[size:64px_64px]"></div>
-
-    //             <div className="relative z-10 min-h-screen flex items-center justify-center px-6">
-    //                 <div className="text-center max-w-4xl">
-    //                     {/* Logo/Title Section */}
-    //                     <div className="mb-12 space-y-6">
-    //                         <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl mb-6 shadow-2xl">
-    //                             <div className="text-3xl font-bold text-white">DQ</div>
-    //                         </div>
-
-    //                         <h1 className="text-6xl md:text-7xl font-black bg-gradient-to-r from-emerald-300 via-green-400 to-teal-300 bg-clip-text text-transparent leading-tight">
-    //                             DevQuest
-    //                         </h1>
-
-    //                         <div className="space-y-2">
-    //                             <p className="text-2xl font-medium text-slate-300">Professional Developer Assessment</p>
-    //                             <div className="w-24 h-1 bg-gradient-to-r from-emerald-500 to-green-500 mx-auto rounded-full"></div>
-    //                         </div>
-    //                     </div>
-
-    //                     {/* Feature Cards */}
-    //                     <div className="grid md:grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto">
-    //                         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/70 transition-all duration-300">
-    //                             <div className="text-emerald-500 text-3xl mb-3">⚡</div>
-    //                             <h3 className="font-semibold text-white mb-2">Daily Challenges</h3>
-    //                             <p className="text-slate-400 text-sm">Fresh questions every 24 hours</p>
-    //                         </div>
-
-    //                         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/70 transition-all duration-300">
-    //                             <div className="text-green-500 text-3xl mb-3">🎯</div>
-    //                             <h3 className="font-semibold text-white mb-2">Instant Feedback</h3>
-    //                             <p className="text-slate-400 text-sm">Learn with detailed explanations</p>
-    //                         </div>
-
-    //                         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/70 transition-all duration-300">
-    //                             <div className="text-teal-500 text-3xl mb-3">📊</div>
-    //                             <h3 className="font-semibold text-white mb-2">Track Progress</h3>
-    //                             <p className="text-slate-400 text-sm">Monitor your skill development</p>
-    //                         </div>
-    //                     </div>
-
-    //                     {/* CTA Section */}
-    //                     <div className="space-y-6">
-    //                         <button
-    //                             onClick={startQuiz}
-    //                             className="group relative px-12 py-5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold text-xl rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-emerald-500/25"
-    //                         >
-    //                             <span className="relative z-10">Begin Assessment</span>
-    //                             <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-green-400 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-    //                         </button>
-
-    //                         <p className="text-slate-400 text-lg">
-    //                             Ready to test your development expertise?
-    //                         </p>
-    //                     </div>
-    //                 </div>
-    //             </div>
-    //         </div>
-    //     );
-    // }
-
     // Quiz Completed Screen
     if (quizCompleted) {
         const stats = getQuizStats();
         return (
-            <div className="min-h-screen bg-gradient-to-br py-4 from-slate-900 via-gray-900 to-slate-800 text-white relative overflow-hidden">
-                {/* Animated Background */}
-                <div className="absolute inset-0">
-                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
-                    <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-                </div>
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-white relative overflow-hidden">
+                {/* Background mesh overlay for subtle depth */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-slate-900 via-slate-800 to-gray-900/90"></div>
 
-                <div className="relative z-10 min-h-screen flex items-center justify-center px-6">
-                    <div className="text-center max-w-4xl">
-                        {/* Success Badge */}
-                        <div className="mb-8">
-                            <div className="inline-flex mt-5 items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full shadow-2xl mb-2 animate-bounce">
-                                <div className="text-4xl">🏆</div>
+                <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 py-12 space-y-12">
+                    {/* Hero Section */}
+                    <div className="text-center max-w-4xl w-full">
+                        {/* <div className="flex items-center justify-center mb-4 relative w-32 h-32 mx-auto">
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-emerald-700 to-green-900 opacity-20 animate-pulse"></div>
+                            <div className="flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-emerald-900 to-green-600 shadow-lg">
+                                <span className="text-6xl">🏆</span>
                             </div>
+                        </div> */}
 
-                            <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-emerald-300 to-green-400 bg-clip-text text-transparent mb-4">
-                                Assessment Complete!
-                            </h1>
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold bg-clip-text text-transparent ZaptronFont bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 leading-tight">
+                            Mission Accomplished
+                        </h1>
+                        <p className="text-lg md:text-xl text-slate-300 -mt-3">
+                            You've successfully completed the <span className="text-emerald-400 font-semibold">DevQuest</span> challenge.
+                        </p>
+                    </div>
 
-                            <p className="text-xl text-slate-300">Excellent work on completing the DevQuest challenge</p>
+                    <div className="bg-slate-800/60 backdrop-blur-md border border-slate-700/30 rounded-2xl p-6 max-w-3xl w-full space-y-6 shadow-md">
+                        <h2 className="text-xl md:text-2xl font-bold text-center text-white tracking-tight">
+                            Performance <span className="text-emerald-400">Analytics</span>
+                        </h2>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                                { label: "Total Questions", value: stats.total, color: "text-white", bg: "bg-slate-700" },
+                                { label: "Answered", value: stats.answered, color: "text-emerald-400", bg: "bg-emerald-800/20" },
+                                { label: "Correct", value: stats.correct, color: "text-green-400", bg: "bg-green-800/20" },
+                                { label: "Success Rate", value: `${stats.percentage}%`, color: "text-white", bg: "bg-emerald-700/20" },
+                            ].map((stat, i) => (
+                                <div key={i} className="flex flex-col items-center text-center space-y-1">
+                                    <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow ${stat.bg}`}>
+                                        <span className={`text-2xl md:text-3xl font-bold ${stat.color}`}>{stat.value}</span>
+                                    </div>
+                                    <p className="text-slate-300 text-sm font-medium">{stat.label}</p>
+                                </div>
+                            ))}
                         </div>
 
-                        {/* Results Dashboard */}
-                        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-3xl p-5 mb-8 max-w-2xl mx-auto">
-                            <h2 className="text-2xl font-bold text-white mb-8">Performance Summary</h2>
-
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                <div className="text-center">
-                                    <div className="w-16 h-16 bg-slate-700/50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                        <span className="text-2xl font-bold text-white">{stats.total}</span>
-                                    </div>
-                                    <p className="text-slate-400 font-medium">Total Questions</p>
-                                </div>
-
-                                <div className="text-center">
-                                    <div className="w-16 h-16 bg-emerald-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                        <span className="text-2xl font-bold text-emerald-400">{stats.answered}</span>
-                                    </div>
-                                    <p className="text-slate-400 font-medium">Answered</p>
-                                </div>
-
-                                <div className="text-center">
-                                    <div className="w-16 h-16 bg-green-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                        <span className="text-2xl font-bold text-green-400">{stats.correct}</span>
-                                    </div>
-                                    <p className="text-slate-400 font-medium">Correct</p>
-                                </div>
-
-                                <div className="text-center">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-                                        <span className="text-2xl font-bold text-white">{stats.percentage}%</span>
-                                    </div>
-                                    <p className="text-slate-400 font-medium">Success Rate</p>
-                                </div>
+                        <div className="mt-4 text-center">
+                            <div className={`inline-block px-4 py-2 rounded-xl w-auto md:w-auto border 
+      ${stats.percentage >= 80 ? "bg-emerald-700/20 border-emerald-400 text-emerald-400" :
+                                    stats.percentage >= 60 ? "bg-blue-700/20 border-blue-400 text-blue-400" :
+                                        "bg-orange-700/20 border-orange-400 text-orange-400"}`}>
+                                <span className="font-semibold text-sm">
+                                    {stats.percentage >= 80 ? "Outstanding Performance!" :
+                                        stats.percentage >= 60 ? "Great Job!" :
+                                            "Good Effort! Keep Learning!"}
+                                </span>
                             </div>
+                            <p className="text-slate-300 text-xs mt-2">
+                                {stats.percentage >= 80 ? "Exceptional work! Your mastery is impressive." :
+                                    stats.percentage >= 60 ? "Well done! Keep building on this foundation." :
+                                        "Every expert was once a beginner. Keep practicing!"}
+                            </p>
+                        </div>
 
-                            {/* Performance Badge */}
-                            <div className="mt-8 pt-8 border-t border-slate-700/50">
-                                <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-600/20 to-green-600/20 border border-emerald-500/30 rounded-full">
-                                    <span className="text-emerald-400 font-semibold">
-                                        {stats.percentage >= 80 ? "Outstanding Performance!" :
-                                            stats.percentage >= 60 ? "Great Job!" :
-                                                "Good Effort! Keep Learning!"}
-                                    </span>
-                                </div>
-                            </div>
+                        <div className="mt-4 flex justify-center">
+                            <button
+                                onClick={() => navigate("/leaderboard")}
+                                className="px-4 py-2 bg-emerald-600 cursor-pointer hover:bg-green-600 text-white font-semibold rounded-lg shadow transition hover:scale-105 text-sm"
+                            >
+                                View Leaderboard 🏆
+                            </button>
+                        </div>
 
-                            {/* Navigate Button */}
-                            <div className="mt-5">
-                                <button
-                                    onClick={() => navigate("/leaderboard")}
-                                    className="px-6 py-3 cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold text-lg rounded-4xl transition-all duration-300 transform hover:scale-105 shadow-lg"
-                                >
-                                    Go to LeaderBoard
-                                </button>
+                        <div className="mt-4">
+                            <div className="bg-slate-700 rounded-full h-2">
+                                <div className="bg-emerald-500 h-full rounded-full transition-all duration-1000" style={{ width: `${stats.percentage}%` }}></div>
                             </div>
+                        </div>
+
+                        <div className="mt-4 text-center max-w-md mx-auto text-sm">
+                            <h3 className="font-semibold text-white mb-1">Next Quiz Available In</h3>
+                            <div className="font-mono font-bold text-emerald-400">{formatTime(timeUntilMidnight)}</div>
+                            <p className="text-slate-400">New challenges refresh daily at midnight</p>
                         </div>
                     </div>
                 </div>
@@ -547,9 +536,6 @@ const Questions = () => {
                     <div className="max-w-6xl mx-auto px-6 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
-                                {/* <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
-                                    <span className="text-white font-bold text-sm">DQ</span>
-                                </div> */}
                                 <div>
                                     <h1 className="text-xl font-bold text-white">DevQuest Assessment</h1>
                                     <p className="text-sm text-slate-400">Question {currentQuestionIndex + 1} of {questions.length}</p>

@@ -15,12 +15,11 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      // required: true,
     },
 
     provider: {
       type: String,
-      enum: ["local", "google"],
+      enum: ["local", "google", "github"],
       default: "local",
     },
 
@@ -75,7 +74,6 @@ const userSchema = new mongoose.Schema(
     gitHubAccessToken: {
       type: String,
       default: ""
-      // required: true
     },
     streaks: {
       type: Number,
@@ -93,7 +91,7 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
-    currentQuizPoints: { type: Number, default: 0 }, // earned in current quiz
+    currentQuizPoints: { type: Number, default: 0 },
     currentQuizTotalPoints: { type: Number, default: 0 },
     contactNumber: {
       type: String,
@@ -105,6 +103,9 @@ const userSchema = new mongoose.Schema(
         message: props => `${props.value} is not a valid phone number!`
       }
     },
+    leaderOfHackathons: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "hackathons" }
+    ],
     registeredHackathons: [
       { type: mongoose.Schema.Types.ObjectId, ref: "hackathons" }
     ],
@@ -114,26 +115,46 @@ const userSchema = new mongoose.Schema(
     attemptedDevQuestions: [
       { type: mongoose.Schema.Types.ObjectId, ref: "dailyQuiz" }
     ],
-    devQuestionSubmittedTime : {
-      type : Date
+    devQuestionSubmittedTime: {
+      type: Date
     },
-    institute: {
-      type: String
-    },
-    passOutYear: {
-      type: Number
-    },
-    department: {
-      type: String
-    },
+    education: [
+      {
+        institute: {
+          type: String, required: true
+        },
+        passOutYear: {
+          type: Number, required: true
+        },
+        department: {
+          type: String, required: true
+        },
+        location: {
+          type: String, required: true
+        }
+      }
+    ],
     connectedApps: [
       {
         appName: { type: String, required: true },
         appURL: { type: String, required: true }
       }
     ],
-    verificationTokenExpiresAt: Date,
-    // Submissions
+    languages: [
+      {
+        language: { type: String, required: true }
+      }
+    ],
+    skills: [
+      {
+        skill: { type: String, required: true}
+      }
+    ],
+    coins: {
+      type: Number,
+      default: 0
+    },
+    verificationTokenExpiresAt: Date
   },
   { timestamps: true }
 );

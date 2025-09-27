@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Plus, Code, Trophy, Calendar, DollarSign, Users, BookOpen, Settings, CheckCircle, AlertCircle, Info, Star, FileText, Target, Award } from 'lucide-react';
 
 const Admin = () => {
@@ -30,7 +31,9 @@ const Admin = () => {
         projectSubmission: [],
         TandCforHackathon: [],
         evaluationCriteria: [],
-        registeredParticipants: []
+        registeredParticipants: [],
+        image: null, // Add image field for file
+        imagePreview: '' // Add imagePreview for displaying the image
     });
     const [customCategory, setCustomCategory] = useState('');
     const [customTechStack, setCustomTechStack] = useState('');
@@ -48,14 +51,45 @@ const Admin = () => {
         'TensorFlow', 'OpenAI', 'FastAPI', 'Solidity', 'Web3.js',
         'IPFS', 'Arduino', 'PostgreSQL', 'Other'
     ];
-    // const themeOptions = ['Innovation', 'Sustainability', 'Healthcare', 'Education', 'FinTech', 'Gaming', 'Social Impact', 'Other'];
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size must be less than 5MB.');
+            return;
+        }
+        if (file) {
+            // Validate file type
+            const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (!validImageTypes.includes(file.type)) {
+                alert('Please upload a valid image file (JPEG, PNG, or GIF).');
+                return;
+            }
+            // Create preview URL
+            const previewUrl = URL.createObjectURL(file);
+            setHackathonForm({
+                ...hackathonForm,
+                image: file,
+                imagePreview: previewUrl
+            });
+        }
+    };
+
+    // Cleanup preview URL to prevent memory leaks
+    useEffect(() => {
+        return () => {
+            if (hackathonForm.imagePreview) {
+                URL.revokeObjectURL(hackathonForm.imagePreview);
+            }
+        };
+    }, [hackathonForm.imagePreview]);
 
     const handleDevQuestSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // await new Promise(resolve => setTimeout(resolve, 1000));
 
         console.log('DevQuest Form Data:', devQuestForm);
         alert('DevQuest question added successfully!');
@@ -83,8 +117,47 @@ const Admin = () => {
         }
         setIsSubmitting(true);
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        try {
+            // Simulate API call
+            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            console.log('Hackathon Form Data:', Object.fromEntries(formData));
+            alert(response.data.message); // Display backend success message
+
+            // Create FormData for API submission (if needed)
+            const formData = new FormData();
+            formData.append('title', hackathonForm.title);
+            formData.append('subTitle', hackathonForm.subTitle);
+            formData.append('description', hackathonForm.description);
+            formData.append('startDate', hackathonForm.startDate);
+            formData.append('endDate', hackathonForm.endDate);
+            formData.append('refMaterial', hackathonForm.refMaterial);
+            formData.append('difficulty', hackathonForm.difficulty);
+            formData.append('category', JSON.stringify(hackathonForm.category));
+            formData.append('prizeMoney', hackathonForm.prizeMoney);
+            formData.append('techStackUsed', JSON.stringify(hackathonForm.techStackUsed));
+            formData.append('overview', hackathonForm.overview);
+            formData.append('themes', JSON.stringify(hackathonForm.themes));
+            formData.append('FAQs', JSON.stringify(hackathonForm.FAQs));
+            formData.append('teams', JSON.stringify(hackathonForm.teams));
+            formData.append('aboutUs', hackathonForm.aboutUs);
+            formData.append('projectSubmission', JSON.stringify(hackathonForm.projectSubmission));
+            formData.append('TandCforHackathon', JSON.stringify(hackathonForm.TandCforHackathon));
+            formData.append('evaluationCriteria', JSON.stringify(hackathonForm.evaluationCriteria));
+            formData.append('registeredParticipants', JSON.stringify(hackathonForm.registeredParticipants));
+            if (hackathonForm.image) {
+                formData.append('image', hackathonForm.image);
+            }
+
+            console.log('Hackathon Form Data:', Object.fromEntries(formData)); // Log for debugging
+            alert('Hackathon created successfully!');
+        } catch (error) {
+            console.error('Error submitting hackathon:', error);
+            alert('Failed to create hackathon: ' + (error.response?.data?.error || 'Unknown error'));
+        }
 
         console.log('Hackathon Form Data:', hackathonForm);
         alert('Hackathon created successfully!');
@@ -110,7 +183,9 @@ const Admin = () => {
             projectSubmission: [],
             TandCforHackathon: [],
             evaluationCriteria: [],
-            registeredParticipants: []
+            registeredParticipants: [],
+            image: null,
+            imagePreview: ''
         });
         setCustomCategory('');
         setCustomTechStack('');
@@ -236,7 +311,7 @@ const Admin = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
             {/* Animated background gradient */}
-            <div className="fixed inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-orange-500/5 pointer-events-none"></div>
+            <div className="fixed inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-orange-500/5"></div>
 
             {/* Header */}
             <div className="relative bg-gray-900/90 backdrop-blur-xl border-b border-gray-800/50 shadow-xl">
@@ -320,7 +395,7 @@ const Admin = () => {
                                     <Code className="h-6 w-6 text-white" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-bold text-white">Add DevQuest Question</h2>
+                                    <h2 className="text-2xl font-bold text-white hover pointer">Add DevQuest Question</h2>
                                     <p className="text-blue-300/80 mt-1">Create engaging coding challenges for developers</p>
                                 </div>
                             </div>
@@ -534,6 +609,36 @@ const Admin = () => {
                                 />
                             </div>
 
+                            <div className="space-y-2">
+                                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                                    <FileText className="h-4 w-4 text-orange-400" />
+                                    <span>Upload Hackathon Image (Optional)</span>
+                                </label>
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/gif"
+                                    onChange={handleImageUpload}
+                                    className="w-full px-4 py-3 bg-gray-800/80 border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all duration-300 hover:border-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-600 file:text-white hover:file:bg-orange-700"
+                                />
+                                {hackathonForm.imagePreview && (
+                                    <div className="mt-4">
+                                        <p className="text-sm text-gray-300 mb-2">Image Preview:</p>
+                                        <img
+                                            src={hackathonForm.imagePreview}
+                                            alt="Hackathon Preview"
+                                            className="max-w-xs rounded-lg border border-gray-700/50 shadow-lg"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setHackathonForm({ ...hackathonForm, image: null, imagePreview: '' })}
+                                            className="mt-2 text-red-400 hover:text-red-300 text-sm"
+                                        >
+                                            Remove Image
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Date, Difficulty, Prize, Status */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div className="space-y-2">
@@ -724,7 +829,7 @@ const Admin = () => {
                                             <span>Add</span>
                                         </button>
                                     </div>
-                                    
+
                                     {hackathonForm.themes.length > 0 && (
                                         <div className="space-y-2 mt-4">
                                             {hackathonForm.themes.map((theme, index) => (
@@ -775,7 +880,7 @@ const Admin = () => {
                                         <Plus className="h-4 w-4" />
                                         <span>Add FAQ</span>
                                     </button>
-                                    
+
                                     {hackathonForm.FAQs.length > 0 && (
                                         <div className="space-y-3 mt-4">
                                             {hackathonForm.FAQs.map((faq, index) => (
@@ -822,7 +927,7 @@ const Admin = () => {
                                             <span>Add</span>
                                         </button>
                                     </div>
-                                    
+
                                     {hackathonForm.evaluationCriteria.length > 0 && (
                                         <div className="space-y-2 mt-4">
                                             {hackathonForm.evaluationCriteria.map((criteria, index) => (
@@ -866,7 +971,7 @@ const Admin = () => {
                                             <span>Add</span>
                                         </button>
                                     </div>
-                                    
+
                                     {hackathonForm.TandCforHackathon.length > 0 && (
                                         <div className="space-y-2 mt-4">
                                             {hackathonForm.TandCforHackathon.map((term, index) => (

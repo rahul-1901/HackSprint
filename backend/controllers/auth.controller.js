@@ -527,7 +527,7 @@ const signup = async (req, res) => {
     const verifyToken = jwt.sign(
       { userId: newUser._id },
       process.env.SECRET_KEY,
-      { expiresIn: "24h" }
+      { expiresIn: process.env.JWT_EXPIRE_TIME }
     );
 
     const verifyUrl = `${process.env.FRONTEND_URL}/verify?token=${verifyToken}`;
@@ -670,7 +670,7 @@ const resetPassword = async (req, res) => {
       to: user.email,
       subject: "Your password has been reset - HackSprint",
       templateName: "resetPasswordSuccess",
-      data: { name: user.name, email: user.email},
+      data: { name: user.name, email: user.email },
     });
 
     res.json({ message: "Password reset successful", success: true });
@@ -709,7 +709,7 @@ const login = async (req, res) => {
     const jwtToken = jwt.sign(
       { email: user.email, _id: user._id },
       process.env.SECRET_KEY,
-      { expiresIn: "24h" }
+      { expiresIn: process.env.JWT_EXPIRE_TIME }
     );
 
     user.lastLogin = Date.now();
@@ -765,7 +765,7 @@ const googleLogin = async (req, res) => {
     const jwtToken = jwt.sign(
       { email, _id: user._id },
       process.env.SECRET_KEY,
-      { expiresIn: "24h" }
+      { expiresIn: process.env.JWT_EXPIRE_TIME }
     );
 
     if (isFirstTime) {
@@ -793,6 +793,104 @@ const googleLogin = async (req, res) => {
   }
 };
 
+
+/**
+ * GITHUB LOGIN - no email verification required
+ */
+const githubLogin = async (req, res) => {
+  try {
+    const { code } = req.query;
+    if (!code) {
+      return res.status(400).json({ message: "Code not provided", success: false });
+    }
+
+    const params = new URLSearchParams();
+    params.append("client_id", process.env.GITHUB_CLIENT_ID);
+    params.append("client_secret", process.env.GITHUB_CLIENT_SECRET);
+    params.append("code", code);
+
+    // Exchange code for access token
+    const tokenRes = await axios.post(
+      "https://github.com/login/oauth/access_token",
+      params.toString(),
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+
+    const accessToken = tokenRes.data.access_token;
+    if (!accessToken) {
+      return res.status(400).json({ message: "Invalid GitHub code", success: false });
+    }
+
+    // Get user info from GitHub
+    const userRes = await axios.get("https://api.github.com/user", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    // GitHub may not always return email here (depends on privacy settings).
+    let email = userRes.data.email;
+    if (!email) {
+      const emailRes = await axios.get("https://api.github.com/user/emails", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const primaryEmail = emailRes.data.find((e) => e.primary && e.verified);
+      email = primaryEmail?.email;
+    }
+
+    if (!email) {
+      return res.status(400).json({ message: "Email not available from GitHub", success: false });
+    }
+
+    const name = userRes.data.name || userRes.data.login;
+
+    // Create or find user
+    let user = await UserModel.findOne({ email });
+    let isFirstTime = false;
+    if (!user) {
+      isFirstTime = true;
+      user = await UserModel.create({
+        name,
+        email,
+        provider: "github",
+        isVerified: true,
+      });
+    }
+
+    // Generate JWT
+    const jwtToken = jwt.sign(
+      { email, _id: user._id },
+      process.env.SECRET_KEY,
+      { expiresIn: "24h" }
+    );
+
+    // Send welcome email (only on first login)
+    if (isFirstTime) {
+      await sendMail({
+        to: user.email,
+        subject: "Welcome to HackSprint 🎉",
+        templateName: "welcome",
+        data: { name: user.name, email: user.email },
+      });
+    }
+
+    // Respond with JSON for frontend to handle like Google login
+    return res.json({
+      message: "GitHub login successful",
+      success: true,
+      token: jwtToken,
+      email,
+      name: user.name
+    });
+  } catch (err) {
+    console.error("🔥 Error in githubLogin:", err);
+    return res.status(500).json({ message: "Internal server error", success: false });
+  }
+};
+
 export {
   signup,
   login,
@@ -800,4 +898,5 @@ export {
   sendResetLink,
   resetPassword,
   googleLogin,
+  githubLogin
 };

@@ -1,32 +1,29 @@
-import mongoose from "mongoose"
-import express from 'express'
 import UserModel from "../models/user.models.js"
-import { all } from "axios"
-import devquestModel from "../models/devquest.model.js";
-import dailyQuizModel from "../models/dailyQuiz.model.js";
+import devquestModel from "../models/devquest.model.js"
+import dailyQuizModel from "../models/dailyQuiz.model.js"
 
 export const saveGitHubLink = async (req, res) => {
   try {
     const { code, state } = req.body; // Expecting code from request body for PUT request
-    
+
     if (!code) {
-      return res.status(400).json({ 
-        message: "Missing authorization code from GitHub OAuth" 
+      return res.status(400).json({
+        message: "Missing authorization code from GitHub OAuth"
       });
     }
 
     // Verify user is authenticated
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ 
-        message: "User not authenticated" 
+      return res.status(401).json({
+        message: "User not authenticated"
       });
     }
 
     // Check if GitHub is already linked
     const existingUser = await UserModel.findById(req.user.id);
     if (existingUser?.isGitHubloggedIn && existingUser?.gitHubAccessToken) {
-      return res.status(409).json({ 
-        message: "GitHub account is already linked to this user" 
+      return res.status(409).json({
+        message: "GitHub account is already linked to this user"
       });
     }
 
@@ -38,7 +35,7 @@ export const saveGitHubLink = async (req, res) => {
     });
 
     const tokenResponse = await axios.post(
-      "https://github.com/login/oauth/access_token", 
+      "https://github.com/login/oauth/access_token",
       params,
       {
         headers: {
@@ -53,21 +50,21 @@ export const saveGitHubLink = async (req, res) => {
 
     if (error) {
       console.error('GitHub OAuth error:', error_description);
-      return res.status(400).json({ 
-        message: "GitHub OAuth failed", 
-        error: error_description 
+      return res.status(400).json({
+        message: "GitHub OAuth failed",
+        error: error_description
       });
     }
 
     if (!access_token) {
-      return res.status(400).json({ 
-        message: "Failed to obtain GitHub access token" 
+      return res.status(400).json({
+        message: "Failed to obtain GitHub access token"
       });
     }
 
     // Get GitHub user information
     const githubUserResponse = await axios.get("https://api.github.com/user", {
-      headers: { 
+      headers: {
         Authorization: `${token_type || 'token'} ${access_token}`,
         "User-Agent": process.env.APP_NAME || "YourAppName"
       },
@@ -83,8 +80,8 @@ export const saveGitHubLink = async (req, res) => {
     });
 
     if (existingGithubUser) {
-      return res.status(409).json({ 
-        message: "This GitHub account is already linked to another user" 
+      return res.status(409).json({
+        message: "This GitHub account is already linked to another user"
       });
     }
 
@@ -102,20 +99,20 @@ export const saveGitHubLink = async (req, res) => {
         // gitHubLinkedAt: new Date(),
         // updatedAt: new Date()
       },
-      { 
+      {
         new: true,
         select: '-gitHubAccessToken' // Don't return the token in response
       }
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ 
-        message: "User not found" 
+      return res.status(404).json({
+        message: "User not found"
       });
     }
 
     // Return success response with GitHub user info
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "GitHub account linked successfully",
       githubUser: {
         id: githubUser.id,
@@ -139,30 +136,30 @@ export const saveGitHubLink = async (req, res) => {
 
   } catch (error) {
     console.error('Save GitHub link error:', error);
-    
+
     // Handle specific axios errors
     if (error.response) {
       const status = error.response.status;
-      
+
       if (status === 401) {
-        return res.status(401).json({ 
-          message: "Invalid GitHub authorization code" 
+        return res.status(401).json({
+          message: "Invalid GitHub authorization code"
         });
       } else if (status === 403) {
-        return res.status(403).json({ 
-          message: "GitHub API rate limit exceeded. Please try again later." 
+        return res.status(403).json({
+          message: "GitHub API rate limit exceeded. Please try again later."
         });
       } else if (status === 422) {
-        return res.status(400).json({ 
-          message: "Invalid or expired GitHub authorization code" 
+        return res.status(400).json({
+          message: "Invalid or expired GitHub authorization code"
         });
       }
     }
 
     // Handle network timeouts
     if (error.code === 'ECONNABORTED') {
-      return res.status(408).json({ 
-        message: "Request timeout. Please try again." 
+      return res.status(408).json({
+        message: "Request timeout. Please try again."
       });
     }
 
@@ -173,20 +170,19 @@ export const saveGitHubLink = async (req, res) => {
   }
 };
 
-// Optional: Function to update GitHub link (refresh token/info)
 export const updateGitHubLink = async (req, res) => {
   try {
     const user = await UserModel.findById(req.user.id);
-    
+
     if (!user || !user.gitHubAccessToken) {
-      return res.status(400).json({ 
-        message: "GitHub account not linked" 
+      return res.status(400).json({
+        message: "GitHub account not linked"
       });
     }
 
     // Refresh GitHub user information
     const githubUserResponse = await axios.get("https://api.github.com/user", {
-      headers: { 
+      headers: {
         Authorization: `token ${user.gitHubAccessToken}`,
         "User-Agent": process.env.APP_NAME || "YourAppName"
       },
@@ -206,13 +202,13 @@ export const updateGitHubLink = async (req, res) => {
         lastGitHubSync: new Date(),
         updatedAt: new Date()
       },
-      { 
+      {
         new: true,
         select: '-gitHubAccessToken'
       }
     );
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "GitHub information updated successfully",
       githubUser: {
         id: githubUser.id,
@@ -234,13 +230,13 @@ export const updateGitHubLink = async (req, res) => {
 
   } catch (error) {
     console.error('Update GitHub link error:', error);
-    
+
     if (error.response?.status === 401) {
       // Token is invalid, clear GitHub connection
       await UserModel.findByIdAndUpdate(
         req.user.id,
         {
-          $unset: { 
+          $unset: {
             gitHubAccessToken: 1,
             gitHubUserId: 1,
             gitHubUsername: 1,
@@ -252,25 +248,24 @@ export const updateGitHubLink = async (req, res) => {
           updatedAt: new Date()
         }
       );
-      
-      return res.status(401).json({ 
-        message: "GitHub token invalid. Please reconnect your GitHub account." 
+
+      return res.status(401).json({
+        message: "GitHub token invalid. Please reconnect your GitHub account."
       });
     }
 
-    return res.status(500).json({ 
-      message: "Failed to update GitHub information" 
+    return res.status(500).json({
+      message: "Failed to update GitHub information"
     });
   }
 };
 
-// Function to remove GitHub link
 export const removeGitHubLink = async (req, res) => {
   try {
     const updatedUser = await UserModel.findByIdAndUpdate(
       req.user.id,
       {
-        $unset: { 
+        $unset: {
           gitHubAccessToken: 1,
           // gitHubUserId: 1,
           // gitHubUsername: 1,
@@ -283,19 +278,19 @@ export const removeGitHubLink = async (req, res) => {
         isGitHubLoggedIn: false,
         // updatedAt: new Date()
       },
-      { 
+      {
         new: true,
         select: '-gitHubAccessToken'
       }
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ 
-        message: "User not found" 
+      return res.status(404).json({
+        message: "User not found"
       });
     }
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "GitHub account unlinked successfully",
       user: {
         id: updatedUser._id,
@@ -305,8 +300,8 @@ export const removeGitHubLink = async (req, res) => {
 
   } catch (error) {
     console.error('Remove GitHub link error:', error);
-    return res.status(500).json({ 
-      message: "Failed to unlink GitHub account" 
+    return res.status(500).json({
+      message: "Failed to unlink GitHub account"
     });
   }
 };
@@ -359,90 +354,90 @@ export const checkAndUpdateGitHubStatus = async (req, res) => {
   }
 };
 
-  export const increaseStreak = async (req, res) => {
-      try {
-          const { userId ,questionId} = req.body;
+export const increaseStreak = async (req, res) => {
+  try {
+    const { userId, questionId } = req.body;
 
-          if (!userId  || !questionId) {
-              return res.status(400).json({ message: "userId or questionId is required" });
-          }
+    if (!userId || !questionId) {
+      return res.status(400).json({ message: "userId or questionId is required" });
+    }
 
-          const user = await UserModel.findById(userId);
-          if (!user) {
-              return res.status(404).json({ message: "User not found" });
-          }
-          const question  = await devquestModel.findById(questionId);
-          if(!question){
-              return res.status(400).json({message : "Question not found"});
-          }
-          user.points += question.points;
-          user.currentQuizPoints+=question.points;
-          user.currentQuizTotalPoints+=question.points;
-          // user.streaks+=1; // Increment streak by 1
-          user.devQuestionsCorrectlyAnswered+=1;
-          await user.save();
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const question = await devquestModel.findById(questionId);
+    if (!question) {
+      return res.status(400).json({ message: "Question not found" });
+    }
+    user.points += question.points;
+    user.currentQuizPoints += question.points;
+    user.currentQuizTotalPoints += question.points;
+    // user.streaks+=1; // Increment streak by 1
+    user.devQuestionsCorrectlyAnswered += 1;
+    await user.save();
 
-          res.status(200).json({ message: "Streak and points are increased", streaks: user.streaks , points : user.points});
-      } catch (error) {
-          console.error("Error increasing streak or points:", error);
-          res.status(500).json({ message: error.message });
-      }
-  };
+    res.status(200).json({ message: "Streak and points are increased", streaks: user.streaks, points: user.points });
+  } catch (error) {
+    console.error("Error increasing streak or points:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
-  export const resetStreak = async (req, res) => {
-      try {
-          const { userId , questionId} = req.body;
+export const resetStreak = async (req, res) => {
+  try {
+    const { userId, questionId } = req.body;
 
-          if (!userId) {
-              return res.status(400).json({ message: "userId is required" });
-          }
+    if (!userId) {
+      return res.status(400).json({ message: "userId is required" });
+    }
 
-          const user = await UserModel.findById(userId);
+    const user = await UserModel.findById(userId);
 
-          if (!user) {
-              return res.status(404).json({ message: "User not found" });
-          }
-          const question  = await devquestModel.findById(questionId);
-          if(!question){
-              return res.status(400).json({message : "Question not found"});
-          }
-          user.devQuestionsIncorrectlyAnswered+=1;
-          user.currentQuizTotalPoints+=question.points;
-          // if(user.devQuestionsCorrectlyAnswered < user.devQuestionsIncorrectlyAnswered){
-          //   user.streaks = 0;
-          // }
-          // if(user.devquestions) // Reset streak to 0
-          await user.save();
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const question = await devquestModel.findById(questionId);
+    if (!question) {
+      return res.status(400).json({ message: "Question not found" });
+    }
+    user.devQuestionsIncorrectlyAnswered += 1;
+    user.currentQuizTotalPoints += question.points;
+    // if(user.devQuestionsCorrectlyAnswered < user.devQuestionsIncorrectlyAnswered){
+    //   user.streaks = 0;
+    // }
+    // if(user.devquestions) // Reset streak to 0
+    await user.save();
 
-          res.status(200).json({ message: "Streak reset", streaks: user.streaks });
-      } catch (error) {
-          console.error("Error resetting streak:", error);
-          res.status(500).json({ message: error.message });
-      }
-  };
+    res.status(200).json({ message: "Streak reset", streaks: user.streaks });
+  } catch (error) {
+    console.error("Error resetting streak:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
-export const devQuestionsAnsweredData = async(req,res)=>{
-  try{
-    const {userId ,quizId } = req.body;
-    if(!userId || !quizId){
-      return res.status(404).json({message : "user or quiz id not found"});
+export const devQuestionsAnsweredData = async (req, res) => {
+  try {
+    const { userId, quizId } = req.body;
+    if (!userId || !quizId) {
+      return res.status(404).json({ message: "user or quiz id not found" });
     }
     const user = await UserModel.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
     const quiz = await dailyQuizModel.findById(quizId);
-    if(!quiz){
-      return res.status(404).json({message : "dailyquiz not found"})
+    if (!quiz) {
+      return res.status(404).json({ message: "dailyquiz not found" })
     }
     if (!quiz.attemptedBy.includes(userId)) {
       quiz.attemptedBy.push(userId);
       await quiz.save();
     }
     user.devQuestionSubmittedTime = new Date(Date.now());
-    if(user.currentQuizPoints >= (user.currentQuizTotalPoints)/2){
+    if (user.currentQuizPoints >= (user.currentQuizTotalPoints) / 2) {
       user.streaks += 1;
-    }else{
+    } else {
       user.streaks = 0;
     }
     if (!user.attemptedDevQuestions.includes(quizId)) {
@@ -456,69 +451,171 @@ export const devQuestionsAnsweredData = async(req,res)=>{
     user.currentQuizTotalPoints = 0;
     await user.save();
     res.status(200).json({
-      message : "Streaks updated",
-      streaks : user.streaks
+      message: "Streaks updated",
+      streaks: user.streaks
     })
-  }catch (error) {
-        console.error("Error resetting streak:", error);
-        res.status(500).json({ message: error.message });
+  } catch (error) {
+    console.error("Error resetting streak:", error);
+    res.status(500).json({ message: error.message });
   }
 }
 
-export const updatingEducation = async (req, res) => {
+export const addEducation = async (req, res) => {
   try {
-    const { userId,institute, passOutYear, department } = req.body;
+    const { userId, institute, passOutYear, department, location } = req.body;
+
+    if (!userId || !institute || !passOutYear || !department || !location) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
 
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
-      {
-        $set: {
-          "institute": institute,
-          "passOutYear": passOutYear,
-          "department": department,
-        },
-      },
-      { new: true, runValidators: true } // return updated doc & validate
+      { $push: { education: { institute, passOutYear, department, location } } },
+      { new: true }
     );
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!updatedUser) return res.status(404).json({ message: "User not found" });
 
     res.status(200).json({
-      message: "Education details updated successfully",
-      user: updatedUser,
+      message: "Education added successfully",
+      education: updatedUser.education,
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-export const updatingConnectedApps = async (req, res) => {
+export const editEducation = async (req, res) => {
   try {
-    const { userId, AppName, AppURL } = req.body;
+    const { userId, eduId, institute, passOutYear, department, location } = req.body;
 
-    if (!userId || !AppName || !AppURL) {
+    if (!userId || !eduId) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const updatedUser = await UserModel.findOneAndUpdate(
+      { _id: userId, "education._id": eduId },
+      {
+        $set: {
+          "education.$.institute": institute,
+          "education.$.passOutYear": passOutYear,
+          "education.$.department": department,
+          "education.$.location": location,
+        }
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) return res.status(404).json({ message: "User or Education not found" });
+
+    res.status(200).json({
+      message: "Education updated successfully",
+      education: updatedUser.education,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const deleteEducation = async (req, res) => {
+  try {
+    const { userId, eduId } = req.body;
+
+    if (!userId || !eduId) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
-      {
-        $push: {
-          connectedApps: { appName: AppName, appURL: AppURL }
-        }
-      },
-      { new: true } // return updated doc
+      { $pull: { education: { _id: eduId } } },
+      { new: true }
     );
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+    if (!updatedUser) return res.status(404).json({ message: "User or Education not found" });
+
+    res.status(200).json({
+      message: "Education deleted successfully",
+      education: updatedUser.education,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const addConnectedApp = async (req, res) => {
+  try {
+    const { userId, appName, appURL } = req.body;
+
+    if (!userId || !appName || !appURL) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      { $push: { connectedApps: { appName, appURL } } },
+      { new: true }
+    );
+
+    if (!updatedUser) return res.status(404).json({ message: "User not found" });
 
     res.status(200).json({
       message: "Connected app added successfully",
-      connectedApps: updatedUser.connectedApps
+      connectedApps: updatedUser.connectedApps,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const editConnectedApp = async (req, res) => {
+  try {
+    const { userId, appId, appName, appURL } = req.body;
+
+    if (!userId || !appId) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const updatedUser = await UserModel.findOneAndUpdate(
+      { _id: userId, "connectedApps._id": appId },
+      {
+        $set: {
+          "connectedApps.$.appName": appName,
+          "connectedApps.$.appURL": appURL,
+        }
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) return res.status(404).json({ message: "User or App not found" });
+
+    res.status(200).json({
+      message: "Connected app updated successfully",
+      connectedApps: updatedUser.connectedApps,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const deleteConnectedApp = async (req, res) => {
+  try {
+    const { userId, appId } = req.body;
+
+    if (!userId || !appId) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      { $pull: { connectedApps: { _id: appId } } },
+      { new: true }
+    );
+
+    if (!updatedUser) return res.status(404).json({ message: "User or App not found" });
+
+    res.status(200).json({
+      message: "Connected app deleted successfully",
+      connectedApps: updatedUser.connectedApps,
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -560,6 +657,113 @@ export const displayLeaderBoard = async (req, res) => {
   } catch (error) {
     console.error("Error fetching leaderboard:", error);
     res.status(500).json({ message: "Something went wrong while fetching leaderboard!" });
+  }
+};
+
+export const addLanguage = async (req, res) => {
+  try {
+    const { userId, language } = req.body;
+
+    if (!userId || !language) {
+      return res.status(400).json({ message: "User ID and language are required" });
+    }
+
+    const user = await UserModel.findById(userId);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const exists = user.languages.some(
+      (langObj) => langObj.language.toLowerCase() === language.toLowerCase()
+    );
+
+    if (exists) {
+      return res.status(400).json({ message: "Language already added" });
+    }
+
+    user.languages.push({ language });
+    await user.save();
+
+    res.status(200).json({ message: "Language added successfully", languages: user.languages });
+  } catch (err) {
+    console.error("Add language error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const removeLanguage = async (req, res) => {
+  try {
+    const { userId, language } = req.body;
+
+    if (!userId || !language) return res.status(400).json({ message: "User ID and language are required" });
+
+    const user = await UserModel.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.languages = user.languages.filter(
+      (langObj) => langObj.language.toLowerCase() !== language.toLowerCase()
+    );
+
+    await user.save();
+
+    res.status(200).json({ message: "Language removed successfully", languages: user.languages });
+  } catch (err) {
+    console.error("Remove language error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const addSkill = async (req, res) => {
+  try {
+    const { userId, skill } = req.body;
+
+    if (!userId || !skill) {
+      return res.status(400).json({ message: "User ID and skill are required" });
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const exists = user.skills.some(
+      (s) => s.skill.toLowerCase() === skill.toLowerCase()
+    );
+
+    if (exists) {
+      return res.status(400).json({ message: "Skill already added" });
+    }
+
+    if (!user.skills) user.skills = [];
+    user.skills.push({ skill });
+
+    await user.save();
+
+    res.status(200).json({ message: "Skill added successfully", skills: user.skills });
+  } catch (err) {
+    console.error("Add skill error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const deleteSkill = async (req, res) => {
+  try {
+    const { userId, skill } = req.body;
+
+    if (!userId || !skill) {
+      return res.status(400).json({ message: "User ID and skill are required" });
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.skills = user.skills.filter(
+      (s) => s.skill.toLowerCase() !== skill.toLowerCase()
+    );
+
+    await user.save();
+
+    res.status(200).json({ message: "Skill removed successfully", skills: user.skills });
+  } catch (err) {
+    console.error("Remove skill error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

@@ -64,7 +64,7 @@ export const createTeam = async (req, res) => {
     });
 
     await UserModel.findByIdAndUpdate(leader, {
-      $addToSet: { registeredHackathons: hackathon },
+      $addToSet: { registeredHackathons: hackathon, leaderOfHackathons : hackathon }
     });
     await hackathonModel.findByIdAndUpdate(hackathon, {
       $addToSet: { registeredParticipants: leader },
@@ -228,7 +228,8 @@ export const searchTeamByCode = async (req, res) => {
         pendingRequestsCount: team.pendingMembers.length,
         createdAt: team.createdAt,
         updatedAt: team.updatedAt,
-        secretLink : team.secretLink
+        secretLink : team.secretLink,
+        maxTeamSize : team.maxTeamSize
       },
     });
   } catch (error) {
@@ -246,7 +247,7 @@ export const getPendingRequests = async (req, res) => {
     const { leaderId } = req.body;
 
     const leaderRegistration = await RegisteredParticipantsModel.findOne({
-      user: leaderId,
+      user: leaderId
     });
 
     if (!leaderRegistration || !leaderRegistration.team) {

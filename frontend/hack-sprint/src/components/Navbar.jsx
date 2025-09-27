@@ -11,6 +11,8 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userInfo, setUserInfo] = useState(null)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const [coins, setCoins] = useState(0);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -56,11 +58,45 @@ const Navbar = () => {
     setShowProfileMenu(false)
   }
 
+  useEffect(() => {
+    const today = new Date().toDateString();
+    const lastVisit = localStorage.getItem("lastVisit");
+    const storedCoins = parseInt(localStorage.getItem("coins") || "0", 10);
+    const storedStreak = parseInt(localStorage.getItem("streak") || "0", 10);
+
+    let newCoins = storedCoins;
+    let newStreak = storedStreak;
+    let rewardEarned = 0;
+
+    if (lastVisit !== today) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (lastVisit === yesterday.toDateString()) {
+        newStreak = storedStreak + 1; // continued streak
+      } else {
+        newStreak = 1; // reset streak
+      }
+
+      rewardEarned = 10 + Math.floor(newStreak / 5) * 5; // 10 coins + bonus every 5 days
+      newCoins += rewardEarned;
+
+      localStorage.setItem("coins", newCoins.toString());
+      localStorage.setItem("streak", newStreak.toString());
+      localStorage.setItem("lastVisit", today);
+
+      setShowReward(true);
+    }
+
+    setCoins(newCoins);
+    setStreak(newStreak);
+  }, []);
+
   return (
     <>
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled
-          ? 'bg-gray-900/95 backdrop-blur-md shadow-2xl border-b border-green-500/30'
-          : 'bg-gray-900/80 backdrop-blur-sm border-b border-green-900/50'
+        ? 'bg-gray-900/95 backdrop-blur-md shadow-2xl border-b border-green-500/30'
+        : 'bg-gray-900/80 backdrop-blur-sm border-b border-green-900/50'
         }`}>
 
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-60" />
@@ -134,7 +170,7 @@ const Navbar = () => {
                           {/* Coins Display (non-clickable) */}
                           <div className="flex flex-col items-center p-3 bg-gray-800 rounded-lg text-gray-200 select-none">
                             <Coins size={20} className="mb-1 text-yellow-400" />
-                            <span className="text-xs">{userInfo?.coins || 10} Coins</span>
+                            <span className="text-xs">{coins || 0} Coins</span>
                           </div>
                         </div>
 
