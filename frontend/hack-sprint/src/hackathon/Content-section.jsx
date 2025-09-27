@@ -18,9 +18,9 @@ export const ContentSection = ({ activeSection, hackathon }) => {
       {children}
     </div>
   );
-  
+
   const SectionHeader = ({ children }) => (
-      <h3 className="text-3xl font-bold text-white mb-6">{children}</h3>
+    <h3 className="text-3xl font-bold text-white mb-6">{children}</h3>
   );
 
   // Component for sections with standard text content
@@ -68,8 +68,8 @@ export const ContentSection = ({ activeSection, hackathon }) => {
         return (
           <div className="space-y-8">
             <SectionCard>
-                <h4 className="text-xl font-bold text-white mb-4">Description</h4>
-                <p className="text-gray-300 leading-relaxed prose max-w-none">{hackathon.description}</p>
+              <h4 className="text-xl font-bold text-white mb-4">Description</h4>
+              <p className="text-gray-300 leading-relaxed prose max-w-none">{hackathon.description}</p>
             </SectionCard>
             <SectionCard>
               <h4 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
@@ -133,7 +133,7 @@ export const ContentSection = ({ activeSection, hackathon }) => {
 
       // --- These sections still use SimpleContentSection for string data ---
       case "prizes":
-        const prizeContent = hackathon.prizeMoney 
+        const prizeContent = hackathon.prizeMoney
           ? `The total prize pool for this event is $${hackathon.prizeMoney.toLocaleString()}. Further details on prize distribution will be provided by the organizers.`
           : null;
         return <SimpleContentSection title="Prizes" content={prizeContent} />;
@@ -183,7 +183,7 @@ export const ContentSection = ({ activeSection, hackathon }) => {
             </div>
           </div>
         );
-        
+
       case "discussion":
         return (
           <div>
@@ -192,13 +192,15 @@ export const ContentSection = ({ activeSection, hackathon }) => {
               <Users className="w-16 h-16 mx-auto mb-4 text-green-400/50" />
               <p className="text-lg text-white font-semibold">Join the conversation!</p>
               <p className="text-gray-400 mt-2 mb-6">Connect with fellow participants on our Discord server.</p>
-              <Button className="border border-green-500 text-white font-bold hover:bg-green-500/10 cursor-pointer">
-                Join Discord Community
-              </Button>
+              <a href="https://discord.gg/JHSRmuQu" target="_blank">
+                <Button className="border border-green-500 text-white font-bold hover:bg-green-500/10 cursor-pointer">
+                  Join Discord Community
+                </Button>
+              </a>
             </SectionCard>
           </div>
         );
-        
+
       default:
         return (
           <div className="text-center py-12">

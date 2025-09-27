@@ -20,8 +20,8 @@ export const HeroSection = ({
   isActive,
   startDate,
   endDate,
-  participantCount = 0,
-  prizeMoney = 0,
+  participantCount,
+  prizeMoney,
   imageUrl = "/assets/hackathon-banner.png",
   hackathonId,
 }) => {
@@ -34,15 +34,14 @@ export const HeroSection = ({
   const [registrationInfo, setRegistrationInfo] = useState(false);
   const [leaderButton, setLeaderButton] = useState(false)
   const [leaderValue, setLeaderValue] = useState("")
+  const [isLeader, setIsLeader] = useState(false);
 
   const navigate = useNavigate();
   useEffect(() => {
     const checkLeader = async () => {
       if (localStorage.getItem('teamDetails_code')) {
         setLeaderValue(localStorage.getItem('teamDetails_code'))
-        setLeaderButton(true)
       } else {
-        setLeaderButton(false)
         setLeaderValue('')
       }
     }
@@ -61,17 +60,36 @@ export const HeroSection = ({
         setUserData(fetchedUserData);
         setIsVerified(fetchedUserData?.isVerified || false);
 
-        if (
-          fetchedUserData &&
-          Array.isArray(fetchedUserData.registeredHackathons)
-        ) {
-          const registrationFound = fetchedUserData.registeredHackathons.find(
-            (registrationId) => String(registrationId) === String(hackathonId)
-          );
-          setRegistrationInfo(!!registrationFound);
+        if (fetchedUserData) {
+          setUserData(fetchedUserData);
+          setIsVerified(fetchedUserData?.isVerified || false);
+
+          let registrationFound = false;
+          if (Array.isArray(fetchedUserData.registeredHackathons)) {
+            registrationFound = fetchedUserData.registeredHackathons.some(
+              (registrationId) => String(registrationId) === String(hackathonId)
+            );
+          }
+          setRegistrationInfo(registrationFound);
+
+          // Check if user is leader of this hackathon
+          let leaderOfThisHackathon = false;
+          if (fetchedUserData.leaderOfHackathons) {
+            leaderOfThisHackathon = fetchedUserData.leaderOfHackathons.some(
+              (leaderHackId) => String(leaderHackId) === String(hackathonId)
+            );
+            if(leaderOfThisHackathon == true) {
+              setLeaderButton(true)
+            }
+          } else {
+            setLeaderButton(false)
+          }
+          setIsLeader(leaderOfThisHackathon);
         } else {
           setRegistrationInfo(false);
+          setIsLeader(false);
         }
+
       } catch (err) {
         setUserData(null);
         setIsVerified(false);
@@ -163,38 +181,20 @@ export const HeroSection = ({
   );
 
   const renderActionButton = () => {
-    if (loading) {
+    if (loading || !userData) {
       return (
         <Button
           disabled
-          size="lg"
-          className="bg-gray-500/50 text-white font-bold w-auto"
+          className="cursor-not-allowed group w-auto bg-gray-700 text-gray-400 font-bold px-6 py-2.5 text-base"
         >
           Loading...
         </Button>
       );
     }
 
-    if (!isActive) {
-      return null;
-    }
+    if (!isActive) return null;
 
-    if (registrationInfo) {
-      // User is registered
-      return (
-        <Button
-          onClick={handleSubmit}
-          className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
-        >
-          <span className="flex items-center gap-2">
-            Submit Now
-            {/* The Send icon is not imported, you may need to add: import { Send } from "lucide-react"; */}
-            <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-          </span>
-        </Button>
-      );
-    } else {
-      // User is not registered for this hackathon
+    if (!registrationInfo) {
       return (
         <Button
           onClick={handleRegister}
@@ -207,6 +207,32 @@ export const HeroSection = ({
         </Button>
       );
     }
+
+    // User registered & leader
+    if (registrationInfo && isLeader) {
+      return (
+        <Button
+          onClick={handleSubmit}
+          className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+        >
+          <span className="flex items-center gap-2">
+            Submit Now
+            <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+          </span>
+        </Button>
+      );
+    }
+
+    // Registered but not leader — disabled
+    return (
+      <Button
+        disabled
+        className="cursor-not-allowed group w-auto bg-gray-700 text-gray-400 font-bold px-6 py-2.5 text-base"
+        title="Only team leaders can submit"
+      >
+        Submit Now
+      </Button>
+    );
   };
 
   const fallbackImage = `https://via.placeholder.com/1200x400/0a0f18/22c55e?text=${encodeURIComponent(

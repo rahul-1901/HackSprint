@@ -34,24 +34,6 @@ const GridBackground = () => (
   </div>
 );
 
-const FloatingParticles = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    {[...Array(20)].map((_, i) => (
-      <div
-        key={i}
-        className="absolute w-1 h-1 bg-green-400 rounded-full opacity-40 animate-pulse"
-        style={{
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-          animationDelay: `${Math.random() * 5}s`,
-          animationDuration: `${2 + Math.random() * 4}s`,
-        }}
-      />
-    ))}
-  </div>
-);
-
-// --- HACKATHON CARD COMPONENT ---
 
 const HackathonCard = ({ hackathon }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -206,7 +188,6 @@ const AdminProfile = () => {
   return (
     <div className="relative min-h-screen bg-gray-900 text-white overflow-hidden">
       <GridBackground />
-      <FloatingParticles />
       
       <div className="relative z-10 p-4 sm:p-6 lg:p-8">
         {/* --- TOP ADMIN SECTION --- */}
@@ -216,7 +197,7 @@ const AdminProfile = () => {
             <span className="text-green-400 text-sm font-semibold tracking-wide uppercase mx-4">ADMIN DASHBOARD</span>
             <div className="w-px h-8 bg-green-400"></div>
           </div>
-          <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl ZaptronFont text-green-400 [text-shadow:0_0_2px_theme(colors.green.400)]">Administrator Profile</h1>
+          <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl ZaptronFont text-green-400">Administrator Profile</h1>
           <p className="text-gray-400 text-lg mt-4 max-w-2xl">Manage platform operations, monitor hackathons, and oversee community growth.</p>
         </div>
 

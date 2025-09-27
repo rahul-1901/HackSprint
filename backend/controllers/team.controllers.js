@@ -247,7 +247,7 @@ export const getPendingRequests = async (req, res) => {
     const { leaderId } = req.body;
 
     const leaderRegistration = await RegisteredParticipantsModel.findOne({
-      user: leaderId,
+      user: leaderId
     });
 
     if (!leaderRegistration || !leaderRegistration.team) {

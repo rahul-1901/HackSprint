@@ -40,6 +40,9 @@ import LiveHackathonsPage from './admin/livehackathon.jsx';
 import EndedHackathonsPage from './admin/endedhackathon.jsx';
 import HackathonUsersPage from './admin/userlist.jsx';
 import UserSubmissionDetailPage from './admin/usersubmission.jsx';
+import ParticipantPoliciesPage from './pages/Participation.jsx';
+import OrganizerPlaybookPage from './pages/Organiser.jsx';
+import LegalSupportPage from './pages/TermsCond.jsx';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -68,13 +71,13 @@ function App() {
           <Route path="/adminhome" element={<Adminhome />} caseSensitive />
           <Route path="/adminlogin" element={<AdminLogin />} caseSensitive />
           <Route path="/admin/signup" element={<AdminSignup />} caseSensitive /> {/* --- ADD THE NEW ROUTE --- */}
-          
+
           <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
           <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
           <Route path="/quest" element={<Quest />} caseSensitive />
           <Route path="/about" element={<About />} caseSensitive />
           <Route path="/hackathons" element={<AllHackathons />} caseSensitive />
-          
+
           <Route path="/admin" element={<Admin />} caseSensitive />
           <Route path="/hacksprintTeraBaap" element={<Admin />} caseSensitive />
           <Route path="/Hacksprintkaadminprofile" element={<AuthenticateRoute element={<AdminProfile />} />} caseSensitive />
@@ -88,7 +91,7 @@ function App() {
 
           <Route path="/hackathon/:id" element={<HackathonDetails />} />
           <Route path="/hackathon/RegistrationForm/:id" element={<AuthenticateRoute element={<RegistrationForm />} />} />
-          
+
           <Route path="/hackathon/:hackathonId/team/:teamId" element={<AuthenticateRoute element={<TeamDetails />} />} />
 
           <Route path="/dashboard" element={<AuthenticateRoute element={<Dashboard />} />} caseSensitive />
@@ -98,6 +101,11 @@ function App() {
           <Route path='/leaderboard' element={<Leaderboard />} />
           <Route path='/Hacksprintkaadminprofile/:slug/usersubmissions' element={<HackathonUsersPage />} />
           <Route path='/hackathon/:slug/submission/:id' element={<AuthenticateRoute element={<UserSubmissionDetailPage />} />} />
+
+          <Route path="/participation-policies" element={<ParticipantPoliciesPage />} caseSensitive />
+          <Route path="/organizer-ruleBook" element={<OrganizerPlaybookPage />} caseSensitive />
+          <Route path="/organizer-ruleBook" element={<OrganizerPlaybookPage />} caseSensitive />
+          <Route path="/terms-and-condition" element={<LegalSupportPage />} caseSensitive />
         </Routes>
 
         <HideRouteFooter>

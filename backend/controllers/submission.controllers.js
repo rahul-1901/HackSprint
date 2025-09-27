@@ -177,3 +177,35 @@ export const submitHackathonSolution = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+export const getSubmissionStatus = async (req, res) => {
+  try {
+    const { hackathonId, teamId, userId } = req.query;
+
+    if (!hackathonId || (!teamId && !userId)) {
+      return res
+        .status(400)
+        .json({ message: "hackathonId and teamId or userId are required" });
+    }
+
+    const submission = await SubmissionModel.findOne({
+      hackathon: hackathonId,
+      $or: [
+        { team: teamId || null }
+      ],
+    });
+
+    if (!submission) {
+      return res.status(200).json({ submitted: false });
+    }
+
+    return res.status(200).json({
+      submitted: true,
+      submission,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

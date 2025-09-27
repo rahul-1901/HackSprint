@@ -20,12 +20,8 @@ const app = express()
 dotenv.config()
 connectDB()
 
-// --- MIDDLEWARE SETUP ---
-
-// KEY CHANGE: More specific CORS configuration for development
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173', // Use environment variable or default to Vite's port
-    credentials: true, // This allows cookies and authorization headers to be sent
+    origin: "*"
 };
 
 app.use(cors(corsOptions));

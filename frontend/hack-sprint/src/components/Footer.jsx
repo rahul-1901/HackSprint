@@ -62,6 +62,14 @@ const Footer = () => {
             ]
         }
     ];
+
+    const footerLinks = [
+        { name: "Participation Policy", path: "/participation-policies" },
+        { name: "Organiser RuleBook", path: "/organizer-ruleBook" },
+        { name: "Terms & Conditions", path: "/terms-and-condition" },
+    ];
+
+
     const socialLinks = [
         { name: 'GitHub', icon: <Github size={20} />, url: 'https://github.com/devlup-labs/' },
         { name: 'Instagram', icon: <Instagram size={20} />, url: 'https://www.instagram.com/devluplabs/' },
@@ -183,13 +191,14 @@ const Footer = () => {
                         </p>
                     </div>
                     <div className="flex space-x-6 items-center">
-                        {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((items) => (
-                            <a
-                                key={items}
+                        {footerLinks.map((link) => (
+                            <Link
+                                key={link.name}
+                                to={link.path}
                                 className="text-xs cursor-pointer text-gray-500 hover:text-green-400 transition duration-300"
                             >
-                                {items}
-                            </a>
+                                {link.name}
+                            </Link>
                         ))}
 
                         <a

@@ -804,7 +804,7 @@ export const UserDashboard = () => {
                     key={idx}
                     className="flex justify-between items-center text-gray-300"
                   >
-                    <span>{hack.hackathon.title}</span>
+                    <span>{hack.hackathon}</span>
                     <a
                       href={hack.repoUrl || "#"}
                       className="text-green-400 underline hover:text-green-300 cursor-pointer"

@@ -5,24 +5,7 @@ import { useNavigate } from "react-router-dom"
 import Loader from "../components/Loader"
 import { Users, Calendar, Timer, Code, Trophy, Zap, Search, Filter, X } from "lucide-react"
 // KEY CHANGE: Import the functions from your api.js file
-import { getActiveHackathons, getExpiredHackathons, getUpcomingHackathons } from "../backendApis/api" 
-
-const FloatingParticles = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    {[...Array(20)].map((_, i) => (
-      <div
-        key={i}
-        className="absolute w-1 h-1 bg-green-400 rounded-full opacity-30 animate-pulse"
-        style={{
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-          animationDelay: `${Math.random() * 5}s`,
-          animationDuration: `${3 + Math.random() * 4}s`,
-        }}
-      />
-    ))}
-  </div>
-)
+import { getActiveHackathons, getExpiredHackathons, getUpcomingHackathons } from "../backendApis/api"
 
 const GridBackground = () => (
   <div className="absolute inset-0 opacity-10  pointer-events-none">
@@ -185,7 +168,7 @@ const HackathonCard = ({ hackathon }) => {
       </div>
       {hackathon.status === "active" && (
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700/50">
-          <div className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300" style={{ width: `${getProgress(hackathon.startDate, hackathon.endDate)}%` }}/>
+          <div className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300" style={{ width: `${getProgress(hackathon.startDate, hackathon.endDate)}%` }} />
         </div>
       )}
     </div>
@@ -209,10 +192,10 @@ const Hackathons = () => {
   }, [])
 
   useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {entries.forEach((entry) => {if (entry.isIntersecting) {entry.target.classList.add("fade-in")}})},{ threshold: 0.1 },)
+    const observer = new IntersectionObserver((entries) => { entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add("fade-in") } }) }, { threshold: 0.1 },)
     const sections = document.querySelectorAll(".fade-section")
     sections.forEach((section) => observer.observe(section))
-    return () => {sections.forEach((section) => observer.unobserve(section))}
+    return () => { sections.forEach((section) => observer.unobserve(section)) }
   }, [])
 
   useEffect(() => {
@@ -236,7 +219,7 @@ const Hackathons = () => {
             image: h.image || h.imageUrl || null,
             dates: `${new Date(h.startDate).toLocaleDateString()} - ${new Date(h.endDate).toLocaleDateString()}`,
           }));
-        
+
         // KEY CHANGE: Accessing data from the correct properties
         setActiveHackathons(mapData(activeRes.data.allHackathons, "active"));
         setExpiredHackathons(mapData(expiredRes.data.expiredHackathons, "expired"));
@@ -313,7 +296,6 @@ const Hackathons = () => {
     <div className="bg-gray-900 relative overflow-hidden min-h-screen -mt-16">
       <Loader />
       <GridBackground />
-      <FloatingParticles />
       <div className="flex items-center justify-center px-4 sm:px-6 lg:px-8 mt-24 sm:mt-32 lg:mt-40">
         <div className="flex flex-col w-full max-w-7xl">
           <div className="flex flex-wrap gap-3 sm:gap-4 mb-8 sm:mb-10">
@@ -323,7 +305,7 @@ const Hackathons = () => {
           </div>
           <div className="mb-8 space-y-4">
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Search className="h-5 w-5 text-gray-400" /></div>
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Search className="h-5 w-5 z-10 text-gray-400" /></div>
               <input type="text" placeholder="Search hackathons by title..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="block w-full pl-10 pr-12 py-3 border border-gray-700/50 rounded-lg bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-colors" />
               {searchTerm && (<button onClick={() => setSearchTerm("")} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white"><X className="h-5 w-5" /></button>)}
             </div>
