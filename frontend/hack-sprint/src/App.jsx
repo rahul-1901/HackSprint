@@ -43,6 +43,7 @@ import UserSubmissionDetailPage from './admin/usersubmission.jsx';
 import ParticipantPoliciesPage from './pages/Participation.jsx';
 import OrganizerPlaybookPage from './pages/Organiser.jsx';
 import LegalSupportPage from './pages/TermsCond.jsx';
+import CreateHackathonPage from './pages/CreateHackathonPage.jsx';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -101,7 +102,7 @@ function App() {
           <Route path='/leaderboard' element={<Leaderboard />} />
           <Route path='/Hacksprintkaadminprofile/:slug/usersubmissions' element={<HackathonUsersPage />} />
           <Route path='/hackathon/:slug/submission/:id' element={<AuthenticateRoute element={<UserSubmissionDetailPage />} />} />
-
+          <Route path="/createHackathon" element={<AuthenticateRoute element={<CreateHackathonPage />} />} caseSensitive />
           <Route path="/participation-policies" element={<ParticipantPoliciesPage />} caseSensitive />
           <Route path="/organizer-ruleBook" element={<OrganizerPlaybookPage />} caseSensitive />
           <Route path="/organizer-ruleBook" element={<OrganizerPlaybookPage />} caseSensitive />
