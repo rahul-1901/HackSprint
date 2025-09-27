@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { 
-  Plus, Check, X, User, Shield, Clock, CheckCircle, Trophy 
+import {
+  Plus, Check, X, User, Shield, Clock, CheckCircle, Trophy, ArrowRight, Users, Calendar, DollarSign
 } from 'lucide-react';
-import { 
-  getAdminDetails, 
-  getAdminHackathons, 
-  getPendingHackathons, 
-  approveHackathon, 
-  rejectHackathon 
+import {
+  getAdminDetails,
+  getAdminHackathons,
+  getPendingHackathons,
+  approveHackathon,
+  rejectHackathon
 } from '../backendApis/api';
 
 // --- HELPER & BACKGROUND COMPONENTS ---
@@ -24,53 +24,101 @@ const GridBackground = () => (
   </div>
 );
 
-const HackathonCard = ({ hackathon }) => (
-  <div className="border border-green-500/20 bg-white/5 p-4 rounded-xl hover:border-green-400 transition-colors duration-300 h-full">
-    <h3 className="text-white font-bold text-lg">{hackathon.title}</h3>
-    <p className="text-gray-400 text-sm line-clamp-2 mt-1">{hackathon.description}</p>
-  </div>
-);
+// --- MODIFIED HackathonCard COMPONENT ---
+const HackathonCard = ({ hackathon }) => {
+  const navigate = useNavigate();
+  return (
+    <div
+      onClick={() => navigate(`/hackathon/${hackathon._id}/users`)}
+      className="relative w-full rounded-2xl overflow-hidden shadow-lg border border-gray-800 hover:border-green-500/50 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-gray-900/70 backdrop-blur-sm"
+      style={{ height: "250px" }}
+    >
+      <div className="flex flex-col sm:flex-row h-full">
+        {/* Image */}
+        <div className="sm:w-1/3 h-20 sm:h-full relative">
+          <img
+            src={
+              hackathon.image ||
+              "https://images.unsplash.com/photo-1556740758-90de374c12ad?q=80&w=2070&auto=format&fit=crop"
+            }
+            alt={hackathon.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900/50 to-transparent"></div>
+        </div>
 
-// Helper component for the pending hackathon list
+        {/* Text */}
+        <div className="p-4 sm:p-5 flex-1 flex flex-col justify-center">
+          <h3 className="text-white font-bold text-xl sm:text-2xl mb-2 leading-snug">
+            {hackathon.title}
+          </h3>
+          <p className="text-green-300 text-base mb-2">{hackathon.subTitle}</p>
+          <p className="text-gray-400 text-base line-clamp-1 mb-2">
+            {hackathon.description}
+          </p>
+
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-gray-400 text-base mb-2">
+            <span className="flex items-center gap-1.5">
+              <Users size={16} className="text-green-400" />{" "}
+              {hackathon.numParticipants || 0}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <DollarSign size={16} className="text-green-400" /> $
+              {hackathon.prizeMoney || 0}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Calendar size={16} className="text-green-400" />{" "}
+              {new Date(hackathon.startDate).toLocaleDateString()}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {hackathon.techStackUsed.slice(0, 2).map((tech, index) => (
+              <span
+                key={index}
+                className="px-2.5 py-1 rounded-full text-sm bg-green-900/50 text-green-300 font-medium"
+              >
+                {tech}
+              </span>
+            ))}
+            {hackathon.techStackUsed.length > 2 && (
+              <span className="px-2.5 py-1 rounded-full text-sm bg-gray-700 text-gray-300 font-medium">
+                +{hackathon.techStackUsed.length - 2}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
 const PendingHackathonCard = ({ hackathon, onApprove, onReject }) => (
-  <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-    <div>
-      <p className="font-bold text-white">{hackathon.title}</p>
-      <p className="text-sm text-gray-400">Submitted: {new Date(hackathon.createdAt).toLocaleDateString()}</p>
+    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div>
+            <p className="font-bold text-white">{hackathon.title}</p>
+            <p className="text-sm text-gray-400">Submitted: {new Date(hackathon.createdAt).toLocaleDateString()}</p>
+        </div>
+        <div className="flex-shrink-0 flex gap-2">
+            <button onClick={() => onApprove(hackathon._id)} className="bg-green-500/20 hover:bg-green-500/40 text-green-300 font-bold p-2 rounded-full transition-colors" title="Approve"><Check size={20} /></button>
+            <button onClick={() => onReject(hackathon._id)} className="bg-red-500/20 hover:bg-red-500/40 text-red-300 font-bold p-2 rounded-full transition-colors" title="Reject"><X size={20} /></button>
+        </div>
     </div>
-    <div className="flex-shrink-0 flex gap-2">
-      <button 
-        onClick={() => onApprove(hackathon._id)}
-        className="bg-green-500/20 hover:bg-green-500/40 text-green-300 font-bold p-2 rounded-full transition-colors"
-        title="Approve"
-      >
-        <Check size={20} />
-      </button>
-      <button 
-        onClick={() => onReject(hackathon._id)}
-        className="bg-red-500/20 hover:bg-red-500/40 text-red-300 font-bold p-2 rounded-full transition-colors"
-        title="Reject"
-      >
-        <X size={20} />
-      </button>
-    </div>
-  </div>
 );
 
 const AdminProfile = () => {
   const navigate = useNavigate();
   const [adminData, setAdminData] = useState(null);
   const [loading, setLoading] = useState(true);
-  
   const [liveHackathons, setLiveHackathons] = useState([]);
   const [recentlyStartedHackathons, setRecentlyStartedHackathons] = useState([]);
   const [expiredHackathons, setExpiredHackathons] = useState([]);
   const [hackathonsLoading, setHackathonsLoading] = useState(true);
-
   const [pendingHackathons, setPendingHackathons] = useState([]);
   const [pendingLoading, setPendingLoading] = useState(true);
-  
-  // Effect to fetch admin details
+
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
@@ -86,7 +134,6 @@ const AdminProfile = () => {
     fetchAdminData();
   }, [navigate]);
 
-  // Effect to fetch admin's own segregated hackathons
   useEffect(() => {
     if (adminData) {
       const fetchAndSegregateHackathons = async () => {
@@ -120,7 +167,6 @@ const AdminProfile = () => {
     }
   }, [adminData]);
 
-  // Effect to fetch pending hackathons IF admin is a controller
   useEffect(() => {
     if (adminData && adminData.controller) {
       const fetchPending = async () => {
@@ -139,7 +185,6 @@ const AdminProfile = () => {
     }
   }, [adminData]);
 
-  // Handlers for approve/reject actions
   const handleApprove = async (pendingId) => {
     try {
       await approveHackathon({ pendingHackathonId: pendingId, adminId: adminData.id });
@@ -167,23 +212,52 @@ const AdminProfile = () => {
       </div>
     );
   }
-  
-  const HackathonSection = ({ title, hackathons }) => (
-    <div className="mb-12">
-      <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">{title}</h2>
-      {hackathons.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {hackathons.map(hackathon => (
-            <Link key={hackathon._id} to={`/Hacksprintkaadminprofile/${hackathon._id}/usersubmissions`}>
-              <HackathonCard hackathon={hackathon} />
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-400">No hackathons in this category.</p>
-      )}
-    </div>
-  );
+
+const HackathonSection = ({ title, hackathons, viewMoreLink }) => (
+  <div className="mb-12">
+    <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+      {title}
+    </h2>
+    {hackathons.length > 0 ? (
+      <div className="flex flex-col gap-6">
+        {hackathons.slice(0, 3).map((hackathon, index) => {
+          const isViewMoreCard = index === 2 && hackathons.length > 3;
+
+          if (isViewMoreCard) {
+            return (
+              <div key={hackathon._id} className="relative">
+                {/* Make card non-clickable */}
+                <div className="pointer-events-none">
+                  <HackathonCard hackathon={hackathon} />
+                </div>
+
+                {/* Fade overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent rounded-2xl" />
+
+                {/* View More button */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <button
+                    onClick={() => navigate(viewMoreLink)}
+                    className="bg-gray-800/80 hover:bg-gray-700/80 text-gray-200 font-semibold py-3 px-6 rounded-lg border border-gray-600 backdrop-blur-sm transition-all duration-300 flex items-center gap-2 group hover:border-green-400 hover:text-white"
+                  >
+                    View More
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          return <HackathonCard key={hackathon._id} hackathon={hackathon} />;
+        })}
+      </div>
+    ) : (
+      <p className="text-gray-400">No hackathons in this category.</p>
+    )}
+  </div>
+);
+
+
 
   const permissions = ["Full Access", "User Management", "Event Creation"];
 
@@ -211,10 +285,6 @@ const AdminProfile = () => {
                     <p className="text-gray-400 text-sm">{adminData.email}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-2 mb-2"><div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div><span className="text-green-400 text-sm font-medium">ACTIVE</span></div>
-                  {adminData.lastLogin && <p className="text-gray-400 text-sm">Last seen: {new Date(adminData.lastLogin).toLocaleTimeString()}</p>}
-                </div>
               </div>
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><Shield className="w-5 h-5 text-green-400" />Access Permissions</h3>
@@ -223,53 +293,34 @@ const AdminProfile = () => {
                 </div>
               </div>
           </div>
-
           <div className="space-y-6">
             <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 hover:border-green-400/30 transition-all duration-500 flex items-center justify-center">
-                <button 
-                  onClick={() => navigate('/createHackathon')} 
-                  className="w-full bg-green-400/10 hover:bg-green-400/20 border border-green-400/20 text-green-400 font-semibold px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 hover:scale-105 group"
-                >
+                <button onClick={() => navigate('/createHackathon')} className="w-full bg-green-400/10 hover:bg-green-400/20 border border-green-400/20 text-green-400 font-semibold px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 hover:scale-105 group">
                     <Plus className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90" />
                     Create New Hackathon
                 </button>
             </div>
           </div>
         </div>
-        
-        {/* Conditionally render the Pending Hackathons section */}
+
         {adminData.controller && (
           <div className="mb-12">
-            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-              <Clock /> Pending Approvals
-            </h2>
-            {pendingLoading ? (
-              <p className="text-gray-400">Loading pending hackathons...</p>
-            ) : pendingHackathons.length > 0 ? (
+            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3"><Clock /> Pending Approvals</h2>
+            {pendingLoading ? (<p className="text-gray-400">Loading pending hackathons...</p>) : pendingHackathons.length > 0 ? (
               <div className="space-y-4">
-                {pendingHackathons.map(hackathon => (
-                  <PendingHackathonCard 
-                    key={hackathon._id} 
-                    hackathon={hackathon}
-                    onApprove={handleApprove}
-                    onReject={handleReject}
-                  />
-                ))}
+                {pendingHackathons.map(hackathon => ( <PendingHackathonCard key={hackathon._id} hackathon={hackathon} onApprove={handleApprove} onReject={handleReject} /> ))}
               </div>
-            ) : (
-              <p className="text-gray-400">No hackathons are currently pending approval.</p>
-            )}
+            ) : (<p className="text-gray-400">No hackathons are currently pending approval.</p>)}
           </div>
         )}
-        
-        {/* Regular Hackathon sections */}
+
         {hackathonsLoading ? (
           <p className="text-gray-400 text-lg">Loading your hackathons...</p>
         ) : (
           <>
-            <HackathonSection title="Live Hackathons" hackathons={liveHackathons} />
-            <HackathonSection title="Recently Started" hackathons={recentlyStartedHackathons} />
-            <HackathonSection title="Expired Hackathons" hackathons={expiredHackathons} />
+            <HackathonSection title="Live Hackathons" hackathons={liveHackathons} viewMoreLink="/Hacksprintkaadminprofile/livehackathons" />
+            <HackathonSection title="Recently Started" hackathons={recentlyStartedHackathons} viewMoreLink="/Hacksprintkaadminprofile/recentlystarted" />
+            <HackathonSection title="Expired Hackathons" hackathons={expiredHackathons} viewMoreLink="/Hacksprintkaadminprofile/endedhackathons" />
           </>
         )}
       </div>
