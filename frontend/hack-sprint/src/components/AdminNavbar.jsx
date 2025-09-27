@@ -71,7 +71,7 @@ const AdminNavbar = () => {
         </nav>
 
         <button
-          className="md:hidden p-2"
+          className="md:hidden p-2 text-white"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
           {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -79,7 +79,7 @@ const AdminNavbar = () => {
       </div>
 
       {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800/50 shadow-lg">
+        <div className="md:hidden absolute top-full left-0 border-b-1 right-0 bg-gray-900 border-t border-gray-800 shadow-lg">
           <div className="p-4 space-y-4 flex flex-col">
             {isAdminLoggedIn ? (
               <>
@@ -94,7 +94,6 @@ const AdminNavbar = () => {
                   <ArrowRight className="w-4 h-4" />
                 </Button>
                 <Button
-                  variant="outline"
                   className="w-full justify-between flex items-center gap-2"
                   onClick={() => {
                     handleLogout();

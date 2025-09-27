@@ -104,7 +104,7 @@ function Login() {
         </form>
 
         <GoogleAuthWrapper />
-        <GithubLogin />
+        {/* <GithubLogin /> */}
       </div>
     </div>
   );

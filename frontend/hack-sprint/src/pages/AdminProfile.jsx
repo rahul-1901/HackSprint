@@ -19,23 +19,23 @@ const GridBackground = () => (
       className="absolute inset-0"
       style={{ backgroundImage: `linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px)`, backgroundSize: "40px 40px" }}
     />
-    <div className="absolute top-1/3 left-1/4 w-32 h-32 bg-green-500/5 rounded-full blur-2xl" style={{ animation: "morph 8s ease-in-out infinite" }}/>
-    <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-green-600/3 rounded-full blur-3xl" style={{ animation: "morph 8s ease-in-out infinite 4s" }}/>
+    <div className="absolute top-1/3 left-1/4 w-32 h-32 bg-green-500/5 rounded-full blur-2xl" style={{ animation: "morph 8s ease-in-out infinite" }} />
+    <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-green-600/3 rounded-full blur-3xl" style={{ animation: "morph 8s ease-in-out infinite 4s" }} />
   </div>
 );
 
-// --- MODIFIED HackathonCard COMPONENT ---
 const HackathonCard = ({ hackathon }) => {
   const navigate = useNavigate();
   return (
     <div
-      onClick={() => navigate(`/hackathon/${hackathon._id}/users`)}
+      onClick={() =>
+        navigate(`/Hacksprintkaadminprofile/${hackathon._id}/usersubmissions`)
+      }
       className="relative w-full rounded-2xl overflow-hidden shadow-lg border border-gray-800 hover:border-green-500/50 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-gray-900/70 backdrop-blur-sm"
-      style={{ height: "250px" }}
     >
-      <div className="flex flex-col sm:flex-row h-full">
+      <div className="flex flex-col lg:flex-row">
         {/* Image */}
-        <div className="sm:w-1/3 h-20 sm:h-full relative">
+        <div className="w-full lg:w-1/3 h-48 lg:h-64 relative">
           <img
             src={
               hackathon.image ||
@@ -44,48 +44,42 @@ const HackathonCard = ({ hackathon }) => {
             alt={hackathon.title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-900/50 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900/50 to-transparent lg:from-transparent lg:to-transparent"></div>
         </div>
 
         {/* Text */}
-        <div className="p-4 sm:p-5 flex-1 flex flex-col justify-center">
-          <h3 className="text-white font-bold text-xl sm:text-2xl mb-2 leading-snug">
+        <div className="p-4 lg:p-5 flex-1 flex flex-col justify-center">
+          <h3 className="text-white font-bold text-xl lg:text-2xl mb-2 leading-snug">
             {hackathon.title}
           </h3>
           <p className="text-green-300 text-base mb-2">{hackathon.subTitle}</p>
-          <p className="text-gray-400 text-base line-clamp-1 mb-2">
+          <p className="text-gray-400 text-base line-clamp-2 lg:line-clamp-1 mb-3">
             {hackathon.description}
           </p>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-gray-400 text-base mb-2">
+          {/* Participants, Prize, Date */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-gray-400 text-base mb-3">
             <span className="flex items-center gap-1.5">
-              <Users size={16} className="text-green-400" />{" "}
-              {hackathon.numParticipants || 0}
+              <Users size={16} className="text-green-400" /> {hackathon.numParticipants || 0}
             </span>
             <span className="flex items-center gap-1.5">
-              <DollarSign size={16} className="text-green-400" /> $
-              {hackathon.prizeMoney || 0}
+              <DollarSign size={16} className="text-green-400" /> ${hackathon.prizeMoney || 0}
             </span>
             <span className="flex items-center gap-1.5">
-              <Calendar size={16} className="text-green-400" />{" "}
-              {new Date(hackathon.startDate).toLocaleDateString()}
+              <Calendar size={16} className="text-green-400" /> {new Date(hackathon.startDate).toLocaleDateString()}
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {hackathon.techStackUsed.slice(0, 2).map((tech, index) => (
+          {/* Tech Stack */}
+          <div className="flex gap-2 overflow-x-auto py-1 scrollbar-hide">
+            {hackathon.techStackUsed.map((tech, index) => (
               <span
                 key={index}
-                className="px-2.5 py-1 rounded-full text-sm bg-green-900/50 text-green-300 font-medium"
+                className="flex-shrink-0 px-2.5 py-1 rounded-full text-sm bg-green-900/50 text-green-300 font-medium"
               >
                 {tech}
               </span>
             ))}
-            {hackathon.techStackUsed.length > 2 && (
-              <span className="px-2.5 py-1 rounded-full text-sm bg-gray-700 text-gray-300 font-medium">
-                +{hackathon.techStackUsed.length - 2}
-              </span>
-            )}
           </div>
         </div>
       </div>
@@ -93,19 +87,17 @@ const HackathonCard = ({ hackathon }) => {
   );
 };
 
-
-
 const PendingHackathonCard = ({ hackathon, onApprove, onReject }) => (
-    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div>
-            <p className="font-bold text-white">{hackathon.title}</p>
-            <p className="text-sm text-gray-400">Submitted: {new Date(hackathon.createdAt).toLocaleDateString()}</p>
-        </div>
-        <div className="flex-shrink-0 flex gap-2">
-            <button onClick={() => onApprove(hackathon._id)} className="bg-green-500/20 hover:bg-green-500/40 text-green-300 font-bold p-2 rounded-full transition-colors" title="Approve"><Check size={20} /></button>
-            <button onClick={() => onReject(hackathon._id)} className="bg-red-500/20 hover:bg-red-500/40 text-red-300 font-bold p-2 rounded-full transition-colors" title="Reject"><X size={20} /></button>
-        </div>
+  <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+    <div>
+      <p className="font-bold text-white">{hackathon.title}</p>
+      <p className="text-sm text-gray-400">Submitted: {new Date(hackathon.createdAt).toLocaleDateString()}</p>
     </div>
+    <div className="flex-shrink-0 flex gap-2">
+      <button onClick={() => onApprove(hackathon._id)} className="bg-green-500/20 hover:bg-green-500/40 text-green-300 font-bold p-2 rounded-full transition-colors" title="Approve"><Check size={20} /></button>
+      <button onClick={() => onReject(hackathon._id)} className="bg-red-500/20 hover:bg-red-500/40 text-red-300 font-bold p-2 rounded-full transition-colors" title="Reject"><X size={20} /></button>
+    </div>
+  </div>
 );
 
 const AdminProfile = () => {
@@ -213,49 +205,49 @@ const AdminProfile = () => {
     );
   }
 
-const HackathonSection = ({ title, hackathons, viewMoreLink }) => (
-  <div className="mb-12">
-    <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-      {title}
-    </h2>
-    {hackathons.length > 0 ? (
-      <div className="flex flex-col gap-6">
-        {hackathons.slice(0, 3).map((hackathon, index) => {
-          const isViewMoreCard = index === 2 && hackathons.length > 3;
+  const HackathonSection = ({ title, hackathons, viewMoreLink }) => (
+    <div className="mb-12">
+      <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+        {title}
+      </h2>
+      {hackathons.length > 0 ? (
+        <div className="flex flex-col gap-6">
+          {hackathons.slice(0, 3).map((hackathon, index) => {
+            const isViewMoreCard = index === 2 && hackathons.length > 3;
 
-          if (isViewMoreCard) {
-            return (
-              <div key={hackathon._id} className="relative">
-                {/* Make card non-clickable */}
-                <div className="pointer-events-none">
-                  <HackathonCard hackathon={hackathon} />
+            if (isViewMoreCard) {
+              return (
+                <div key={hackathon._id} className="relative">
+                  {/* Make card non-clickable */}
+                  <div className="pointer-events-none">
+                    <HackathonCard hackathon={hackathon} />
+                  </div>
+
+                  {/* Fade overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent rounded-2xl" />
+
+                  {/* View More button */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <button
+                      onClick={() => navigate(viewMoreLink)}
+                      className="bg-gray-800/80 hover:bg-gray-700/80 text-gray-200 font-semibold py-3 px-6 rounded-lg border border-gray-600 backdrop-blur-sm transition-all duration-300 flex items-center gap-2 group hover:border-green-400 hover:text-white"
+                    >
+                      View More
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </button>
+                  </div>
                 </div>
+              );
+            }
 
-                {/* Fade overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent rounded-2xl" />
-
-                {/* View More button */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <button
-                    onClick={() => navigate(viewMoreLink)}
-                    className="bg-gray-800/80 hover:bg-gray-700/80 text-gray-200 font-semibold py-3 px-6 rounded-lg border border-gray-600 backdrop-blur-sm transition-all duration-300 flex items-center gap-2 group hover:border-green-400 hover:text-white"
-                  >
-                    View More
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </button>
-                </div>
-              </div>
-            );
-          }
-
-          return <HackathonCard key={hackathon._id} hackathon={hackathon} />;
-        })}
-      </div>
-    ) : (
-      <p className="text-gray-400">No hackathons in this category.</p>
-    )}
-  </div>
-);
+            return <HackathonCard key={hackathon._id} hackathon={hackathon} />;
+          })}
+        </div>
+      ) : (
+        <p className="text-gray-400">No hackathons in this category.</p>
+      )}
+    </div>
+  );
 
 
 
@@ -266,39 +258,39 @@ const HackathonSection = ({ title, hackathons, viewMoreLink }) => (
       <GridBackground />
       <div className="relative z-10 p-4 sm:p-6 lg:p-8">
         <div className="mb-8">
-          <div className="flex items-center mb-4"><div className="w-px h-8 bg-green-400"></div><span className="text-green-400 text-sm font-semibold tracking-wide uppercase mx-4">ADMIN DASHBOARD</span><div className="w-px h-8 bg-green-400"></div></div>
-          <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-extrabold -tracking-tight text-green-400">Administrator Profile</h1>
-          <p className="text-gray-400 text-lg mt-4 max-w-2xl">Manage platform operations, monitor hackathons, and oversee community growth.</p>
+          <div className="flex items-center mb-1 -ml-3 md:-ml-2"><span className="text-green-400 text-sm font-semibold tracking-wide uppercase mx-4">ADMIN DASHBOARD</span></div>
+          <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl ZaptronFont font-extrabold -tracking-tight text-green-400">Administrator Profile</h1>
+          <p className="text-gray-400 text-lg ml-1 mt-0 md:-mt-4 max-w-2xl">Manage platform operations, monitor hackathons, and oversee community growth.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           <div className="lg:col-span-2 bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8 hover:border-green-400/30 transition-all duration-500">
-              <div className="flex items-start justify-between mb-8">
-                <div className="flex items-center gap-6">
-                  <div className="relative">
-                    <div className="w-20 h-20 bg-green-400/10 border-2 border-green-400/20 rounded-full flex items-center justify-center"><User className="w-10 h-10 text-green-400" /></div>
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center"><Shield className="w-4 h-4 text-gray-900" /></div>
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white mb-2">{adminData.name}</h2>
-                    <p className="text-green-400 font-medium mb-1">{adminData.controller ? 'Platform Administrator' : 'Admin'}</p>
-                    <p className="text-gray-400 text-sm">{adminData.email}</p>
-                  </div>
+            <div className="flex items-start justify-between mb-8">
+              <div className="flex items-center gap-6">
+                <div className="relative">
+                  <div className="w-20 h-20 bg-green-400/10 border-2 border-green-400/20 rounded-full flex items-center justify-center"><User className="w-10 h-10 text-green-400" /></div>
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center"><Shield className="w-4 h-4 text-gray-900" /></div>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">{adminData.name}</h2>
+                  <p className="text-green-400 font-medium mb-1">{adminData.controller ? 'Platform Administrator' : 'Admin'}</p>
+                  <p className="text-gray-400 text-sm">{adminData.email}</p>
                 </div>
               </div>
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><Shield className="w-5 h-5 text-green-400" />Access Permissions</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {permissions.map((permission) => (<div key={permission} className="flex items-center gap-3 p-3 bg-gray-800/30 rounded-lg border border-gray-700/50 hover:border-green-400/30 transition-colors duration-300"><CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" /><span className="text-gray-300 text-sm">{permission}</span></div>))}
-                </div>
+            </div>
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><Shield className="w-5 h-5 text-green-400" />Access Permissions</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {permissions.map((permission) => (<div key={permission} className="flex items-center gap-3 p-3 bg-gray-800/30 rounded-lg border border-gray-700/50 hover:border-green-400/30 transition-colors duration-300"><CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" /><span className="text-gray-300 text-sm">{permission}</span></div>))}
               </div>
+            </div>
           </div>
           <div className="space-y-6">
             <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 hover:border-green-400/30 transition-all duration-500 flex items-center justify-center">
-                <button onClick={() => navigate('/createHackathon')} className="w-full bg-green-400/10 hover:bg-green-400/20 border border-green-400/20 text-green-400 font-semibold px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 hover:scale-105 group">
-                    <Plus className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90" />
-                    Create New Hackathon
-                </button>
+              <button onClick={() => navigate('/createHackathon')} className="w-full cursor-pointer bg-green-400/10 hover:bg-green-400/20 border border-green-400/20 text-green-400 font-semibold px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 hover:scale-105 group">
+                <Plus className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90" />
+                Create New Hackathon
+              </button>
             </div>
           </div>
         </div>
@@ -308,7 +300,7 @@ const HackathonSection = ({ title, hackathons, viewMoreLink }) => (
             <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3"><Clock /> Pending Approvals</h2>
             {pendingLoading ? (<p className="text-gray-400">Loading pending hackathons...</p>) : pendingHackathons.length > 0 ? (
               <div className="space-y-4">
-                {pendingHackathons.map(hackathon => ( <PendingHackathonCard key={hackathon._id} hackathon={hackathon} onApprove={handleApprove} onReject={handleReject} /> ))}
+                {pendingHackathons.map(hackathon => (<PendingHackathonCard key={hackathon._id} hackathon={hackathon} onApprove={handleApprove} onReject={handleReject} />))}
               </div>
             ) : (<p className="text-gray-400">No hackathons are currently pending approval.</p>)}
           </div>
