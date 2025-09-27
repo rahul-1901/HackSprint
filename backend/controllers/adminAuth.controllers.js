@@ -5,8 +5,8 @@ import Admin from "../models/admin.model.js";
 // Admin Signup
 export const adminSignup = async (req, res) => {
   try {
-    // const {name , email , password} = req.body;
-    const { email, password } = req.body;
+    const {name , email , password} = req.body;
+    // const { email, password } = req.body;
 
     // Check if admin already exists
     const existingAdmin = await Admin.findOne({ email });
@@ -18,7 +18,7 @@ export const adminSignup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newAdmin = new Admin({
-      // name,
+      name,
       email,
       password: hashedPassword,
     });
@@ -45,7 +45,7 @@ export const adminLogin = async (req, res) => {
     // Create JWT with role = admin
     const token = jwt.sign(
       { id: admin._id, role: "admin" },
-      process.env.JWT_SECRET,
+      process.env.SECRET_KEY,
       { expiresIn: "1d" }
     );
 
