@@ -6,6 +6,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import GoogleLogin from "../components/GoogleLogin.jsx";
+import GithubLogin from "../components/GithubLogin.jsx";
 
 function Login() {
   const navigate = useNavigate();
@@ -103,6 +104,7 @@ function Login() {
         </form>
 
         <GoogleAuthWrapper />
+        <GithubLogin />
       </div>
     </div>
   );

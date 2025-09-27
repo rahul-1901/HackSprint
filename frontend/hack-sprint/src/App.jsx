@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
+import GithubAuthHandler from './components/GithubAuthHandler.jsx';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import HideRoute from './components/HideRoute';
@@ -43,6 +44,7 @@ import UserSubmissionDetailPage from './admin/usersubmission.jsx';
 import ParticipantPoliciesPage from './pages/Participation.jsx';
 import OrganizerPlaybookPage from './pages/Organiser.jsx';
 import LegalSupportPage from './pages/TermsCond.jsx';
+import CreateHackathonPage from './pages/CreateHackathonPage.jsx';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -86,6 +88,7 @@ function App() {
           <Route path="/Hacksprintkaadminprofile/endedhackathons" element={<EndedHackathonsPage />} caseSensitive />
           <Route path="/questions" element={<AuthenticateRoute element={<Questions />} />} caseSensitive />
           <Route path="/account/login" element={<Login />} caseSensitive></Route>
+          <Route path="/github-auth-handler" element={<GithubAuthHandler />} caseSensitive></Route>
           <Route path="/account/signup" element={<Signup />} caseSensitive></Route>
           <Route path="/account/reset-password" element={<AuthenticateRoute element={<ResetPassword />} />} caseSensitive></Route>
 
@@ -101,7 +104,7 @@ function App() {
           <Route path='/leaderboard' element={<Leaderboard />} />
           <Route path='/Hacksprintkaadminprofile/:slug/usersubmissions' element={<HackathonUsersPage />} />
           <Route path='/hackathon/:slug/submission/:id' element={<AuthenticateRoute element={<UserSubmissionDetailPage />} />} />
-
+          <Route path="/createHackathon" element={<AuthenticateRoute element={<CreateHackathonPage />} />} caseSensitive />
           <Route path="/participation-policies" element={<ParticipantPoliciesPage />} caseSensitive />
           <Route path="/organizer-ruleBook" element={<OrganizerPlaybookPage />} caseSensitive />
           <Route path="/organizer-ruleBook" element={<OrganizerPlaybookPage />} caseSensitive />
