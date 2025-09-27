@@ -1,12 +1,100 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { UploadCloud, ArrowLeft } from 'lucide-react';
+import { UploadCloud, ArrowLeft, Plus, X } from 'lucide-react';
 import { getAdminDetails, createHackathon } from '../backendApis/api';
 
 const GridBackground = () => (
   <div className="absolute inset-0 h-full w-full bg-gray-900 bg-grid-white/[0.05] -z-20" />
 );
+
+const DynamicListInput = ({ label, placeholder, values, onUpdate }) => {
+  const [currentValue, setCurrentValue] = useState('');
+
+  const handleAdd = () => {
+    if (currentValue && !values.includes(currentValue)) {
+      onUpdate([...values, currentValue]);
+      setCurrentValue('');
+    }
+  };
+
+  const handleRemove = (itemToRemove) => {
+    onUpdate(values.filter(item => item !== itemToRemove));
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-300 mb-2">{label}</label>
+      <div className="flex flex-wrap gap-2 mb-2">
+        {values.map((item, index) => (
+          <div key={index} className="flex items-center gap-2 bg-green-900/50 text-green-300 text-sm px-3 py-1 rounded-full">
+            <span>{item}</span>
+            <button type="button" onClick={() => handleRemove(item)} className="text-green-400 hover:text-white">
+              <X size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          placeholder={placeholder}
+          value={currentValue}
+          onChange={(e) => setCurrentValue(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAdd(); } }}
+          className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"
+        />
+        <button type="button" onClick={handleAdd} className="bg-gray-700 hover:bg-gray-600 text-white font-bold p-2 rounded-lg flex-shrink-0">
+          <Plus size={20} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const DynamicFaqInput = ({ values, onUpdate }) => {
+    const [question, setQuestion] = useState('');
+    const [answer, setAnswer] = useState('');
+
+    const handleAdd = () => {
+        if(question && answer) {
+            onUpdate([...values, { question, answer }]);
+            setQuestion('');
+            setAnswer('');
+        }
+    };
+
+    const handleRemove = (indexToRemove) => {
+        onUpdate(values.filter((_, index) => index !== indexToRemove));
+    };
+
+    return (
+        <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">FAQs</label>
+            <div className="space-y-2 mb-3">
+                {values.map((faq, index) => (
+                    <div key={index} className="bg-gray-800/50 p-3 rounded-lg flex justify-between items-start gap-4">
+                        <div className="flex-1">
+                            <p className="font-semibold text-white">{faq.question}</p>
+                            <p className="text-gray-400 text-sm mt-1">{faq.answer}</p>
+                        </div>
+                        <button type="button" onClick={() => handleRemove(index)} className="text-red-400 hover:text-red-300 flex-shrink-0">
+                            <X size={16} />
+                        </button>
+                    </div>
+                ))}
+            </div>
+            <div className="space-y-2 border-t border-gray-700 pt-3">
+                <input type="text" placeholder="Question" value={question} onChange={(e) => setQuestion(e.target.value)} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
+                <textarea placeholder="Answer" value={answer} onChange={(e) => setAnswer(e.target.value)} rows="2" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
+                <button type="button" onClick={handleAdd} className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2">
+                    <Plus size={16} /> Add FAQ
+                </button>
+            </div>
+        </div>
+    );
+};
+
 
 const CreateHackathonPage = () => {
   const navigate = useNavigate();
@@ -14,8 +102,9 @@ const CreateHackathonPage = () => {
   const [formData, setFormData] = useState({
     title: '', subTitle: '', description: '', overview: '', startDate: '', endDate: '',
     submissionStartDate: '', submissionEndDate: '', prizeMoney: '', difficulty: 'Beginner',
-    techStackUsed: '', category: '', themes: '', refMaterial: '', aboutUs: '',
-    problems: '', TandCforHackathon: '', evaluationCriteria: '', FAQs: ''
+    techStackUsed: [], category: [], themes: [], refMaterial: '', aboutUs: '',
+    problems: [], TandCforHackathon: [], evaluationCriteria: [], projectSubmission: [], 
+    FAQs: []
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
@@ -54,27 +143,20 @@ const CreateHackathonPage = () => {
 
     const submissionData = new FormData();
     
-    // Append simple key-value pairs
-    const simpleFields = ['title', 'subTitle', 'description', 'overview', 'startDate', 'endDate', 'submissionStartDate', 'submissionEndDate', 'prizeMoney', 'difficulty', 'refMaterial', 'aboutUs'];
-    simpleFields.forEach(field => {
-        if(formData[field]) submissionData.append(field, formData[field]);
+    // Append all fields except FAQs, which needs special handling
+    Object.keys(formData).forEach(key => {
+        if (key === 'FAQs') return;
+        
+        if (Array.isArray(formData[key])) {
+            submissionData.append(key, JSON.stringify(formData[key]));
+        } else {
+            submissionData.append(key, formData[key]);
+        }
     });
-
-    // Process and stringify fields that are arrays of strings
-    const processSimpleArray = (str) => str.split(',').map(item => item.trim()).filter(Boolean);
-    const processTextareaArray = (str) => str.split('\n').map(item => item.trim()).filter(Boolean);
-
-    submissionData.append('techStackUsed', JSON.stringify(processSimpleArray(formData.techStackUsed)));
-    submissionData.append('category', JSON.stringify(processSimpleArray(formData.category)));
-    submissionData.append('themes', JSON.stringify(processSimpleArray(formData.themes)));
-    submissionData.append('problems', JSON.stringify(processTextareaArray(formData.problems)));
-    submissionData.append('TandCforHackathon', JSON.stringify(processTextareaArray(formData.TandCforHackathon)));
-    submissionData.append('evaluationCriteria', JSON.stringify(processTextareaArray(formData.evaluationCriteria)));
-
-    // KEY CHANGE: Process FAQs into a simple array of strings to match your schema
-    // The format "Question|Answer" will be preserved as a single string in the array.
-    const faqsArray = formData.FAQs.split('\n').map(line => line.trim()).filter(Boolean);
-    submissionData.append('FAQs', JSON.stringify(faqsArray));
+    
+    // Convert the FAQs array of objects into an array of strings ("Question|Answer")
+    const faqsStringArray = formData.FAQs.map(faq => `${faq.question}|${faq.answer}`);
+    submissionData.append('FAQs', JSON.stringify(faqsStringArray));
     
     submissionData.append('adminId', adminData.id);
     if (imageFile) {
@@ -106,7 +188,6 @@ const CreateHackathonPage = () => {
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Basic Info Section */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Basic Information</h2>
             <div className="space-y-4">
@@ -124,42 +205,49 @@ const CreateHackathonPage = () => {
             </div>
           </div>
 
-          {/* Details Section */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
              <h2 className="text-2xl font-bold text-white mb-6">Event Details</h2>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <input type="number" name="prizeMoney" placeholder="Prize Money ($) *" value={formData.prizeMoney} onChange={handleChange} required className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-                <select name="difficulty" value={formData.difficulty} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white">
-                    <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Expert</option>
-                </select>
-                <input type="text" name="techStackUsed" placeholder="Tech Stack (comma-separated)" value={formData.techStackUsed} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-                <input type="text" name="category" placeholder="Categories (comma-separated)" value={formData.category} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-                <textarea name="themes" placeholder="Themes (comma-separated)" value={formData.themes} onChange={handleChange} rows="2" className="md:col-span-2 w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
+                <div className="md:col-span-2">
+                    <input type="number" name="prizeMoney" placeholder="Prize Money ($) *" value={formData.prizeMoney} onChange={handleChange} required className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
+                </div>
+                <div className="md:col-span-2">
+                    <label htmlFor="difficulty" className="block text-sm font-medium text-gray-300 mb-1">Difficulty</label>
+                    <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white">
+                        <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Expert</option>
+                    </select>
+                </div>
+                <div className="md:col-span-2">
+                    <DynamicListInput label="Tech Stack" placeholder="e.g., React" values={formData.techStackUsed} onUpdate={(newVal) => setFormData(p => ({...p, techStackUsed: newVal}))} />
+                </div>
+                <div className="md:col-span-2">
+                    <DynamicListInput label="Categories" placeholder="e.g., AI" values={formData.category} onUpdate={(newVal) => setFormData(p => ({...p, category: newVal}))} />
+                </div>
+                <div className="md:col-span-2">
+                    <DynamicListInput label="Themes" placeholder="e.g., Sustainability" values={formData.themes} onUpdate={(newVal) => setFormData(p => ({...p, themes: newVal}))} />
+                </div>
              </div>
           </div>
           
-          {/* Rules & Criteria Section */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Rules & Other Details</h2>
-            <div className="space-y-4">
-              <textarea name="problems" placeholder="Problem Statements (enter each on a new line)" value={formData.problems} onChange={handleChange} rows="4" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
-              <textarea name="TandCforHackathon" placeholder="Terms & Conditions (enter each on a new line)" value={formData.TandCforHackathon} onChange={handleChange} rows="4" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
-              <textarea name="evaluationCriteria" placeholder="Evaluation Criteria (enter each on a new line)" value={formData.evaluationCriteria} onChange={handleChange} rows="4" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
-              <textarea name="projectSubmission" placeholder="Project Submission Guidelines (enter each on a new line)" value={formData.projectSubmission} onChange={handleChange} rows="4" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
+            <div className="space-y-6">
+              <DynamicListInput label="Problem Statements" placeholder="Add a problem statement" values={formData.problems} onUpdate={(newVal) => setFormData(p => ({...p, problems: newVal}))} />
+              <DynamicListInput label="Terms & Conditions" placeholder="Add a term/condition" values={formData.TandCforHackathon} onUpdate={(newVal) => setFormData(p => ({...p, TandCforHackathon: newVal}))} />
+              <DynamicListInput label="Evaluation Criteria" placeholder="Add a criterion" values={formData.evaluationCriteria} onUpdate={(newVal) => setFormData(p => ({...p, evaluationCriteria: newVal}))} />
+              <DynamicListInput label="Project Submission Guidelines" placeholder="Add a guideline" values={formData.projectSubmission} onUpdate={(newVal) => setFormData(p => ({...p, projectSubmission: newVal}))} />
             </div>
           </div>
 
-          {/* Additional Content Section */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Additional Content</h2>
-            <div className="space-y-4">
+            <div className="space-y-6">
                <input type="text" name="refMaterial" placeholder="Reference Material URL" value={formData.refMaterial} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
                <textarea name="aboutUs" placeholder="About the Organizer" value={formData.aboutUs} onChange={handleChange} rows="4" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
-               <textarea name="FAQs" placeholder="FAQs (format: Question|Answer, each on a new line)" value={formData.FAQs} onChange={handleChange} rows="5" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
+               <DynamicFaqInput values={formData.FAQs} onUpdate={(newVal) => setFormData(p => ({...p, FAQs: newVal}))} />
             </div>
           </div>
 
-          {/* Timeline Section */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Timeline</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -182,7 +270,6 @@ const CreateHackathonPage = () => {
             </div>
           </div>
 
-          {/* Submit Button */}
           <div className="flex justify-end pt-4">
             <button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed">
               {isSubmitting ? 'Submitting...' : 'Submit for Approval'}
