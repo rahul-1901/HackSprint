@@ -7,7 +7,6 @@ import {
   Trophy,
   Clock,
   ChevronRight,
-  Send,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../backendApis/api";
@@ -20,8 +19,10 @@ export const HeroSection = ({
   isActive,
   startDate,
   endDate,
-  participantCount,
-  prizeMoney,
+  participantCount = 0,
+  prizeMoney1 = 0,
+  prizeMoney2 = 0,
+  prizeMoney3 = 0,
   imageUrl = "/assets/hackathon-banner.png",
   hackathonId,
 }) => {
@@ -32,132 +33,115 @@ export const HeroSection = ({
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSubmissionModal, setShowSubmissionModal] = useState(false);
   const [registrationInfo, setRegistrationInfo] = useState(false);
-  const [leaderButton, setLeaderButton] = useState(false)
-  const [leaderValue, setLeaderValue] = useState("")
+  const [leaderButton, setLeaderButton] = useState(false);
+  const [leaderValue, setLeaderValue] = useState("");
   const [isLeader, setIsLeader] = useState(false);
+  const [isTeamMember, setIsTeamMember] = useState(false);
 
   const navigate = useNavigate();
+
   useEffect(() => {
-    const checkLeader = async () => {
-      if (localStorage.getItem('teamDetails_code')) {
-        setLeaderValue(localStorage.getItem('teamDetails_code'))
-      } else {
-        setLeaderValue('')
-      }
+    if (localStorage.getItem("teamDetails_code")) {
+      setLeaderValue(localStorage.getItem("teamDetails_code"));
     }
-
-    checkLeader()
-  }, [])
-
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchTeamData = async (teamId, currentUserId) => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/team/${teamId}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch team");
+        const data = await res.json();
+        const team = data.team;
+
+        console.log("Fetched team:", team);
+
+        if (team?.hackathon?._id && String(team.hackathon._id) === String(hackathonId)) {
+          const member = team.members?.some(
+            (m) => String(m._id) === String(currentUserId)
+          );
+          setIsTeamMember(member || false);
+        } else {
+          setIsTeamMember(false);
+        }
+      } catch (err) {
+        console.error("Team fetch error:", err.message);
+        setIsTeamMember(false);
+      }
+    };
+
+    const fetchUserData = async () => {
       setLoading(true);
       try {
         const res = await getDashboard();
         const fetchedUserData = res.data.userData;
-        console.log(fetchedUserData)
         setUserData(fetchedUserData);
         setIsVerified(fetchedUserData?.isVerified || false);
 
-        if (fetchedUserData) {
-          setUserData(fetchedUserData);
-          setIsVerified(fetchedUserData?.isVerified || false);
+        const registered = Array.isArray(fetchedUserData.registeredHackathons)
+          ? fetchedUserData.registeredHackathons.some(
+            (id) => String(id) === String(hackathonId)
+          )
+          : false;
+        setRegistrationInfo(registered);
 
-          let registrationFound = false;
-          if (Array.isArray(fetchedUserData.registeredHackathons)) {
-            registrationFound = fetchedUserData.registeredHackathons.some(
-              (registrationId) => String(registrationId) === String(hackathonId)
-            );
-          }
-          setRegistrationInfo(registrationFound);
+        const leader = fetchedUserData.leaderOfHackathons?.some(
+          (id) => String(id) === String(hackathonId)
+        );
+        setIsLeader(leader || false);
+        setLeaderButton(leader || false);
 
-          // Check if user is leader of this hackathon
-          let leaderOfThisHackathon = false;
-          if (fetchedUserData.leaderOfHackathons) {
-            leaderOfThisHackathon = fetchedUserData.leaderOfHackathons.some(
-              (leaderHackId) => String(leaderHackId) === String(hackathonId)
-            );
-            if(leaderOfThisHackathon == true) {
-              setLeaderButton(true)
-            }
-          } else {
-            setLeaderButton(false)
-          }
-          setIsLeader(leaderOfThisHackathon);
+        if (fetchedUserData.team) {
+          await fetchTeamData(fetchedUserData.team, fetchedUserData._id);
         } else {
-          setRegistrationInfo(false);
-          setIsLeader(false);
+          setIsTeamMember(false);
         }
 
       } catch (err) {
+        console.error("Dashboard fetch error:", err.message);
         setUserData(null);
         setIsVerified(false);
         setRegistrationInfo(false);
+        setIsLeader(false);
+        setIsTeamMember(false);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-
-    window.addEventListener("focus", fetchData);
-    window.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") {
-        fetchData();
-      }
-    });
-
-    return () => {
-      window.removeEventListener("focus", fetchData);
-      window.removeEventListener("visibilitychange", fetchData);
-    };
+    fetchUserData();
   }, [hackathonId]);
 
+
   const handleRegister = () => {
-    if (isVerified) {
-      navigate(`/hackathon/RegistrationForm/${hackathonId}`);
-    } else {
-      setShowLoginModal(true);
-    }
+    if (isVerified) navigate(`/hackathon/RegistrationForm/${hackathonId}`);
+    else setShowLoginModal(true);
   };
 
   const handleLeader = () => {
-    navigate(`/hackathon/${hackathonId}/team/${leaderValue}`)
-  }
-
-  const handleLoginSuccess = (data) => {
-    setShowLoginModal(false);
-    setIsVerified(true);
-    setUserData(data);
+    navigate(`/hackathon/${hackathonId}/team/${leaderValue}`);
   };
 
   const handleSubmit = () => {
     setShowSubmissionModal(true);
   };
-  const formatDateRange = (start, end) => {
-    const startDateObj = new Date(start);
-    const endDateObj = new Date(end);
-    const startYear = startDateObj.getFullYear();
-    const endYear = endDateObj.getFullYear();
-    const monthDayOptions = { month: "long", day: "numeric" };
 
-    if (startYear === endYear) {
-      const startStr = startDateObj.toLocaleDateString(
+  const formatDateRange = (start, end) => {
+    const s = new Date(start);
+    const e = new Date(end);
+    const opt = { month: "long", day: "numeric" };
+    if (s.getFullYear() === e.getFullYear()) {
+      return `${s.toLocaleDateString("en-US", opt)} – ${e.toLocaleDateString(
         "en-US",
-        monthDayOptions
-      );
-      const endStr = endDateObj.toLocaleDateString("en-US", {
-        ...monthDayOptions,
-        year: "numeric",
-      });
-      return `${startStr} – ${endStr}`;
-    } else {
-      const fullOptions = { ...monthDayOptions, year: "numeric" };
-      const startStr = startDateObj.toLocaleDateString("en-US", fullOptions);
-      const endStr = endDateObj.toLocaleDateString("en-US", fullOptions);
-      return `${startStr} – ${endStr}`;
+        { ...opt, year: "numeric" }
+      )}`;
     }
+    return `${s.toLocaleDateString("en-US", {
+      ...opt,
+      year: "numeric",
+    })} – ${e.toLocaleDateString("en-US", { ...opt, year: "numeric" })}`;
   };
 
   const getDaysRemaining = () => {
@@ -167,9 +151,9 @@ export const HeroSection = ({
   };
 
   const StatCard = ({ value, label, icon: Icon }) => (
-    <div className="bg-gray-900/70 backdrop-blur-sm border border-green-500/20 rounded-xl p-4 hover:border-green-400/30 transition-all duration-300 group">
+    <div className="bg-gray-900/70 backdrop-blur-sm border border-green-500/20 rounded-xl p-4 hover:border-green-400/30 transition-all">
       <div className="flex items-center gap-4">
-        <div className="w-10 h-10 bg-green-400/10 rounded-lg flex items-center justify-center group-hover:bg-green-400/20 transition-colors duration-300 border border-green-500/20">
+        <div className="w-10 h-10 bg-green-400/10 rounded-lg flex items-center justify-center border border-green-500/20">
           <Icon className="w-5 h-5 text-green-400" />
         </div>
         <div>
@@ -180,60 +164,75 @@ export const HeroSection = ({
     </div>
   );
 
+  const PrizeStatCard = ({ prize1, prize2, prize3, icon: Icon }) => (
+    <div className="bg-gray-900/70 backdrop-blur-sm border border-green-500/20 rounded-xl p-4 hover:border-green-400/30 transition-all">
+      <div className="flex items-center gap-4 mb-3">
+        <div className="w-10 h-10 bg-green-400/10 rounded-lg flex items-center justify-center border border-green-500/20">
+          <Icon className="w-5 h-5 text-green-400" />
+        </div>
+        <h3 className="text-xl font-bold text-white">Prize Pool</h3>
+      </div>
+      <div className="flex flex-col sm:flex-row sm:justify-start sm:gap-6 text-sm text-gray-400">
+        <span>1st: ₹{prize1.toLocaleString("en-IN")}</span>
+        <span>2nd: ₹{prize2.toLocaleString("en-IN")}</span>
+        <span>3rd: ₹{prize3.toLocaleString("en-IN")}</span>
+      </div>
+    </div>
+  );
+
   const renderActionButton = () => {
+    const baseClasses = "px-6 py-2.5 w-full sm:w-auto flex justify-center sm:justify-start items-center gap-2";
+
     if (loading || !userData) {
       return (
-        <Button
-          disabled
-          className="cursor-not-allowed group w-auto bg-gray-700 text-gray-400 font-bold px-6 py-2.5 text-base"
-        >
-          Loading...
+        <Button disabled className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}>
+          User not logined
         </Button>
       );
     }
-
     if (!isActive) return null;
 
     if (!registrationInfo) {
       return (
         <Button
           onClick={handleRegister}
-          className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+          className={`bg-green-500  cursor-pointer text-gray-900 ${baseClasses}`}
         >
-          <span className="flex items-center gap-2">
-            Register Now
-            <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-          </span>
+          Register Now <ChevronRight className="w-5 h-5" />
         </Button>
       );
     }
 
-    // User registered & leader
-    if (registrationInfo && isLeader) {
+    if (isLeader) {
       return (
         <Button
           onClick={handleSubmit}
-          className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+          className={`bg-green-500 cursor-pointer text-gray-900 ${baseClasses}`}
         >
-          <span className="flex items-center gap-2">
-            Submit Now
-            <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-          </span>
+          Submit Now <ChevronRight className="w-5 h-5" />
         </Button>
       );
     }
 
-    // Registered but not leader — disabled
+    if (isTeamMember) {
+      return (
+        <Button disabled className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}>
+          Submit Now (Leader Only)
+        </Button>
+      );
+    }
+
+    // Individual
     return (
       <Button
-        disabled
-        className="cursor-not-allowed group w-auto bg-gray-700 text-gray-400 font-bold px-6 py-2.5 text-base"
-        title="Only team leaders can submit"
+        onClick={handleSubmit}
+        className={`bg-green-500 cursor-pointer text-gray-900 ${baseClasses}`}
       >
-        Submit Now
+        Submit Now <ChevronRight className="w-5 h-5" />
       </Button>
     );
   };
+
 
   const fallbackImage = `https://via.placeholder.com/1200x400/0a0f18/22c55e?text=${encodeURIComponent(
     title
@@ -252,6 +251,7 @@ export const HeroSection = ({
         </div>
 
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
+          {/* top badges */}
           <div className="flex flex-wrap items-center gap-4 mb-4">
             <Badge
               className={`${isActive
@@ -267,62 +267,51 @@ export const HeroSection = ({
             </div>
           </div>
 
+          {/* title + buttons */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 leading-tight tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
                 {title}
               </h1>
-              <p className="text-lg text-gray-400 leading-relaxed">
-                {subTitle}
-              </p>
+              <p className="text-lg text-gray-400">{subTitle}</p>
+
+              {/* Role display */}
+              {userData && registrationInfo && (
+                <p className="text-sm text-green-300 mt-2">
+                  Role:{" "}
+                  {isLeader
+                    ? "Leader"
+                    : isTeamMember
+                      ? "Team Member"
+                      : "Individual"}
+                </p>
+              )}
             </div>
-            <div className="flex gap-5 w-full lg:w-auto text-center lg:text-left">
-              {/* --- CHANGE 5: Render the action button using the new logic --- */}
-              {leaderButton ?
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 w-full sm:w-auto text-center sm:text-left">
+              {leaderButton && (
                 <Button
                   onClick={handleLeader}
-                  className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+                  className="bg-green-500 flex cursor-pointer justify-center sm:justify-start text-gray-900 px-6 py-2.5 w-full sm:w-auto"
                 >
-                  <span className="flex items-center gap-2">
-                    Leader DashBoard
-                    <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                </Button> : <></>}
+                  Leader Dashboard <ChevronRight className="w-5 h-5 ml-2" />
+                </Button>
+              )}
               {renderActionButton()}
             </div>
-            {/* <div className="flex-shrink-0 w-full lg:w-auto text-center lg:text-left">
-              {isActive &&
-                (loading ? (
-                  <Button
-                    disabled
-                    size="lg"
-                    className="bg-gray-500/50 text-white font-bold w-auto"
-                  >
-                    Loading...
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleRegister}
-                    className="cursor-pointer group w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
-                  >
-                    <span className="flex items-center gap-2">
-                      Register Now
-                      <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                    </span>
-                  </Button>
-                ))}
-            </div> */}
           </div>
 
+          {/* stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
             <StatCard
               value={participantCount.toLocaleString()}
               label="Participants"
               icon={Users}
             />
-            <StatCard
-              value={`₹${prizeMoney?.toLocaleString("en-IN")}`}
-              label="Prize Pool"
+            <PrizeStatCard
+              prize1={prizeMoney1}
+              prize2={prizeMoney2}
+              prize3={prizeMoney3}
               icon={Trophy}
             />
             <StatCard
@@ -334,31 +323,19 @@ export const HeroSection = ({
         </div>
       </div>
 
-      {/* Login Modal */}
+      {/* modals */}
       {showLoginModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70"
             onClick={() => setShowLoginModal(false)}
           />
-          {/* Modal Content */}
-
           <div className="relative z-10 max-w-md w-full mx-4">
-            <LoginForm
-              onLoginSuccess={handleLoginSuccess}
-              showTitle={true}
-              showSignupLink={true}
-              showForgotPassword={true}
-              showGoogleLogin={true}
-              redirectTo="#"
-              containerClassName="bg-gray-900/95 backdrop-blur-sm border border-green-500/20 text-white shadow-[0_0_25px_#5fff6050] p-6 sm:p-10 rounded-xl w-full"
-            />
+            <LoginForm onLoginSuccess={() => setShowLoginModal(false)} />
           </div>
         </div>
       )}
 
-      {/* Submission Modal */}
       {showSubmissionModal && (
         <SubmissionForm
           isOpen={showSubmissionModal}

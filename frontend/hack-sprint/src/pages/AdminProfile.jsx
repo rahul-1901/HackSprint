@@ -62,8 +62,15 @@ const HackathonCard = ({ hackathon }) => {
             <span className="flex items-center gap-1.5">
               <Users size={16} className="text-green-400" /> {hackathon.numParticipants || 0}
             </span>
-            <span className="flex items-center gap-1.5">
-              <DollarSign size={16} className="text-green-400" /> ${hackathon.prizeMoney || 0}
+            <span className="flex items-center">
+              <Trophy size={14} className="text-gray-500" />
+              <span className="ml-1 text-gray-400">
+                ₹{(
+                  (hackathon.prizeMoney1 || 0) +
+                  (hackathon.prizeMoney2 || 0) +
+                  (hackathon.prizeMoney3 || 0)
+                ).toLocaleString("en-IN")}
+              </span>
             </span>
             <span className="flex items-center gap-1.5">
               <Calendar size={16} className="text-green-400" /> {new Date(hackathon.startDate).toLocaleDateString()}
@@ -230,7 +237,7 @@ const AdminProfile = () => {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <button
                       onClick={() => navigate(viewMoreLink)}
-                      className="bg-gray-800/80 hover:bg-gray-700/80 text-gray-200 font-semibold py-3 px-6 rounded-lg border border-gray-600 backdrop-blur-sm transition-all duration-300 flex items-center gap-2 group hover:border-green-400 hover:text-white"
+                      className="bg-gray-800/80 cursor-pointer hover:bg-gray-700/80 text-gray-200 font-semibold py-3 px-6 rounded-lg border border-gray-600 backdrop-blur-sm transition-all duration-300 flex items-center gap-2 group hover:border-green-400 hover:text-white"
                     >
                       View More
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

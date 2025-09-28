@@ -43,8 +43,15 @@ const HackathonCard = ({ hackathon }) => {
             <span className="flex items-center gap-1.5">
               <Users size={16} className="text-green-400" /> {hackathon.numParticipants || 0}
             </span>
-            <span className="flex items-center gap-1.5">
-              <DollarSign size={16} className="text-green-400" /> ${hackathon.prizeMoney || 0}
+            <span className="flex items-center">
+              <Trophy size={14} className="text-gray-500" />
+              <span className="ml-1 text-gray-400">
+                ₹{(
+                  (hackathon.prizeMoney1 || 0) +
+                  (hackathon.prizeMoney2 || 0) +
+                  (hackathon.prizeMoney3 || 0)
+                ).toLocaleString("en-IN")}
+              </span>
             </span>
             <span className="flex items-center gap-1.5">
               <Calendar size={16} className="text-green-400" /> {new Date(hackathon.startDate).toLocaleDateString()}

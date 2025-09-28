@@ -164,7 +164,7 @@ export const submitHackathonSolution = async (req, res) => {
       await hackathon.save();
 
       await UserModel.findByIdAndUpdate(userId, {
-        $push: { submissions: submission._id },
+        $push: { submittedHackathons: submission._id },
       });
     }
 
@@ -189,11 +189,13 @@ export const getSubmissionStatus = async (req, res) => {
         .json({ message: "hackathonId and teamId or userId are required" });
     }
 
+    // Look for either team submission or individual submission
     const submission = await SubmissionModel.findOne({
       hackathon: hackathonId,
       $or: [
-        { team: teamId || null }
-      ],
+        teamId ? { team: teamId } : null,
+        userId ? { participant: userId } : null
+      ].filter(Boolean), 
     });
 
     if (!submission) {
@@ -209,6 +211,7 @@ export const getSubmissionStatus = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 export const getSubmissionById = async (req, res) => {
   try {

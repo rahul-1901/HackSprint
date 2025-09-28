@@ -183,7 +183,7 @@ const CreateHackathonPage = () => {
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             Back to Dashboard
           </Link>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight">Create a New Hackathon</h1>
+          <h1 className="text-4xl sm:text-5xl ZaptronFont text-green-600/90 font-extrabold leading-tight">Create a New Hackathon</h1>
           <p className="mt-2 text-gray-400">Fill in the details below to set up your event.</p>
         </header>
 

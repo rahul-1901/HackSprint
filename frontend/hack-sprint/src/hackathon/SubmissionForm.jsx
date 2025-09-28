@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { X, Clock, Calendar, Users, Code, FileVideo, FileText } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
-import { getDashboard } from "../backendApis/api"; // your existing API helper
+import { getDashboard } from "../backendApis/api"; // your API helper
 
 // Input component
 function Input({ className = "", ...props }) {
@@ -73,7 +73,7 @@ function FileUpload({ label, icon: Icon, accept, file, onFileChange, onRemove, p
   );
 }
 
-// SubmissionForm
+// SubmissionForm component
 const SubmissionForm = ({ isOpen, onClose }) => {
   const { id: hackathonId } = useParams();
   const [repoUrl, setRepoUrl] = useState("");
@@ -85,7 +85,10 @@ const SubmissionForm = ({ isOpen, onClose }) => {
   const [submissionStatus, setSubmissionStatus] = useState(null);
   const [userData, setUserData] = useState(null);
   const [isLeader, setIsLeader] = useState(false);
+  const [isTeamMember, setIsTeamMember] = useState(false);
   const [teamId, setTeamId] = useState(null);
+
+  const navigate = useNavigate();
 
   // Fetch hackathon details
   useEffect(() => {
@@ -96,35 +99,60 @@ const SubmissionForm = ({ isOpen, onClose }) => {
       .catch((err) => console.error("Error fetching hackathon:", err));
   }, [hackathonId, isOpen]);
 
-  // Fetch user dashboard data
+  // Fetch user and team info
   useEffect(() => {
     if (!isOpen) return;
-    getDashboard()
-      .then((res) => {
+
+    const fetchUserData = async () => {
+      try {
+        const res = await getDashboard();
         const fetchedUserData = res.data.userData;
         setUserData(fetchedUserData);
-        setTeamId(fetchedUserData.team || null);
-        setIsLeader(fetchedUserData.leaderOfHackathons?.includes(hackathonId));
-      })
-      .catch((err) => console.error("Error fetching user data:", err));
-  }, [isOpen, hackathonId]);
 
-  // Cleanup video URL
-  useEffect(() => {
-    return () => {
-      if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+        const leader = fetchedUserData.leaderOfHackathons?.some(
+          (id) => String(id) === String(hackathonId)
+        );
+        setIsLeader(leader || false);
+
+        if (fetchedUserData.team) {
+          setTeamId(fetchedUserData.team);
+          // Fetch team details
+          const teamRes = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/api/team/${fetchedUserData.team}`
+          );
+          const teamData = await teamRes.json();
+          const team = teamData.team;
+
+          // Check if this team belongs to this hackathon
+          if (team?.hackathon?._id && String(team.hackathon._id) === String(hackathonId)) {
+            const member = team.members?.some((m) => String(m._id) === String(fetchedUserData._id));
+            setIsTeamMember(member || false);
+          } else {
+            setIsTeamMember(false);
+          }
+        } else {
+          setIsTeamMember(false);
+        }
+      } catch (err) {
+        console.error("Error fetching user/team:", err);
+        setUserData(null);
+        setIsLeader(false);
+        setIsTeamMember(false);
+      }
     };
-  }, [videoPreviewUrl]);
 
+    fetchUserData();
+  }, [hackathonId, isOpen]);
 
+  // Fetch submission status
   useEffect(() => {
-    if (!hackathonId || !isOpen || !userData) return;
+    if (!hackathonId || !userData) return;
 
     const fetchSubmissionStatus = async () => {
       try {
         const params = new URLSearchParams({
           hackathonId,
-          teamId: userData.team,
+          teamId: userData.team || "",
           userId: userData._id,
         });
 
@@ -139,8 +167,10 @@ const SubmissionForm = ({ isOpen, onClose }) => {
     };
 
     fetchSubmissionStatus();
-  }, [hackathonId, isOpen, userData]);
+  }, [hackathonId, userData]);
 
+  // Cleanup video preview URL
+  useEffect(() => () => { if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl); }, [videoPreviewUrl]);
 
   const handleVideoFileChange = (e) => {
     const file = e.target.files[0];
@@ -165,10 +195,15 @@ const SubmissionForm = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isLeader) {
+
+    // Only leader or individual can submit
+    const canSubmit = isLeader || (!isTeamMember);
+    if (!canSubmit) {
       toast.error("Only team leaders can submit!", { position: "top-right", theme: "dark" });
+      console.log("rff")
       return;
     }
+
     setLoading(true);
     try {
       const formData = new FormData();
@@ -184,7 +219,7 @@ const SubmissionForm = ({ isOpen, onClose }) => {
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Failed to submit");
+      if (!res.ok) throw new Error("Submission failed");
 
       toast.success("Submission successful!", { position: "top-right", theme: "dark" });
       setRepoUrl("");
@@ -199,45 +234,53 @@ const SubmissionForm = ({ isOpen, onClose }) => {
     }
   };
 
-  const onCloseClick = () => onClose?.();
-
   if (!isOpen || !hackathon || !userData) return null;
 
   const durationDays = Math.ceil((new Date(hackathon.endDate) - new Date()) / (1000 * 60 * 60 * 24));
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 z-50 flex items-start justify-center p-4 pt-30">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/90 z-50 flex items-start justify-center p-4 pt-30"
+    >
       <ToastContainer />
-      <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-gray-900 rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-green-500/50 text-white max-h-[90vh] overflow-y-auto">
+      <motion.div
+        initial={{ scale: 0.95 }}
+        animate={{ scale: 1 }}
+        exit={{ scale: 0.95 }}
+        className="bg-gray-900 rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-green-500/50 text-white max-h-[90vh] overflow-y-auto"
+      >
         {/* Header */}
         <div className="flex justify-between items-start mb-5">
           <div>
             <h2 className="text-2xl font-bold">{hackathon.title}</h2>
             <p className="text-gray-400">{hackathon.subTitle}</p>
           </div>
-          <button onClick={onCloseClick} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-6 h-6" /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white cursor-pointer">
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
-        {/* Hackathon Stats */}
+        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <StatCard icon={Code} label="Prize Pool" value={`₹${hackathon.prizeMoney || 0}`} />
+          <StatCard icon={Code} label="Prize Pool" value={`₹${(
+            (hackathon.prizeMoney1 || 0) +
+            (hackathon.prizeMoney2 || 0) +
+            (hackathon.prizeMoney3 || 0)
+          ).toLocaleString("en-IN")}`} />
           <StatCard icon={Clock} label="Duration" value={`${durationDays} Days`} />
           <StatCard icon={Users} label="Participants" value={hackathon.numParticipants || 0} />
           <StatCard icon={Calendar} label="Difficulty" value={hackathon.difficulty} />
         </div>
 
-        {/* Description */}
         <p className="text-gray-300 mb-6">{hackathon.description}</p>
 
         {submissionStatus?.submitted ? (
           <div className="p-4 bg-gray-800 rounded-lg border border-green-500/50 space-y-2">
             <p className="text-green-400 font-semibold">Already Submitted!</p>
             <p>Repo: <a href={submissionStatus.submission.repoUrl} className="text-blue-500 underline" target="_blank">{submissionStatus.submission.repoUrl}</a></p>
-            {submissionStatus.submission.submittedAt && (
-              <p>Submitted At: {new Date(submissionStatus.submission.submittedAt).toLocaleString()}</p>
-            )}
-            {submissionStatus.submission.docs.length > 0 && <p>Docs uploaded</p>}
-            {submissionStatus.submission.videos.length > 0 && <p>Video uploaded</p>}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -271,7 +314,7 @@ const SubmissionForm = ({ isOpen, onClose }) => {
 
             <Button
               type="submit"
-              disabled={loading || !isLeader}
+              disabled={loading || (!isLeader && isTeamMember)}
               className="cursor-pointer group w-full bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
             >
               {loading ? "Submitting..." : "Submit Project"}

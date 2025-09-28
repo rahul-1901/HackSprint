@@ -284,7 +284,7 @@ export const UserDashboard = () => {
       try {
         const results = await Promise.all(
           data?.submittedHackathons.map(async (id) => {
-            const res = await axios.get(`http://localhost:3000/api/submit/getSubmissionById/${id}`);
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/submit/getSubmissionById/${id}`);
             return res.data;
           })
         );
@@ -305,7 +305,7 @@ export const UserDashboard = () => {
       try {
         const results = await Promise.all(
           submission?.map(async (sub) => {
-            const res = await axios.get(`http://localhost:3000/api/hackathons/${sub.hackathon}`);
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${sub.hackathon}`);
             return res.data;
           })
         );
@@ -333,10 +333,10 @@ export const UserDashboard = () => {
           localStorage.removeItem("token");
           localStorage.removeItem("email");
           toast.success("Logout successfull...", { autoClose: 800, style: { backgroundColor: "#f3f4f6", color: "#000000" } })
-            setTimeout(() => {
-              navigate('/account/login');
-              window.location.reload();
-            }, 2000)
+          setTimeout(() => {
+            navigate('/account/login');
+            window.location.reload();
+          }, 2000)
 
         }
       }
@@ -864,7 +864,14 @@ export const UserDashboard = () => {
                           <span>Submitted: {submittedAt}</span>
                           <span>Start: {startDate}</span>
                           <span>End: {endDate}</span>
-                          <span>Prize: ₹{hack.prizeMoney}</span>
+                          <span className="ml-1 text-gray-400">
+                            ₹{(
+                              (hack.prizeMoney1 || 0) +
+                              (hack.prizeMoney2 || 0) +
+                              (hack.prizeMoney3 || 0)
+                            ).toLocaleString("en-IN")}
+                          </span>
+
                         </div>
 
                         <div className="mt-2">

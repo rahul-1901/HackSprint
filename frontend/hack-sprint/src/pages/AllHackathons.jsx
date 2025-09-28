@@ -107,7 +107,13 @@ const HackathonCard = ({ hackathon }) => {
         }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => navigate(`/hackathon/${hackathon._id}`)}
+      onClick={() => {
+        if (hackathon.status !== "upcoming") {
+          navigate(`/hackathon/${hackathon._id}`)
+        } else {
+          
+        }
+      }}
     >
       <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-green-400/20 to-transparent transform -skew-x-12 transition-transform duration-1000 ${isHovered ? "translate-x-full" : "-translate-x-full"}`} />
       <div className="absolute inset-0 bg-gradient-to-r from-green-400/0 via-green-400/5 to-green-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -160,7 +166,16 @@ const HackathonCard = ({ hackathon }) => {
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 lg:gap-8">
               <div className="flex items-center text-xs sm:text-sm"><Users size={14} className="text-gray-500" /><span className="ml-1 text-gray-400">{hackathon.participants} participants</span></div>
-              <div className="flex items-center text-xs sm:text-sm"><Trophy size={14} className="text-gray-500" /><span className="ml-1 text-gray-400">₹{hackathon.prize}</span></div>
+              <div className="flex items-center text-xs sm:text-sm">
+                <Trophy size={14} className="text-gray-500" />
+                <span className="ml-1 text-gray-400">
+                  ₹{(
+                    (hackathon.prizeMoney1 || 0) +
+                    (hackathon.prizeMoney2 || 0) +
+                    (hackathon.prizeMoney3 || 0)
+                  ).toLocaleString("en-IN")}
+                </span>
+              </div>
               <div className="flex items-center text-xs sm:text-sm"><Calendar size={14} className="text-gray-500" /><span className="ml-1 text-gray-400">{hackathon.dates}</span></div>
             </div>
           </div>
