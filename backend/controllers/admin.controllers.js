@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import hackathonModel from "../models/hackathon.models.js";
+import UserModel from "../models/user.models.js";
 import SubmissionModel from "../models/submission.js";
 import RegisteredParticipantsModel from "../models/registeredParticipants.js";
 import PendingHackathon from "../models/pendingHackathon.model.js";
@@ -223,8 +224,8 @@ export const displayPendingHackathon = async (req, res) => {
   }
 };
 
-// Update points for a hackathon submission
 export const updateHackathonPoint = async (req, res) => {
+  const session = await mongoose.startSession();
   try {
     const { adminId, submissionId, points } = req.body;
     if (!adminId) {
@@ -242,7 +243,8 @@ export const updateHackathonPoint = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid submissionId" });
     }
 
-    const submission = await SubmissionModel.findById(submissionId).lean();
+    // Load submission (we'll use session in transaction)
+    const submission = await SubmissionModel.findById(submissionId).session(session);
     if (!submission) {
       return res.status(404).json({ success: false, message: "Submission not found" });
     }
@@ -259,22 +261,67 @@ export const updateHackathonPoint = async (req, res) => {
       });
     }
 
-    const updated = await SubmissionModel.findByIdAndUpdate(
+    // Start transaction
+    session.startTransaction();
+
+    // Update submission's hackathonPoints to the provided points
+    const updatedSubmission = await SubmissionModel.findByIdAndUpdate(
       submissionId,
       { $set: { hackathonPoints: points } },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true, session }
     );
+
+    // Build list of user ids to update (leader + members OR participant)
+    const userIds = [];
+    if (submission.team) {
+      const team = await TeamModel.findById(submission.team).select("leader members").lean();
+      if (team) {
+        if (team.leader) userIds.push(team.leader);
+        if (Array.isArray(team.members) && team.members.length) {
+          userIds.push(...team.members);
+        }
+      }
+    } else if (submission.participant) {
+      userIds.push(submission.participant);
+    }
+
+    // Dedupe and filter ids
+    const uniqueUserIds = [...new Set(userIds.map(id => id?.toString()).filter(Boolean))];
+
+    let usersUpdatedCount = 0;
+    if (uniqueUserIds.length) {
+      // Set each user's hackathonPoints to the incoming points value
+      const updateResult = await UserModel.updateMany(
+        { _id: { $in: uniqueUserIds } },
+        { $set: { hackathonPoints: points } },
+        { session }
+      );
+      usersUpdatedCount = updateResult.nModified ?? updateResult.modifiedCount ?? 0;
+    }
+
+    // Commit transaction
+    await session.commitTransaction();
+    session.endSession();
 
     return res.status(200).json({
       success: true,
-      message: "hackathonPoints updated",
-      submission: updated,
+      message: "hackathonPoints updated on submission and users",
+      submission: updatedSubmission,
+      usersUpdatedCount,
+      setToPoints: points,
     });
   } catch (err) {
+    try {
+      await session.abortTransaction();
+    } catch (e) {
+      // ignore abort errors
+    }
+    session.endSession();
     console.error("updateHackathonPoint error:", err);
     return res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 };
+
 
 // Get the profile details of the currently logged-in admin
 export const getAdminDetails = async (req, res) => {

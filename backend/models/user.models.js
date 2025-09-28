@@ -154,6 +154,10 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
+    hackathonPoints:{
+      type : Number,
+      default :0
+    },
     verificationTokenExpiresAt: Date
   },
   { timestamps: true }

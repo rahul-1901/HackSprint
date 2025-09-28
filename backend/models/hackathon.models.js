@@ -50,8 +50,14 @@ const hackathonSchema = new mongoose.Schema({
         //     values : ["Web Dev" , "AI/ML" , "Blockchain" , "IoT"]
         // }
     },
-    prizeMoney: {
+    prizeMoney1: {
         type: Number
+    },
+    prizeMoney2 :{
+        type : Number
+    },
+    prizeMoney3 : {
+        type : Number
     },
     techStackUsed: {
         type: Array,
