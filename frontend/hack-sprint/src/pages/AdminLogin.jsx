@@ -23,7 +23,7 @@ function AdminLogin() {
       );
 
       if (data.token) {
-        toast.success(data.message || "Login successful!", { className: "text-sm max-w-xs" });
+        toast.success(data.message || "Login successful!", { className: "text-sm max-w-xs" , autoClose: 1200},);
         localStorage.setItem("adminToken", data.token);
         navigate("/Hacksprintkaadminprofile");
       } else {

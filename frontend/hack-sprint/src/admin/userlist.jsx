@@ -89,13 +89,13 @@ const HackathonUsersPage = () => {
     <div className="relative min-h-screen bg-gray-900 text-white overflow-hidden">
       <GridBackground />
       <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-        <header className="my-12">
+        <header className="my-5">
           <Link to="/Hacksprintkaadminprofile" className="flex items-center gap-2 text-green-400 hover:text-green-300 mb-6 group">
              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
              Back to Dashboard
           </Link>
           <p className="text-green-400 text-sm font-semibold tracking-wide uppercase">Participants List</p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl text-white font-extrabold leading-tight mt-2">{hackathon.title}</h1>
+          <h1 className="text-4xl sm:text-5xl ZaptronFont -tracking-tight text-green-400 md:text-6xl font-extrabold leading-tight mt-2">{hackathon.title}</h1>
         </header>
 
         <main className="space-y-12">

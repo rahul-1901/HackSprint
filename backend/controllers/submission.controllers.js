@@ -209,3 +209,15 @@ export const getSubmissionStatus = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getSubmissionById = async (req, res) => {
+  try {
+    const submission = await SubmissionModel.findById(req.params.id);
+    if (!submission) {
+      return res.status(404).json({ message: 'Submission not found' });
+    }
+    return res.json(submission);
+  } catch (err) {
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+};

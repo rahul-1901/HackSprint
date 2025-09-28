@@ -527,7 +527,7 @@ const signup = async (req, res) => {
     const verifyToken = jwt.sign(
       { userId: newUser._id },
       process.env.SECRET_KEY,
-      { expiresIn: "24h" }
+      { expiresIn: process.env.JWT_EXPIRE_TIME }
     );
 
     const verifyUrl = `${process.env.FRONTEND_URL}/verify?token=${verifyToken}`;
@@ -709,7 +709,7 @@ const login = async (req, res) => {
     const jwtToken = jwt.sign(
       { email: user.email, _id: user._id },
       process.env.SECRET_KEY,
-      { expiresIn: "24h" }
+      { expiresIn: process.env.JWT_EXPIRE_TIME }
     );
 
     user.lastLogin = Date.now();
@@ -765,7 +765,7 @@ const googleLogin = async (req, res) => {
     const jwtToken = jwt.sign(
       { email, _id: user._id },
       process.env.SECRET_KEY,
-      { expiresIn: "24h" }
+      { expiresIn: process.env.JWT_EXPIRE_TIME }
     );
 
     if (isFirstTime) {

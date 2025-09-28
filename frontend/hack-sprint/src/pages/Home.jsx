@@ -108,6 +108,8 @@ const GridBackground = () => (
 const TypingText = ({ text, className = "" }) => {
   const [displayText, setDisplayText] = useState("")
   const [isTyping, setIsTyping] = useState(true)
+  const [isStudent, setIsStudent] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let i = 0
@@ -394,11 +396,23 @@ const DeveloperJourneySection = () => {
 const Home = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true)
+  const [userType, setUserType] = useState("none");
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000)
-    return () => clearTimeout(timer)
-  }, [])
+    const studentToken = localStorage.getItem("token");
+    const adminToken = localStorage.getItem("adminToken");
+
+    if (studentToken) {
+      setUserType("student");
+    } else if (adminToken) {
+      setUserType("admin");
+    } else {
+      setUserType("none");
+    }
+
+    const timer = setTimeout(() => setLoading(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -441,19 +455,42 @@ const Home = () => {
 
           </div>
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/studenthome")}
-              className="bg-green-400/10 cursor-pointer hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105"
-            >
-              Student
-            </button>
-            <button
-              onClick={() => navigate("/adminhome")}
-              className="bg-green-400/10 cursor-pointer hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105"
-            >
-              Admin
-            </button>
+            {userType === "none" && (
+              <>
+                <button
+                  onClick={() => navigate("/studenthome")}
+                  className="bg-green-400/10 cursor-pointer hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105"
+                >
+                  Student
+                </button>
+                <button
+                  onClick={() => navigate("/adminhome")}
+                  className="bg-green-400/10 cursor-pointer hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105"
+                >
+                  Admin
+                </button>
+              </>
+            )}
+
+            {userType === "student" && (
+              <button
+                onClick={() => navigate("/studenthome")}
+                className="bg-green-400/10 cursor-pointer hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105"
+              >
+                Student
+              </button>
+            )}
+
+            {userType === "admin" && (
+              <button
+                onClick={() => navigate("/adminhome")}
+                className="bg-green-400/10 cursor-pointer hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105"
+              >
+                Admin
+              </button>
+            )}
           </div>
+
         </div>
       </nav>
 

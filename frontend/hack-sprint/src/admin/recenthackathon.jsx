@@ -1,31 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Activity, Code, Calendar, Users, Trophy } from 'lucide-react';
-import { getAdminDetails, getAdminHackathons } from '../backendApis/api'; // Import API functions
+import { Activity, Code, Calendar, Users, Trophy, DollarSign } from 'lucide-react';
+import { getAdminDetails, getAdminHackathons } from '../backendApis/api';
 
-// --- BACKGROUND COMPONENTS (No changes) ---
-const GridBackground = () => ( <div className="absolute inset-0 opacity-10 pointer-events-none"><div className="absolute inset-0" style={{ backgroundImage: `linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px)`, backgroundSize: "50px 50px" }} /></div> );
-const FloatingParticles = () => ( <div className="absolute inset-0 overflow-hidden pointer-events-none">{[...Array(20)].map((_, i) => ( <div key={i} className="absolute w-1 h-1 bg-blue-400 rounded-full opacity-30 animate-pulse" style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 5}s`, animationDuration: `${3 + Math.random() * 4}s` }} /> ))}</div> );
+// --- BACKGROUND COMPONENTS ---
+const GridBackground = () => (
+  <div className="absolute inset-0 opacity-10 pointer-events-none">
+    <div
+      className="absolute inset-0"
+      style={{
+        backgroundImage: `linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px)`,
+        backgroundSize: "50px 50px",
+      }}
+    />
+  </div>
+);
 
-// --- HACKATHON CARD (No changes) ---
 const HackathonCard = ({ hackathon }) => {
-    // ... (Your existing HackathonCard component code)
-    return (
-        <div className="border border-blue-500/20 bg-white/5 p-4 rounded-xl hover:border-blue-400 transition-colors duration-300">
-            <h3 className="text-white font-bold text-lg">{hackathon.title}</h3>
-            <p className="text-gray-400 text-sm line-clamp-2 mt-1">{hackathon.description}</p>
+  return (
+    <div className="relative w-full rounded-2xl overflow-hidden shadow-lg border border-gray-800 hover:border-green-500/50 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-gray-900/70 backdrop-blur-sm">
+      <div className="flex flex-col lg:flex-row">
+        {/* Image */}
+        <div className="w-full lg:w-1/3 h-48 lg:h-64 relative">
+          <img
+            src={
+              hackathon.image ||
+              "https://images.unsplash.com/photo-1556740758-90de374c12ad?q=80&w=2070&auto=format&fit=crop"
+            }
+            alt={hackathon.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900/50 to-transparent lg:from-transparent lg:to-transparent"></div>
         </div>
-    );
+
+        {/* Text */}
+        <div className="p-4 lg:p-5 flex-1 flex flex-col justify-center">
+          <h3 className="text-white font-bold text-xl lg:text-2xl mb-2 leading-snug">{hackathon.title}</h3>
+          <p className="text-green-300 text-base mb-2">{hackathon.subTitle}</p>
+          <p className="text-gray-400 text-base line-clamp-2 lg:line-clamp-1 mb-3">{hackathon.description}</p>
+
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-gray-400 text-base mb-3">
+            <span className="flex items-center gap-1.5">
+              <Users size={16} className="text-green-400" /> {hackathon.numParticipants || 0}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <DollarSign size={16} className="text-green-400" /> ${hackathon.prizeMoney || 0}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Calendar size={16} className="text-green-400" /> {new Date(hackathon.startDate).toLocaleDateString()}
+            </span>
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto py-1 scrollbar-hide">
+            {hackathon.techStackUsed.map((tech, index) => (
+              <span
+                key={index}
+                className="flex-shrink-0 px-2.5 py-1 rounded-full text-sm bg-green-900/50 text-green-300 font-medium"
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
-// --- MAIN PAGE COMPONENT ---
 const RecentlyStartedPage = () => {
   const navigate = useNavigate();
   const [recentlyStartedHackathons, setRecentlyStartedHackathons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [adminData, setAdminData] = useState(null);
 
-  // 1. Fetch admin details first
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
@@ -39,7 +86,6 @@ const RecentlyStartedPage = () => {
     fetchAdminData();
   }, [navigate]);
 
-  // 2. Fetch hackathons and filter them once admin data is available
   useEffect(() => {
     if (adminData) {
       const fetchAndFilterHackathons = async () => {
@@ -68,21 +114,25 @@ const RecentlyStartedPage = () => {
   return (
     <div className="relative min-h-screen bg-gray-900 text-white overflow-hidden">
       <GridBackground />
-      <FloatingParticles />
       <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         <header className="text-center my-12 sm:my-16">
-          <h1 className="flex items-center justify-center gap-x-4 text-4xl sm:text-5xl md:text-6xl text-white font-extrabold leading-tight">
+          <h1 className="flex items-center ZaptronFont -tracking-tight text-green-400 justify-center gap-x-4 text-5xl sm:text-5xl md:text-7xl font-extrabold leading-tight">
             <span>Recently Started</span>
           </h1>
-          <p className="text-gray-400 text-lg mt-4 max-w-2xl mx-auto">Catch the momentum! These hackathons have just kicked off.</p>
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            Catch the momentum! These hackathons have just kicked off.
+          </p>
         </header>
         <main>
           {loading ? (
             <p className="text-center text-gray-400">Loading hackathons...</p>
           ) : recentlyStartedHackathons.length > 0 ? (
             <div className="flex flex-col gap-8">
-              {recentlyStartedHackathons.map((hackathon) => (
-                <Link key={hackathon._id} to={`/Hacksprintkaadminprofile/${hackathon._id}/usersubmissions`}>
+              {recentlyStartedHackathons.map(hackathon => (
+                <Link
+                  key={hackathon._id}
+                  to={`/Hacksprintkaadminprofile/${hackathon._id}/usersubmissions`}
+                >
                   <HackathonCard hackathon={hackathon} />
                 </Link>
               ))}

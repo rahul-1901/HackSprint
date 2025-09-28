@@ -53,46 +53,46 @@ const DynamicListInput = ({ label, placeholder, values, onUpdate }) => {
 };
 
 const DynamicFaqInput = ({ values, onUpdate }) => {
-    const [question, setQuestion] = useState('');
-    const [answer, setAnswer] = useState('');
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
 
-    const handleAdd = () => {
-        if(question && answer) {
-            onUpdate([...values, { question, answer }]);
-            setQuestion('');
-            setAnswer('');
-        }
-    };
+  const handleAdd = () => {
+    if (question && answer) {
+      onUpdate([...values, { question, answer }]);
+      setQuestion('');
+      setAnswer('');
+    }
+  };
 
-    const handleRemove = (indexToRemove) => {
-        onUpdate(values.filter((_, index) => index !== indexToRemove));
-    };
+  const handleRemove = (indexToRemove) => {
+    onUpdate(values.filter((_, index) => index !== indexToRemove));
+  };
 
-    return (
-        <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">FAQs</label>
-            <div className="space-y-2 mb-3">
-                {values.map((faq, index) => (
-                    <div key={index} className="bg-gray-800/50 p-3 rounded-lg flex justify-between items-start gap-4">
-                        <div className="flex-1">
-                            <p className="font-semibold text-white">{faq.question}</p>
-                            <p className="text-gray-400 text-sm mt-1">{faq.answer}</p>
-                        </div>
-                        <button type="button" onClick={() => handleRemove(index)} className="text-red-400 hover:text-red-300 flex-shrink-0">
-                            <X size={16} />
-                        </button>
-                    </div>
-                ))}
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-300 mb-2">FAQs</label>
+      <div className="space-y-2 mb-3">
+        {values.map((faq, index) => (
+          <div key={index} className="bg-gray-800/50 p-3 rounded-lg flex justify-between items-start gap-4">
+            <div className="flex-1">
+              <p className="font-semibold text-white">{faq.question}</p>
+              <p className="text-gray-400 text-sm mt-1">{faq.answer}</p>
             </div>
-            <div className="space-y-2 border-t border-gray-700 pt-3">
-                <input type="text" placeholder="Question" value={question} onChange={(e) => setQuestion(e.target.value)} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-                <textarea placeholder="Answer" value={answer} onChange={(e) => setAnswer(e.target.value)} rows="2" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
-                <button type="button" onClick={handleAdd} className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2">
-                    <Plus size={16} /> Add FAQ
-                </button>
-            </div>
-        </div>
-    );
+            <button type="button" onClick={() => handleRemove(index)} className="text-red-400 hover:text-red-300 flex-shrink-0">
+              <X size={16} />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="space-y-2 border-t border-gray-700 pt-3">
+        <input type="text" placeholder="Question" value={question} onChange={(e) => setQuestion(e.target.value)} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
+        <textarea placeholder="Answer" value={answer} onChange={(e) => setAnswer(e.target.value)} rows="2" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
+        <button type="button" onClick={handleAdd} className="w-full cursor-pointer bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2">
+          <Plus size={16} /> Add FAQ
+        </button>
+      </div>
+    </div>
+  );
 };
 
 
@@ -103,7 +103,7 @@ const CreateHackathonPage = () => {
     title: '', subTitle: '', description: '', overview: '', startDate: '', endDate: '',
     submissionStartDate: '', submissionEndDate: '', prizeMoney: '', difficulty: 'Beginner',
     techStackUsed: [], category: [], themes: [], refMaterial: '', aboutUs: '',
-    problems: [], TandCforHackathon: [], evaluationCriteria: [], projectSubmission: [], 
+    problems: [], TandCforHackathon: [], evaluationCriteria: [], projectSubmission: [],
     FAQs: []
   });
   const [imageFile, setImageFile] = useState(null);
@@ -142,27 +142,27 @@ const CreateHackathonPage = () => {
     setIsSubmitting(true);
 
     const submissionData = new FormData();
-    
+
     // Append all fields except FAQs, which needs special handling
     Object.keys(formData).forEach(key => {
-        if (key === 'FAQs') return;
-        
-        if (Array.isArray(formData[key])) {
-            submissionData.append(key, JSON.stringify(formData[key]));
-        } else {
-            submissionData.append(key, formData[key]);
-        }
+      if (key === 'FAQs') return;
+
+      if (Array.isArray(formData[key])) {
+        submissionData.append(key, JSON.stringify(formData[key]));
+      } else {
+        submissionData.append(key, formData[key]);
+      }
     });
-    
+
     // Convert the FAQs array of objects into an array of strings ("Question|Answer")
     const faqsStringArray = formData.FAQs.map(faq => `${faq.question}|${faq.answer}`);
     submissionData.append('FAQs', JSON.stringify(faqsStringArray));
-    
+
     submissionData.append('adminId', adminData.id);
     if (imageFile) {
       submissionData.append('image', imageFile);
     }
-    
+
     try {
       await createHackathon(submissionData);
       toast.success("Hackathon submitted for approval!");
@@ -180,8 +180,8 @@ const CreateHackathonPage = () => {
       <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
         <header className="my-12">
           <Link to="/Hacksprintkaadminprofile" className="flex items-center gap-2 text-green-400 hover:text-green-300 mb-6 group">
-             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-             Back to Dashboard
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            Back to Dashboard
           </Link>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight">Create a New Hackathon</h1>
           <p className="mt-2 text-gray-400">Fill in the details below to set up your event.</p>
@@ -206,45 +206,45 @@ const CreateHackathonPage = () => {
           </div>
 
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
-             <h2 className="text-2xl font-bold text-white mb-6">Event Details</h2>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                    <input type="number" name="prizeMoney" placeholder="Prize Money ($) *" value={formData.prizeMoney} onChange={handleChange} required className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-                </div>
-                <div className="md:col-span-2">
-                    <label htmlFor="difficulty" className="block text-sm font-medium text-gray-300 mb-1">Difficulty</label>
-                    <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white">
-                        <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Expert</option>
-                    </select>
-                </div>
-                <div className="md:col-span-2">
-                    <DynamicListInput label="Tech Stack" placeholder="e.g., React" values={formData.techStackUsed} onUpdate={(newVal) => setFormData(p => ({...p, techStackUsed: newVal}))} />
-                </div>
-                <div className="md:col-span-2">
-                    <DynamicListInput label="Categories" placeholder="e.g., AI" values={formData.category} onUpdate={(newVal) => setFormData(p => ({...p, category: newVal}))} />
-                </div>
-                <div className="md:col-span-2">
-                    <DynamicListInput label="Themes" placeholder="e.g., Sustainability" values={formData.themes} onUpdate={(newVal) => setFormData(p => ({...p, themes: newVal}))} />
-                </div>
-             </div>
+            <h2 className="text-2xl font-bold text-white mb-6">Event Details</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <input type="number" name="prizeMoney" placeholder="Prize Money ($) *" value={formData.prizeMoney} onChange={handleChange} required className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor="difficulty" className="block text-sm font-medium text-gray-300 mb-1">Difficulty</label>
+                <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white">
+                  <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Expert</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <DynamicListInput label="Tech Stack" placeholder="e.g., React" values={formData.techStackUsed} onUpdate={(newVal) => setFormData(p => ({ ...p, techStackUsed: newVal }))} />
+              </div>
+              <div className="md:col-span-2">
+                <DynamicListInput label="Categories" placeholder="e.g., AI" values={formData.category} onUpdate={(newVal) => setFormData(p => ({ ...p, category: newVal }))} />
+              </div>
+              <div className="md:col-span-2">
+                <DynamicListInput label="Themes" placeholder="e.g., Sustainability" values={formData.themes} onUpdate={(newVal) => setFormData(p => ({ ...p, themes: newVal }))} />
+              </div>
+            </div>
           </div>
-          
+
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Rules & Other Details</h2>
             <div className="space-y-6">
-              <DynamicListInput label="Problem Statements" placeholder="Add a problem statement" values={formData.problems} onUpdate={(newVal) => setFormData(p => ({...p, problems: newVal}))} />
-              <DynamicListInput label="Terms & Conditions" placeholder="Add a term/condition" values={formData.TandCforHackathon} onUpdate={(newVal) => setFormData(p => ({...p, TandCforHackathon: newVal}))} />
-              <DynamicListInput label="Evaluation Criteria" placeholder="Add a criterion" values={formData.evaluationCriteria} onUpdate={(newVal) => setFormData(p => ({...p, evaluationCriteria: newVal}))} />
-              <DynamicListInput label="Project Submission Guidelines" placeholder="Add a guideline" values={formData.projectSubmission} onUpdate={(newVal) => setFormData(p => ({...p, projectSubmission: newVal}))} />
+              <DynamicListInput label="Problem Statements" placeholder="Add a problem statement" values={formData.problems} onUpdate={(newVal) => setFormData(p => ({ ...p, problems: newVal }))} />
+              <DynamicListInput label="Terms & Conditions" placeholder="Add a term/condition" values={formData.TandCforHackathon} onUpdate={(newVal) => setFormData(p => ({ ...p, TandCforHackathon: newVal }))} />
+              <DynamicListInput label="Evaluation Criteria" placeholder="Add a criterion" values={formData.evaluationCriteria} onUpdate={(newVal) => setFormData(p => ({ ...p, evaluationCriteria: newVal }))} />
+              <DynamicListInput label="Project Submission Guidelines" placeholder="Add a guideline" values={formData.projectSubmission} onUpdate={(newVal) => setFormData(p => ({ ...p, projectSubmission: newVal }))} />
             </div>
           </div>
 
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Additional Content</h2>
             <div className="space-y-6">
-               <input type="text" name="refMaterial" placeholder="Reference Material URL" value={formData.refMaterial} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-               <textarea name="aboutUs" placeholder="About the Organizer" value={formData.aboutUs} onChange={handleChange} rows="4" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
-               <DynamicFaqInput values={formData.FAQs} onUpdate={(newVal) => setFormData(p => ({...p, FAQs: newVal}))} />
+              <input type="text" name="refMaterial" placeholder="Reference Material URL" value={formData.refMaterial} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
+              <textarea name="aboutUs" placeholder="About the Organizer" value={formData.aboutUs} onChange={handleChange} rows="4" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
+              <DynamicFaqInput values={formData.FAQs} onUpdate={(newVal) => setFormData(p => ({ ...p, FAQs: newVal }))} />
             </div>
           </div>
 
@@ -271,7 +271,7 @@ const CreateHackathonPage = () => {
           </div>
 
           <div className="flex justify-end pt-4">
-            <button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed">
+            <button type="submit" disabled={isSubmitting} className="bg-green-600 cursor-pointer hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed">
               {isSubmitting ? 'Submitting...' : 'Submit for Approval'}
             </button>
           </div>

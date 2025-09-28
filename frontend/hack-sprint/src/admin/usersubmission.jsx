@@ -41,14 +41,14 @@ const UserSubmissionDetailPage = () => {
         try {
           const response = await getAdminHackathonDetail({ adminId: adminData.id, hackathonId: slug });
           const { hackathon, participantsWithoutTeam, teams } = response.data;
-          
+
           setHackathon(hackathon);
 
           let foundTeam = teams.find(t => t._id.toString() === id);
           if (foundTeam && foundTeam.submission) {
             setSubmitter(foundTeam);
             setSubmission(foundTeam.submission);
-            setPoints(foundTeam.submission.hackathonPoints || 0); 
+            setPoints(foundTeam.submission.hackathonPoints || 0);
           } else {
             let participant = participantsWithoutTeam.find(p => p.user._id.toString() === id);
             if (participant && participant.submission) {
@@ -110,7 +110,7 @@ const UserSubmissionDetailPage = () => {
           <AlertTriangle className="mx-auto h-12 w-12 text-red-400" />
           <h1 className="mt-4 text-3xl font-bold text-white">Submission Not Found</h1>
           <p className="mt-2 text-gray-400">The participant has not submitted or the submission could not be found.</p>
-          <Link 
+          <Link
             to={`/hackathon/${slug}/usersubmissions`}
             className="mt-6 inline-flex items-center gap-2 bg-green-500/20 text-green-300 px-4 py-2 rounded-lg hover:bg-green-500/30"
           >
@@ -132,15 +132,15 @@ const UserSubmissionDetailPage = () => {
       <GridBackground />
       <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
         <header className="my-12">
-          <Link 
-            to={`/Hacksprintkaadminprofile/${slug}/usersubmissions`} 
+          <Link
+            to={`/Hacksprintkaadminprofile/${slug}/usersubmissions`}
             className="flex items-center gap-2 text-green-400 hover:text-green-300 mb-6 group"
           >
-             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-             Back to Participants List
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            Back to Participants List
           </Link>
           <p className="text-sm font-semibold tracking-wide text-green-400 uppercase">{hackathon.title}</p>
-          <h1 className="mt-2 text-4xl sm:text-5xl font-extrabold text-white leading-tight">
+          <h1 className="mt-2 text-4xl sm:text-5xl ZaptronFont -tracking-tight text-green-400 font-extrabold leading-tight">
             Submission by {submitter.name}
           </h1>
           <div className="mt-4 text-gray-400 space-y-1">
@@ -166,7 +166,7 @@ const UserSubmissionDetailPage = () => {
                 </a>
               )}
               {submission.docs?.length > 0 && (
-                 <a href={submission.docs[0]} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800/80 transition-colors">
+                <a href={submission.docs[0]} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800/80 transition-colors">
                   <FileText className="h-6 w-6 text-green-400 flex-shrink-0" />
                   <div>
                     <p className="font-semibold text-white">Documentation</p>
@@ -176,8 +176,8 @@ const UserSubmissionDetailPage = () => {
               )}
             </div>
           </div>
-          
-          
+
+
 
           {/* --- Project Media --- */}
           {(submission.images?.length > 0 || submission.videos?.length > 0) && (
@@ -185,7 +185,7 @@ const UserSubmissionDetailPage = () => {
               <h2 className="text-2xl font-bold text-white mb-6">Project Media</h2>
               {submission.images?.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-300 mb-3 flex items-center gap-2"><Image size={18}/> Images</h3>
+                  <h3 className="text-lg font-semibold text-gray-300 mb-3 flex items-center gap-2"><Image size={18} /> Images</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {submission.images.map((imageUrl, index) => (
                       <a key={index} href={imageUrl} target="_blank" rel="noopener noreferrer">
@@ -197,7 +197,7 @@ const UserSubmissionDetailPage = () => {
               )}
               {submission.videos?.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-300 mb-3 flex items-center gap-2"><Video size={18}/> Videos</h3>
+                  <h3 className="text-lg font-semibold text-gray-300 mb-3 flex items-center gap-2"><Video size={18} /> Videos</h3>
                   <ul className="list-disc list-inside space-y-2">
                     {submission.videos.map((videoUrl, index) => (
                       <li key={index}>
@@ -209,32 +209,32 @@ const UserSubmissionDetailPage = () => {
               )}
             </div>
           )}
-          
+
           {/* --- Admin Evaluation Section --- */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6">
             <h3 className="text-xl font-bold text-white mb-4">Admin Evaluation</h3>
             <form onSubmit={handlePointsUpdate} className="space-y-4">
-                <div>
+              <div>
                 <label htmlFor="points" className="block text-sm font-medium text-gray-400 mb-1">
-                    Award Points
+                  Award Points
                 </label>
                 <input
-                    type="number"
-                    id="points"
-                    value={points}
-                    onChange={(e) => setPoints(e.target.value)}
-                    className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white text-2xl font-bold text-center"
-                    min="0"
+                  type="number"
+                  id="points"
+                  value={points}
+                  onChange={(e) => setPoints(e.target.value)}
+                  className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white text-2xl font-bold text-center"
+                  min="0"
                 />
-                </div>
-                <button
+              </div>
+              <button
                 type="submit"
                 disabled={isUpdating}
-                className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
-                >
+                className="w-full flex cursor-pointer items-center justify-center gap-2 bg-green-700 hover:bg-green-800 text-white/90 font-bold py-2 px-4 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
+              >
                 <Save size={18} />
                 {isUpdating ? 'Saving...' : 'Save Points'}
-                </button>
+              </button>
             </form>
           </div>
         </main>
