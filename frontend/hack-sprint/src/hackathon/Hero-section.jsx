@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
+import { Link } from 'react-router-dom'
 import {
   Calendar,
   Users,
@@ -191,9 +192,11 @@ export const HeroSection = ({
 
     if (loading || !userData) {
       return (
-        <Button disabled className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}>
-          User not logined
-        </Button>
+        <Link to="/account/login">
+          <Button className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}>
+            Login
+          </Button>
+        </Link>
       );
     }
     if (!isActive) return null;

@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import { createPortal } from "react-dom";
 import { X, Clock, Calendar, Users, Code, FileVideo, FileText } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
-import { getDashboard } from "../backendApis/api"; // your API helper
+import { getDashboard } from "../backendApis/api";
+import "./Hackathon.css";
 
 // Input component
 function Input({ className = "", ...props }) {
@@ -116,14 +118,12 @@ const SubmissionForm = ({ isOpen, onClose }) => {
 
         if (fetchedUserData.team) {
           setTeamId(fetchedUserData.team);
-          // Fetch team details
           const teamRes = await fetch(
             `${import.meta.env.VITE_API_BASE_URL}/api/team/${fetchedUserData.team}`
           );
           const teamData = await teamRes.json();
           const team = teamData.team;
 
-          // Check if this team belongs to this hackathon
           if (team?.hackathon?._id && String(team.hackathon._id) === String(hackathonId)) {
             const member = team.members?.some((m) => String(m._id) === String(fetchedUserData._id));
             setIsTeamMember(member || false);
@@ -170,7 +170,12 @@ const SubmissionForm = ({ isOpen, onClose }) => {
   }, [hackathonId, userData]);
 
   // Cleanup video preview URL
-  useEffect(() => () => { if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl); }, [videoPreviewUrl]);
+  useEffect(
+    () => () => {
+      if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+    },
+    [videoPreviewUrl]
+  );
 
   const handleVideoFileChange = (e) => {
     const file = e.target.files[0];
@@ -196,11 +201,9 @@ const SubmissionForm = ({ isOpen, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Only leader or individual can submit
-    const canSubmit = isLeader || (!isTeamMember);
+    const canSubmit = isLeader || !isTeamMember;
     if (!canSubmit) {
       toast.error("Only team leaders can submit!", { position: "top-right", theme: "dark" });
-      console.log("rff")
       return;
     }
 
@@ -221,14 +224,14 @@ const SubmissionForm = ({ isOpen, onClose }) => {
 
       if (!res.ok) throw new Error("Submission failed");
 
-      toast.success("Submission successful!", { position: "top-right", theme: "dark" });
+      toast.success("Submission successful!", { position: "top-right" });
       setRepoUrl("");
       setVideoFile(null);
       setPdfFile(null);
       onClose();
     } catch (err) {
       console.error(err);
-      toast.error("Submission failed. Try again.", { position: "top-right", theme: "dark" });
+      toast.error("Submission failed. Try again.", { position: "top-right" });
     } finally {
       setLoading(false);
     }
@@ -236,21 +239,23 @@ const SubmissionForm = ({ isOpen, onClose }) => {
 
   if (!isOpen || !hackathon || !userData) return null;
 
-  const durationDays = Math.ceil((new Date(hackathon.endDate) - new Date()) / (1000 * 60 * 60 * 24));
+  const durationDays = Math.ceil(
+    (new Date(hackathon.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+  );
 
-  return (
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/90 z-50 flex items-start justify-center p-4 pt-30"
+      className="fixed inset-0 bg-black/90 z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
     >
       <ToastContainer />
       <motion.div
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
         exit={{ scale: 0.95 }}
-        className="bg-gray-900 rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-green-500/50 text-white max-h-[90vh] overflow-y-auto"
+        className="bg-gray-900 rounded-2xl w-full max-w-2xl max-h-[90vh] p-6 shadow-xl border border-green-500/50 text-white overflow-y-auto scrollbar-hide"
       >
         {/* Header */}
         <div className="flex justify-between items-start mb-5">
@@ -265,11 +270,15 @@ const SubmissionForm = ({ isOpen, onClose }) => {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <StatCard icon={Code} label="Prize Pool" value={`₹${(
-            (hackathon.prizeMoney1 || 0) +
-            (hackathon.prizeMoney2 || 0) +
-            (hackathon.prizeMoney3 || 0)
-          ).toLocaleString("en-IN")}`} />
+          <StatCard
+            icon={Code}
+            label="Prize Pool"
+            value={`₹${(
+              (hackathon.prizeMoney1 || 0) +
+              (hackathon.prizeMoney2 || 0) +
+              (hackathon.prizeMoney3 || 0)
+            ).toLocaleString("en-IN")}`}
+          />
           <StatCard icon={Clock} label="Duration" value={`${durationDays} Days`} />
           <StatCard icon={Users} label="Participants" value={hackathon.numParticipants || 0} />
           <StatCard icon={Calendar} label="Difficulty" value={hackathon.difficulty} />
@@ -280,7 +289,17 @@ const SubmissionForm = ({ isOpen, onClose }) => {
         {submissionStatus?.submitted ? (
           <div className="p-4 bg-gray-800 rounded-lg border border-green-500/50 space-y-2">
             <p className="text-green-400 font-semibold">Already Submitted!</p>
-            <p>Repo: <a href={submissionStatus.submission.repoUrl} className="text-blue-500 underline" target="_blank">{submissionStatus.submission.repoUrl}</a></p>
+            <p>
+              Repo:{" "}
+              <a
+                href={submissionStatus.submission.repoUrl}
+                className="text-blue-500 underline"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {submissionStatus.submission.repoUrl}
+              </a>
+            </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -299,7 +318,15 @@ const SubmissionForm = ({ isOpen, onClose }) => {
               file={videoFile}
               onFileChange={handleVideoFileChange}
               onRemove={handleRemoveVideo}
-              preview={videoFile && <video src={videoPreviewUrl} controls className="rounded-lg w-full max-h-24 object-contain" />}
+              preview={
+                videoFile && (
+                  <video
+                    src={videoPreviewUrl}
+                    controls
+                    className="rounded-lg w-full max-h-24 object-contain"
+                  />
+                )
+              }
             />
 
             <FileUpload
@@ -309,7 +336,7 @@ const SubmissionForm = ({ isOpen, onClose }) => {
               file={pdfFile}
               onFileChange={handlePdfFileChange}
               onRemove={handleRemovePdf}
-              preview={pdfFile && <FileText className="w-12 h-12 text-blue-500" />}
+              preview={<FileText className="w-12 h-12 text-blue-500" />}
             />
 
             <Button
@@ -322,7 +349,8 @@ const SubmissionForm = ({ isOpen, onClose }) => {
           </form>
         )}
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 };
 

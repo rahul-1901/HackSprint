@@ -36,13 +36,18 @@ const TeamDetails = () => {
   const [copiedItem, setCopiedItem] = useState(null);
 
   const getStoredTeamCode = useCallback(() => {
-    return localStorage.getItem(`teamDetails_code`);
+    if(teamId) {
+      return teamId
+    } else {
+      return localStorage.getItem(`teamDetails_code`);
+    }
   }, [teamId]);
 
   const fetchTeamData = useCallback(async (user) => {
     if (!user) return;
 
     const secretCode = getStoredTeamCode();
+    console.log(secretCode)
 
     try {
       if (secretCode) {
@@ -52,34 +57,6 @@ const TeamDetails = () => {
 
         const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: basicTeamData.leader._id });
         setTeamData({ ...basicTeamData, pendingMembers: pendingResponse.data });
-      } else {
-        try {
-          const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: user._id });
-
-          const partialTeamData = {
-            name: "Your Team",
-            leader: user,
-            members: [],
-            pendingMembers: pendingResponse.data,
-            secretCode: null,
-            secretLink: null,
-            maxMembers: 4,
-            createdAt: user.createdAt,
-          };
-          setTeamData(partialTeamData);
-        } catch (fallbackError) {
-          const minimalTeamData = {
-            name: "Your Team",
-            leader: user,
-            members: [],
-            pendingMembers: [],
-            secretCode: null,
-            secretLink: null,
-            maxMembers: 4,
-            createdAt: user.createdAt,
-          };
-          setTeamData(minimalTeamData);
-        }
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error fetching team data.');
@@ -243,7 +220,7 @@ const TeamDetails = () => {
 
   const currentMembers = [teamData.leader, ...teamData.members];
   const spotsRemaining = teamData.maxTeamSize - currentMembers.length;
-  const showInviteSection = teamData.secretCode && teamData.secretLink;
+  const showInviteSection = teamData.code && teamData.secretLink;
   // console.log(currentMembers.length)
   // console.log(teamData.maxTeamSize)
 
