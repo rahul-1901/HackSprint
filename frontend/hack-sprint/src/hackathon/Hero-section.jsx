@@ -37,14 +37,9 @@ export const HeroSection = ({
   const [leaderValue, setLeaderValue] = useState("");
   const [isLeader, setIsLeader] = useState(false);
   const [isTeamMember, setIsTeamMember] = useState(false);
+  const [teamData, setTeamData] = useState(null);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (localStorage.getItem("teamDetails_code")) {
-      setLeaderValue(localStorage.getItem("teamDetails_code"));
-    }
-  }, []);
 
   useEffect(() => {
     const fetchTeamData = async (teamId, currentUserId) => {
@@ -55,8 +50,7 @@ export const HeroSection = ({
         if (!res.ok) throw new Error("Failed to fetch team");
         const data = await res.json();
         const team = data.team;
-
-        console.log("Fetched team:", team);
+        setTeamData(team);
 
         if (team?.hackathon?._id && String(team.hackathon._id) === String(hackathonId)) {
           const member = team.members?.some(
@@ -113,6 +107,18 @@ export const HeroSection = ({
 
     fetchUserData();
   }, [hackathonId]);
+
+  // useEffect(() => {
+  //   console.log("Team Data Updated:", teamData);
+  // }, [teamData]);
+
+  useEffect(() => {
+    if (teamData?.code) {
+      setLeaderValue(teamData.code);
+    } else {
+      setLeaderValue(localStorage.getItem("teamDetails_code"))
+    }
+  }, [teamData])
 
 
   const handleRegister = () => {

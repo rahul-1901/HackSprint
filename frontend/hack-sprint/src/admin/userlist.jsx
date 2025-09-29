@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Users, CheckCircle, XCircle, ArrowLeft, Shield } from 'lucide-react';
 import { getAdminDetails, getAdminHackathonDetail } from '../backendApis/api';
+import axios from 'axios';
 
 const GridBackground = () => (
   <div className="absolute inset-0 h-full w-full bg-gray-900 bg-grid-white/[0.05] -z-20" />
 );
 
 const HackathonUsersPage = () => {
-  const { slug } = useParams(); 
+  const { slug } = useParams();
   const navigate = useNavigate();
 
   const [hackathon, setHackathon] = useState(null);
@@ -16,6 +17,22 @@ const HackathonUsersPage = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [adminData, setAdminData] = useState(null);
+  const [result, setResult] = useState(null);
+  const [showScoreboard, setShowScoreboard] = useState(false);
+
+  useEffect(() => {
+    const resultDetails = async () => {
+      try {
+        const response = await axios(`${import.meta.env.VITE_API_BASE_URL}/api/submit/hackathon/${slug}`)
+        setResult(response.data)
+        console.log(response.data)
+      } catch (error) {
+        console.log("error")
+      }
+    }
+
+    resultDetails()
+  }, [slug])
 
   // 1. Fetch admin details to get adminId
   useEffect(() => {
@@ -37,9 +54,9 @@ const HackathonUsersPage = () => {
       const fetchHackathonData = async () => {
         try {
           const response = await getAdminHackathonDetail({ adminId: adminData.id, hackathonId: slug });
-          
+
           const { hackathon, participantsWithoutTeam, teams } = response.data;
-          
+
           setHackathon(hackathon);
           setIndividualParticipants(participantsWithoutTeam);
           setTeams(teams);
@@ -91,11 +108,17 @@ const HackathonUsersPage = () => {
       <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         <header className="my-5">
           <Link to="/Hacksprintkaadminprofile" className="flex items-center gap-2 text-green-400 hover:text-green-300 mb-6 group">
-             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-             Back to Dashboard
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            Back to Dashboard
           </Link>
           <p className="text-green-400 text-sm font-semibold tracking-wide uppercase">Participants List</p>
           <h1 className="text-4xl sm:text-5xl ZaptronFont -tracking-tight text-green-400 md:text-6xl font-extrabold leading-tight mt-2">{hackathon.title}</h1>
+          <button
+            onClick={() => setShowScoreboard(true)}
+            className="bg-green-600 hover:bg-green-700 cursor-pointer text-white font-semibold px-4 py-2 rounded-lg shadow-lg transition"
+          >
+            Result
+          </button>
         </header>
 
         <main className="space-y-12">
@@ -116,8 +139,8 @@ const HackathonUsersPage = () => {
                     {teams.map(team => {
                       const submitted = hasTeamSubmitted(team);
                       return (
-                        <tr 
-                          key={team._id} 
+                        <tr
+                          key={team._id}
                           // KEY CHANGE: Corrected navigation path to match App.jsx route
                           onClick={() => navigateToSubmission(submitted, `/hackathon/${slug}/submission/${team._id}`)}
                           className={`transition-colors ${submitted ? 'hover:bg-gray-800/40 cursor-pointer' : ''}`}
@@ -163,8 +186,8 @@ const HackathonUsersPage = () => {
                     {individualParticipants.map(participant => {
                       const submitted = hasUserSubmitted(participant);
                       return (
-                        <tr 
-                          key={participant._id} 
+                        <tr
+                          key={participant._id}
                           // KEY CHANGE: Corrected navigation path to match App.jsx route
                           onClick={() => navigateToSubmission(submitted, `/hackathon/${slug}/submission/${participant.user?._id}`)}
                           className={`transition-colors ${submitted ? 'hover:bg-gray-800/40 cursor-pointer' : ''}`}
@@ -191,6 +214,33 @@ const HackathonUsersPage = () => {
           </div>
         </main>
       </div>
+
+      {showScoreboard && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-gray-800 text-white rounded-2xl p-6 w-full max-w-lg shadow-lg relative">
+            <button
+              onClick={() => setShowScoreboard(false)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-white"
+            >
+              ✕
+            </button>
+            <h2 className="text-2xl font-bold mb-4 text-green-400">Scoreboard</h2>
+
+            {result?.totalSubmissions > 0 ? (
+              <ul className="space-y-2">
+                {result.submissions?.map((sub, idx) => (
+                  <li key={sub._id || idx} className="bg-gray-700/50 px-4 py-2 rounded-lg flex justify-between">
+                    <span>{sub.team?.name || sub.user?.name || "Unknown"}</span>
+                    <span className="text-green-400 font-semibold">{sub.hackathonPoints || 0} pts</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-400">No submissions yet.</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

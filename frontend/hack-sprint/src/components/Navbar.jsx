@@ -84,8 +84,6 @@ const Navbar = () => {
       localStorage.setItem("coins", newCoins.toString());
       localStorage.setItem("streak", newStreak.toString());
       localStorage.setItem("lastVisit", today);
-
-      setShowReward(true);
     }
 
     setCoins(newCoins);

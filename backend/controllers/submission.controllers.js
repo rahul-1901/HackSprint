@@ -195,7 +195,7 @@ export const getSubmissionStatus = async (req, res) => {
       $or: [
         teamId ? { team: teamId } : null,
         userId ? { participant: userId } : null
-      ].filter(Boolean), 
+      ].filter(Boolean),
     });
 
     if (!submission) {
@@ -221,6 +221,50 @@ export const getSubmissionById = async (req, res) => {
     }
     return res.json(submission);
   } catch (err) {
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const getSubmissionsByHackathon = async (req, res) => {
+  try {
+    const { hackathonId } = req.params;
+
+    if (!hackathonId) {
+      return res.status(400).json({ message: "hackathonId is required" });
+    }
+
+    const hackathon = await hackathonModel.findById(hackathonId);
+    if (!hackathon) {
+      return res.status(404).json({ message: "Hackathon not found" });
+    }
+
+    const submissions = await SubmissionModel.find({ hackathon: hackathonId })
+      .populate({
+        path: "participant",
+        select: "name email",
+      })
+      .populate({
+        path: "team",
+        select: "name secretCode members leader",
+        populate: {
+          path: "members leader",
+          select: "name email",
+        },
+      })
+      .sort({ hackathonPoints: -1, submittedAt: 1 });
+
+    const rankedSubmissions = submissions.map((sub, index) => ({
+      rank: index + 1,
+      ...sub.toObject(),
+    }));
+
+    return res.status(200).json({
+      hackathon: hackathon.name,
+      totalSubmissions: submissions.length,
+      submissions: rankedSubmissions,
+    });
+  } catch (err) {
+    console.error("Error fetching hackathon submissions:", err);
     return res.status(500).json({ message: "Server error", error: err.message });
   }
 };

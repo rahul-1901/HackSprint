@@ -1,5 +1,5 @@
 import express from "express";
-import { submitHackathonSolution, getSubmissionStatus, getSubmissionById } from "../controllers/submission.controllers.js";
+import { submitHackathonSolution, getSubmissionStatus, getSubmissionById, getSubmissionsByHackathon } from "../controllers/submission.controllers.js";
 import upload from "../middlewares/multer.js";
 
 const router = express.Router();
@@ -16,5 +16,6 @@ router.post( "/",
 
 router.get("/status", getSubmissionStatus);
 router.get("/getSubmissionById/:id", getSubmissionById);
+router.get("/hackathon/:hackathonId", getSubmissionsByHackathon);
 
 export default router;

@@ -130,7 +130,6 @@ const TeamDetails = () => {
   const handleCopy = (text, type) => {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
-      toast.success("Copied to clipboard!");
       setCopiedItem(type);
       setTimeout(() => setCopiedItem(null), 2000);
     });
@@ -243,8 +242,10 @@ const TeamDetails = () => {
   }
 
   const currentMembers = [teamData.leader, ...teamData.members];
-  const spotsRemaining = teamData.maxMembers - currentMembers.length;
+  const spotsRemaining = teamData.maxTeamSize - currentMembers.length;
   const showInviteSection = teamData.secretCode && teamData.secretLink;
+  // console.log(currentMembers.length)
+  // console.log(teamData.maxTeamSize)
 
   return (
     <div className="min-h-screen bg-gray-900 relative">
@@ -269,8 +270,8 @@ const TeamDetails = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Invite Code</label>
                     <div className="flex items-center gap-2 p-3 bg-gray-700/50 border border-green-500/20 rounded-lg">
-                      <span className="flex-1 font-mono text-green-300">{teamData.secretCode}</span>
-                      <Button onClick={() => handleCopy(teamData.secretCode, 'code')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
+                      <span className="flex-1 font-mono text-green-300">{teamData.code}</span>
+                      <Button onClick={() => handleCopy(teamData.code, 'code')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
                         {copiedItem === 'code' ? <Check size={16} /> : <Copy size={16} />}
                       </Button>
                     </div>

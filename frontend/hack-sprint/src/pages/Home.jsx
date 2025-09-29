@@ -1137,7 +1137,7 @@ const Home = () => {
         </div>
       </section>
 
-      <style jsx>{`
+      <style jsx="true">{`
         .fade-section {
           opacity: 0;
           transform: translateY(30px);
