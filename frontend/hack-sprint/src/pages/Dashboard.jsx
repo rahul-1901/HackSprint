@@ -8,6 +8,7 @@ import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
 import axios from 'axios'
 import { jwtDecode } from "jwt-decode";
+import SubmissionForms from "../hackathon/DashboardSubmission";
 
 export const UserDashboard = () => {
   const [data, setData] = useState(null);
@@ -46,8 +47,21 @@ export const UserDashboard = () => {
   ];
   const [hackathon, setHackathon] = useState([]);
   const [submission, setSubmission] = useState([]);
+  const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
+  const [selectedHackathonId, setSelectedHackathonId] = useState(null);
 
   const navigate = useNavigate();
+
+  const openSubmissionModal = (hackathonId) => {
+    setSelectedHackathonId(hackathonId);
+    setIsSubmissionOpen(true);
+  };
+
+  const closeSubmissionModal = () => {
+    setSelectedHackathonId(null);
+    setIsSubmissionOpen(false);
+  };
+
 
   // Daily Coin + Streak System
   useEffect(() => {
@@ -830,7 +844,7 @@ export const UserDashboard = () => {
                   return (
                     <div
                       key={hack._id}
-                      className="flex flex-col md:flex-row items-center bg-white/5 border border-green-500/20 rounded-xl p-4 hover:border-green-400 transition-all cursor-pointer"
+                      className="flex flex-col md:flex-row items-center bg-white/5 border border-green-500/20 rounded-xl p-4 hover:border-green-400 transition-all"
                     >
                       {/* Hackathon Image */}
                       <div className="w-full md:w-48 h-32 md:h-24 flex-shrink-0 rounded-lg overflow-hidden mr-4 mb-4 md:mb-0">
@@ -875,14 +889,20 @@ export const UserDashboard = () => {
                         </div>
 
                         <div className="mt-2">
-                          <a
+                          {/* <a
                             href={hackSubmission.repoUrl || "#"}
                             target="_blank"
                             rel="noreferrer"
                             className="text-green-400 underline hover:text-green-300 text-sm"
                           >
                             View Submission
-                          </a>
+                          </a> */}
+                          <button
+                            onClick={() => openSubmissionModal(hack._id)}
+                            className="mt-2 text-green-400 cursor-pointer"
+                          >
+                            View Submission
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -909,6 +929,14 @@ export const UserDashboard = () => {
                 </button>
               </div>
             </div>
+          )}
+
+          {isSubmissionOpen && (
+            <SubmissionForms
+              isOpen={isSubmissionOpen}
+              onClose={closeSubmissionModal}
+              hackathonId={selectedHackathonId}
+            />
           )}
         </div>
       </div>

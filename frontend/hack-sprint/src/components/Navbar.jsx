@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { getDashboard } from '../backendApis/api';
 import { Menu, X, User, Trophy, Terminal, LogOut, Coins, LogIn } from 'lucide-react'
@@ -13,6 +13,8 @@ const Navbar = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [coins, setCoins] = useState(0);
   const [streak, setStreak] = useState(0);
+
+  const profileMenuRef = useRef(null)
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -90,6 +92,20 @@ const Navbar = () => {
     setStreak(newStreak);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+        setShowProfileMenu(false)
+      }
+    }
+    if (showProfileMenu) {
+      document.addEventListener("mousedown", handleClickOutside)
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [showProfileMenu])
+
   return (
     <>
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled
@@ -132,7 +148,7 @@ const Navbar = () => {
               })}
 
               {/* Profile Dropdown */}
-              <div className="relative ml-4">
+              <div className="relative ml-4" ref={profileMenuRef}>
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
                   className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg cursor-pointer"

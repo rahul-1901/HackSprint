@@ -26,6 +26,8 @@ export const HeroSection = ({
   prizeMoney3 = 0,
   imageUrl = "/assets/hackathon-banner.png",
   hackathonId,
+  submissionStartDate,
+  submissionEndDate
 }) => {
   const [imageError, setImageError] = useState(false);
   const [userData, setUserData] = useState(null);
@@ -41,6 +43,16 @@ export const HeroSection = ({
   const [teamData, setTeamData] = useState(null);
 
   const navigate = useNavigate();
+
+  const isWithinRegistrationPeriod = () => {
+    const now = new Date();
+    return (
+      startDate &&
+      endDate &&
+      now >= new Date(startDate) &&
+      now <= new Date(endDate)
+    );
+  };
 
   useEffect(() => {
     const fetchTeamData = async (teamId, currentUserId) => {
@@ -202,12 +214,19 @@ export const HeroSection = ({
     if (!isActive) return null;
 
     if (!registrationInfo) {
+      if (isWithinRegistrationPeriod()) {
+        return (
+          <Button
+            onClick={handleRegister}
+            className={`bg-green-500 cursor-pointer text-gray-900 ${baseClasses}`}
+          >
+            Register Now <ChevronRight className="w-5 h-5" />
+          </Button>
+        );
+      }
       return (
-        <Button
-          onClick={handleRegister}
-          className={`bg-green-500  cursor-pointer text-gray-900 ${baseClasses}`}
-        >
-          Register Now <ChevronRight className="w-5 h-5" />
+        <Button disabled className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}>
+          Registration Closed
         </Button>
       );
     }
@@ -218,7 +237,7 @@ export const HeroSection = ({
           onClick={handleSubmit}
           className={`bg-green-500 cursor-pointer text-gray-900 ${baseClasses}`}
         >
-          Submit Now <ChevronRight className="w-5 h-5" />
+          Submit <ChevronRight className="w-5 h-5" />
         </Button>
       );
     }
@@ -226,7 +245,7 @@ export const HeroSection = ({
     if (isTeamMember) {
       return (
         <Button disabled className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}>
-          Submit Now (Leader Only)
+          Submit (Leader Only)
         </Button>
       );
     }
@@ -237,7 +256,7 @@ export const HeroSection = ({
         onClick={handleSubmit}
         className={`bg-green-500 cursor-pointer text-gray-900 ${baseClasses}`}
       >
-        Submit Now <ChevronRight className="w-5 h-5" />
+        Submit <ChevronRight className="w-5 h-5" />
       </Button>
     );
   };
@@ -270,9 +289,22 @@ export const HeroSection = ({
             >
               {isActive ? "Active" : "Ended"}
             </Badge>
-            <div className="flex items-center gap-2 text-gray-300 text-sm">
-              <Calendar className="w-4 h-4 text-green-400" />
-              <span>{formatDateRange(startDate, endDate)}</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 text-gray-300 text-sm">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-green-400" />
+                <span>
+                  <span className="font-medium text-white">Registration:</span>{" "}
+                  {formatDateRange(startDate, endDate)}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 mt-1 sm:mt-0">
+                <Calendar className="w-4 h-4 text-green-400" />
+                <span>
+                  <span className="font-medium text-white">Submission:</span>{" "}
+                  {formatDateRange(submissionStartDate, submissionEndDate)}
+                </span>
+              </div>
             </div>
           </div>
 

@@ -97,6 +97,8 @@ export default function HackathonDetails() {
                     prizeMoney3={hackathon.prizeMoney3}
                     imageUrl="/assets/hackathon-banner.png"
                     hackathonId={hackathon._id}
+                    submissionStartDate={hackathon?.submissionStartDate}
+                    submissionEndDate={hackathon?.submissionEndDate}
                 />
                 <div className="flex flex-col lg:flex-row max-w-screen-2xl mx-auto">
                     <SidebarNav

@@ -289,17 +289,66 @@ const SubmissionForm = ({ isOpen, onClose }) => {
         {submissionStatus?.submitted ? (
           <div className="p-4 bg-gray-800 rounded-lg border border-green-500/50 space-y-2">
             <p className="text-green-400 font-semibold">Already Submitted!</p>
-            <p>
-              Repo:{" "}
-              <a
-                href={submissionStatus.submission.repoUrl}
-                className="text-blue-500 underline"
-                target="_blank"
-                rel="noreferrer"
-              >
-                {submissionStatus.submission.repoUrl}
-              </a>
-            </p>
+
+            {/* Repo */}
+            {submissionStatus.submission.repoUrl && (
+              <p>
+                Repo:{" "}
+                <a
+                  href={submissionStatus.submission.repoUrl}
+                  className="text-blue-500 underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {submissionStatus.submission.repoUrl}
+                </a>
+              </p>
+            )}
+
+            {/* Docs */}
+            {submissionStatus.submission.docs?.length > 0 && (
+              <div>
+                <p className="font-medium text-gray-300">Submitted Documents:</p>
+                <ul className="list-disc list-inside text-gray-400 space-y-1">
+                  {submissionStatus.submission.docs.map((doc) => (
+                    <li key={doc._id}>
+                      <a
+                        href={doc.url}
+                        className="text-blue-400 underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {doc.original_filename || "Document"}
+                      </a>
+                      <span className="ml-2 text-xs text-gray-500">
+                        ({(doc.size / 1024).toFixed(1)} KB)
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Videos */}
+            {submissionStatus.submission.videos?.length > 0 && (
+              <div>
+                <p className="font-medium text-gray-300">Submitted Videos:</p>
+                <ul className="list-disc list-inside text-gray-400 space-y-1">
+                  {submissionStatus.submission.videos.map((vid) => (
+                    <li key={vid._id}>
+                      <a
+                        href={vid.url}
+                        className="text-blue-400 underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {vid.original_filename || "Video"}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">

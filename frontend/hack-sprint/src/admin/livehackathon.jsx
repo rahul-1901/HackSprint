@@ -46,6 +46,7 @@ const LiveHackathonsPage = () => {
         try {
           const response = await getAdminHackathons(adminData.id);
           const allHackathons = response.data;
+          console.log(allHackathons)
           const now = new Date();
 
           const filtered = allHackathons.filter(h => {
@@ -68,7 +69,6 @@ const LiveHackathonsPage = () => {
   return (
     <div className="relative min-h-screen bg-gray-900 text-white overflow-hidden">
       <GridBackground />
-      <FloatingParticles />
       <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         <header className="text-center my-12 sm:my-16">
           <h1 className="flex items-center justify-center gap-x-4 text-4xl sm:text-5xl md:text-6xl text-white font-extrabold leading-tight">

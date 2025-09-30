@@ -75,16 +75,34 @@ export const ContentSection = ({ activeSection, hackathon }) => {
               <h4 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-green-400" /> Event Timeline
               </h4>
+
               <div className="relative pl-6 space-y-8 border-l-2 border-green-500/20">
-                <div className="absolute -left-[11px] top-1 w-5 h-5 bg-green-400 rounded-full border-4 border-gray-900"></div>
-                <div className="absolute -left-[11px] bottom-1 w-5 h-5 bg-green-500 rounded-full border-4 border-gray-900"></div>
-                <div>
-                  <div className="font-bold text-white">Registration & Start</div>
-                  <div className="text-gray-400 text-sm">{formatDateTime(hackathon.startDate)}</div>
+                <div className="relative">
+                  <div>
+                    <div className="font-bold text-white">Registration Opens</div>
+                    <div className="text-gray-400 text-sm">{formatDateTime(hackathon.startDate)}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-bold text-white">Submission Deadline</div>
-                  <div className="text-gray-400 text-sm">{formatDateTime(hackathon.endDate)}</div>
+
+                <div className="relative">
+                  <div>
+                    <div className="font-bold text-white">Registration Closes</div>
+                    <div className="text-gray-400 text-sm">{formatDateTime(hackathon.endDate)}</div>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div>
+                    <div className="font-bold text-white">Submission Opens</div>
+                    <div className="text-gray-400 text-sm">{formatDateTime(hackathon.submissionStartDate)}</div>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div>
+                    <div className="font-bold text-white">Submission Deadline</div>
+                    <div className="text-gray-400 text-sm">{formatDateTime(hackathon.submissionEndDate)}</div>
+                  </div>
                 </div>
               </div>
             </SectionCard>
@@ -133,9 +151,35 @@ export const ContentSection = ({ activeSection, hackathon }) => {
 
       // --- These sections still use SimpleContentSection for string data ---
       case "prizes":
-        const prizeContent = hackathon.prizeMoney
-          ? `The total prize pool for this event is $${hackathon.prizeMoney.toLocaleString()}. Further details on prize distribution will be provided by the organizers.`
-          : null;
+        const totalPrize = (hackathon.prizeMoney1 || 0) +
+          (hackathon.prizeMoney2 || 0) +
+          (hackathon.prizeMoney3 || 0);
+
+        const prizeContent = totalPrize > 0 ? (
+          <div className="space-y-2 text-gray-300">
+            <p>
+              The total prize pool for this event is
+              <span className="ml-1 text-green-400 font-semibold">
+                ₹{totalPrize.toLocaleString("en-IN")}
+              </span>.
+            </p>
+            <ul className="list-disc pl-6 space-y-1">
+              <li>
+                <span className="font-medium text-white">1st Prize:</span>{" "}
+                ₹{(hackathon.prizeMoney1 || 0).toLocaleString("en-IN")}
+              </li>
+              <li>
+                <span className="font-medium text-white">2nd Prize:</span>{" "}
+                ₹{(hackathon.prizeMoney2 || 0).toLocaleString("en-IN")}
+              </li>
+              <li>
+                <span className="font-medium text-white">3rd Prize:</span>{" "}
+                ₹{(hackathon.prizeMoney3 || 0).toLocaleString("en-IN")}
+              </li>
+            </ul>
+          </div>
+        ) : null;
+
         return <SimpleContentSection title="Prizes" content={prizeContent} />;
       case "about":
         return <SimpleContentSection title="About" content={hackathon.aboutUs} />;
