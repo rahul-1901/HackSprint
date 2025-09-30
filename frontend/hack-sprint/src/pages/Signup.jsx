@@ -44,7 +44,8 @@ function Signup() {
         });
       }
     } catch (err) {
-      toast.error("Something went wrong, try again...", {
+      const errorMessage = err.response?.data?.message || "Something went wrong, please try later....."
+      toast.error(errorMessage, {
         className: "text-sm max-w-xs",
       });
     }
