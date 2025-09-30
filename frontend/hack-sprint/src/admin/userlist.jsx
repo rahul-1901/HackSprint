@@ -216,11 +216,11 @@ const HackathonUsersPage = () => {
       </div>
 
       {showScoreboard && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-5">
           <div className="bg-gray-800 text-white rounded-2xl p-6 w-full max-w-lg shadow-lg relative">
             <button
               onClick={() => setShowScoreboard(false)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-white"
+              className="absolute top-3 cursor-pointer right-3 text-gray-400 hover:text-white"
             >
               ✕
             </button>
@@ -230,7 +230,7 @@ const HackathonUsersPage = () => {
               <ul className="space-y-2">
                 {result.submissions?.map((sub, idx) => (
                   <li key={sub._id || idx} className="bg-gray-700/50 px-4 py-2 rounded-lg flex justify-between">
-                    <span>{sub.team?.name || sub.user?.name || "Unknown"}</span>
+                    <span>{sub.team?.name || sub.participant?.name || "Unknown"}</span>
                     <span className="text-green-400 font-semibold">{sub.hackathonPoints || 0} pts</span>
                   </li>
                 ))}

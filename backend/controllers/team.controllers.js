@@ -60,7 +60,7 @@ export const createTeam = async (req, res) => {
       hackathon,
       members: [],
       secretCode: code,
-      secretLink: `${process.env.BASE_URL}/join/${code}` // optional link
+      secretLink: `${process.env.FRONTEND_URL}/join/${code}` // optional link
     });
 
     await UserModel.findByIdAndUpdate(leader, {
