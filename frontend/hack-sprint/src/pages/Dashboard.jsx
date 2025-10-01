@@ -897,12 +897,12 @@ export const UserDashboard = () => {
                           >
                             View Submission
                           </a> */}
-                          <button
+                          {/* <button
                             onClick={() => openSubmissionModal(hack._id)}
                             className="mt-2 text-green-400 cursor-pointer"
                           >
                             View Submission
-                          </button>
+                          </button> */}
                         </div>
                       </div>
                     </div>
