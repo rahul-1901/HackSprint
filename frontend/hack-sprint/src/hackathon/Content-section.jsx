@@ -236,7 +236,7 @@ export const ContentSection = ({ activeSection, hackathon }) => {
               <Users className="w-16 h-16 mx-auto mb-4 text-green-400/50" />
               <p className="text-lg text-white font-semibold">Join the conversation!</p>
               <p className="text-gray-400 mt-2 mb-6">Connect with fellow participants on our Discord server.</p>
-              <a href="https://discord.gg/JHSRmuQu" target="_blank">
+              <a href="https://discord.com/channels/789426842410680365/985360797729423400" target="_blank">
                 <Button className="border border-green-500 text-white font-bold hover:bg-green-500/10 cursor-pointer">
                   Join Discord Community
                 </Button>
