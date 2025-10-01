@@ -8,6 +8,8 @@ import { sendMail } from "../nodemailer/nodemailerConfig.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+const isIITJEmail = (email) => /^[A-Za-z0-9._%+-]+@iitj\.ac\.in$/i.test(email);
+
 /**
  * SIGNUP - creates user, sends verification email
  */
@@ -259,6 +261,18 @@ const googleLogin = async (req, res) => {
     );
 
     const { name, email } = userRes.data;
+    if (!isIITJEmail(email)) {
+      return res.status(403).json({
+        message: "Only iitj emails are allowed.",
+        success: false,
+      });
+    }
+    if (!isIITJEmail(email)) {
+      return res.status(403).json({
+        message: "Only iitj emails are allowed.",
+        success: false,
+      });
+    }
 
     let user = await UserModel.findOne({ email });
     let isFirstTime = false;
@@ -341,6 +355,13 @@ const githubLogin = async (req, res) => {
     const userRes = await axios.get("https://api.github.com/user", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
+
+    if (!isIITJEmail(email)) {
+      return res.status(403).json({
+        message: "Only iitj emails are allowed.",
+        success: false,
+      });
+    }
 
     // GitHub may not always return email here (depends on privacy settings).
     let email = userRes.data.email;
