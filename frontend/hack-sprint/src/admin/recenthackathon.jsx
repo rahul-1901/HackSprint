@@ -138,7 +138,7 @@ const RecentlyStartedPage = () => {
               {recentlyStartedHackathons.map(hackathon => (
                 <Link
                   key={hackathon._id}
-                  to={`/Hacksprintkaadminprofile/${hackathon._id}/usersubmissions`}
+                  to={`/admin/${hackathon._id}/usersubmissions`}
                 >
                   <HackathonCard hackathon={hackathon} />
                 </Link>

@@ -25,7 +25,7 @@ function AdminLogin() {
       if (data.token) {
         toast.success(data.message || "Login successful!", { className: "text-sm max-w-xs" , autoClose: 1200},);
         localStorage.setItem("adminToken", data.token);
-        navigate("/Hacksprintkaadminprofile");
+        navigate("/admin");
       } else {
         toast.error(data.message || data.error || "Login failed.", { className: "text-sm max-w-xs" });
       }

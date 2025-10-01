@@ -82,7 +82,7 @@ const LiveHackathonsPage = () => {
           ) : liveHackathons.length > 0 ? (
             <div className="flex flex-col gap-8">
               {liveHackathons.map((hackathon) => (
-                <Link key={hackathon._id} to={`/Hacksprintkaadminprofile/${hackathon._id}/usersubmissions`}>
+                <Link key={hackathon._id} to={`/admin/${hackathon._id}/usersubmissions`}>
                   <HackathonCard hackathon={hackathon} />
                 </Link>
               ))}

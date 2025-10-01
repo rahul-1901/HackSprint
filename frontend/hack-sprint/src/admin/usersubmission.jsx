@@ -133,7 +133,7 @@ const UserSubmissionDetailPage = () => {
       <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
         <header className="my-12">
           <Link
-            to={`/Hacksprintkaadminprofile/${slug}/usersubmissions`}
+            to={`/admin/${slug}/usersubmissions`}
             className="flex items-center gap-2 text-green-400 hover:text-green-300 mb-6 group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />

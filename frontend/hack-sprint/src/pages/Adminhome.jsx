@@ -136,7 +136,7 @@ export default function OrganizerHome() {
             {localStorage.getItem("adminToken") ? (
               <Button
                 className="hidden md:inline-flex"
-                onClick={() => navigate("/Hacksprintkaadminprofile")}
+                onClick={() => navigate("/admin")}
               >
                 Dashboard
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -153,7 +153,7 @@ export default function OrganizerHome() {
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2"
+              className="md:hidden p-2 cursor-pointer"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? (
@@ -166,27 +166,27 @@ export default function OrganizerHome() {
         </div>
 
         {/* Mobile Menu */}
-        {/* {isMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800/50 shadow-lg">
+        {isMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-1 py-1 border-gray-800/50 shadow-lg">
             <div className="p-4 space-y-4">
-              <a href="#features" className="block text-gray-300 hover:text-green-400">
-                Features
-              </a>
-              <a href="#process" className="block text-gray-300 hover:text-green-400">
-                Process
-              </a>
-              <a href="#resources" className="block text-gray-300 hover:text-green-400">
-                Resources
-              </a>
-              <a href="#testimonials" className="block text-gray-300 hover:text-green-400">
-                Stories
-              </a>
-              <Button className="w-full" onClick={() => navigate("/adminlogin")}>
-                Organize Now
-              </Button>
+              {localStorage.getItem("adminToken") ? (
+                <Button
+                  className="w-full"
+                  onClick={() => navigate("/admin")}
+                >
+                  Dashboard
+                </Button>
+              ) : (
+                <Button
+                  className="w-full"
+                  onClick={() => navigate("/adminlogin")}
+                >
+                  Organize Now
+                </Button>
+              )}
             </div>
           </div>
-        )} */}
+        )}
       </header>
 
       <section className="relative py-32">

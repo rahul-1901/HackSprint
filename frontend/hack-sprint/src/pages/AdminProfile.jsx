@@ -29,7 +29,7 @@ const HackathonCard = ({ hackathon }) => {
   return (
     <div
       onClick={() =>
-        navigate(`/Hacksprintkaadminprofile/${hackathon._id}/usersubmissions`)
+        navigate(`/admin/${hackathon._id}/usersubmissions`)
       }
       className="relative w-full rounded-2xl overflow-hidden shadow-lg border border-gray-800 hover:border-green-500/50 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-gray-900/70 backdrop-blur-sm"
     >
@@ -318,9 +318,9 @@ const AdminProfile = () => {
           <p className="text-gray-400 text-lg">Loading your hackathons...</p>
         ) : (
           <>
-            <HackathonSection title="Live Hackathons" hackathons={liveHackathons} viewMoreLink="/Hacksprintkaadminprofile/livehackathons" />
-            <HackathonSection title="Recently Started" hackathons={recentlyStartedHackathons} viewMoreLink="/Hacksprintkaadminprofile/recentlystarted" />
-            <HackathonSection title="Expired Hackathons" hackathons={expiredHackathons} viewMoreLink="/Hacksprintkaadminprofile/endedhackathons" />
+            <HackathonSection title="Live Hackathons" hackathons={liveHackathons} viewMoreLink="/admin/livehackathons" />
+            <HackathonSection title="Recently Started" hackathons={recentlyStartedHackathons} viewMoreLink="/admin/recentlystarted" />
+            <HackathonSection title="Expired Hackathons" hackathons={expiredHackathons} viewMoreLink="/admin/endedhackathons" />
           </>
         )}
       </div>

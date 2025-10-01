@@ -89,18 +89,18 @@ function App() {
           <Route path="/about" element={<About />} caseSensitive />
           <Route path="/hackathons" element={<AllHackathons />} caseSensitive />
 
-          <Route path="/admin" element={<Admin />} caseSensitive />
+          {/* <Route path="/admin" element={<Admin />} caseSensitive /> */}
           <Route path="/hacksprintTeraBaap" element={<Admin />} caseSensitive />
-          <Route path="/Hacksprintkaadminprofile" element={<AuthenticateRoute element={<AdminProfile />} admin={true} authWait={authWait} isAuthenticated={isAuthenticated} />} caseSensitive />
-          <Route path="/Hacksprintkaadminprofile/recentlystarted"
+          <Route path="/admin" element={<AuthenticateRoute element={<AdminProfile />} admin={true} authWait={authWait} isAuthenticated={isAuthenticated} />} caseSensitive />
+          <Route path="/admin/recentlystarted"
             element={<AuthenticateRoute element={<RecentlyStartedPage />} admin={true} authWait={authWait} isAuthenticated={isAuthenticated} />}
             caseSensitive
           />
-          <Route path="/Hacksprintkaadminprofile/livehackathons"
+          <Route path="/admin/livehackathons"
             element={<AuthenticateRoute element={<LiveHackathonsPage />} admin={true} authWait={authWait} isAuthenticated={isAuthenticated} />}
             caseSensitive
           />
-          <Route path="/Hacksprintkaadminprofile/endedhackathons"
+          <Route path="/admin/endedhackathons"
             element={<AuthenticateRoute element={<EndedHackathonsPage />} admin={true} authWait={authWait} isAuthenticated={isAuthenticated} />}
             caseSensitive
           />
@@ -151,7 +151,7 @@ function App() {
             caseSensitive
           />
           <Route
-            path="/Hacksprintkaadminprofile/:slug/usersubmissions"
+            path="/admin/:slug/usersubmissions"
             element={
               <AuthenticateRoute
                 element={<HackathonUsersPage />}
