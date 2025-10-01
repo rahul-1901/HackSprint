@@ -238,27 +238,50 @@ const TeamDetails = () => {
         {isLeader && (
           <>
             {spotsRemaining > 0 && (
-              <div className="bg-gray-800/30 border border-green-500/20 rounded-lg p-6 mb-8">
+              <div className="bg-gray-800/30 border border-green-500/20 overflow-hidden rounded-lg p-6 mb-8">
                 <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                   <LinkIcon className="w-5 h-5 text-green-400" />
                   Invite Team Members
                 </h2>
                 <div className="grid md:grid-cols-2 gap-4">
+                  {/* Invite Code */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Invite Code</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Invite Code
+                    </label>
                     <div className="flex items-center gap-2 p-3 bg-gray-700/50 border border-green-500/20 rounded-lg">
-                      <span className="flex-1 font-mono text-green-300">{teamData.code}</span>
-                      <Button onClick={() => handleCopy(teamData.code, 'code')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
-                        {copiedItem === 'code' ? <Check size={16} /> : <Copy size={16} />}
+                      <span
+                        className="flex-1 font-mono text-green-300 break-all md:truncate"
+                        title={teamData.code} // shows full value on hover if truncated
+                      >
+                        {teamData.code}
+                      </span>
+                      <Button
+                        onClick={() => handleCopy(teamData.code, "code")}
+                        className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20"
+                      >
+                        {copiedItem === "code" ? <Check size={16} /> : <Copy size={16} />}
                       </Button>
                     </div>
                   </div>
+
+                  {/* Invite Link */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Invite Link</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Invite Link
+                    </label>
                     <div className="flex items-center gap-2 p-3 bg-gray-700/50 border border-green-500/20 rounded-lg">
-                      <span className="flex-1 font-mono text-green-300 truncate">{teamData.secretLink}</span>
-                      <Button onClick={() => handleCopy(teamData.secretLink, 'link')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
-                        {copiedItem === 'link' ? <Check size={16} /> : <Copy size={16} />}
+                      <span
+                        className="flex-1 font-mono text-green-300 break-all md:truncate"
+                        title={teamData.secretLink} // shows full link on hover if truncated
+                      >
+                        {teamData.secretLink}
+                      </span>
+                      <Button
+                        onClick={() => handleCopy(teamData.secretLink, "link")}
+                        className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20"
+                      >
+                        {copiedItem === "link" ? <Check size={16} /> : <Copy size={16} />}
                       </Button>
                     </div>
                   </div>
