@@ -12,6 +12,7 @@ export const SidebarNav = ({ activeSection, onSectionChange }) => {
     { id: "rules", label: "Rules", icon: FileText },
     { id: "faqs", label: "FAQs", icon: CircleHelp },
     { id: "about", label: "About", icon: Info },
+    { id: "refMaterial", label: "Reference Material", icon: FileText },
     { id: "discussion", label: "Discussion", icon: MessagesSquare },
   ];
 

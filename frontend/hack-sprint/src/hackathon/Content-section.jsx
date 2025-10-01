@@ -35,6 +35,28 @@ export const ContentSection = ({ activeSection, hackathon }) => {
     </div>
   );
 
+  const SimpleContentSectionRef = ({ title, content }) => (
+    <div>
+      <SectionHeader>{title}</SectionHeader>
+      <SectionCard>
+        <div className="text-gray-300 whitespace-pre-line leading-relaxed prose max-w-none">
+          {content ? (
+            <a
+              href={content}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline"
+            >
+              {content}
+            </a>
+          ) : (
+            `No ${title.toLowerCase()} information provided.`
+          )}
+        </div>
+      </SectionCard>
+    </div>
+  );
+
   // NEW: Component specifically for sections with array content to display as a list
   const ListContentSection = ({ title, content }) => {
     const isContentAvailable = Array.isArray(content) && content.length > 0;
@@ -183,6 +205,8 @@ export const ContentSection = ({ activeSection, hackathon }) => {
         return <SimpleContentSection title="Prizes" content={prizeContent} />;
       case "about":
         return <SimpleContentSection title="About" content={hackathon.aboutUs} />;
+      case "refMaterial":
+        return <SimpleContentSectionRef title="Reference Material" content={hackathon.refMaterial} />;
 
       case "faqs":
         const rawFaqs = hackathon.FAQs || [];

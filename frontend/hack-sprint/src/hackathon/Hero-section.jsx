@@ -127,9 +127,9 @@ export const HeroSection = ({
     fetchUserData();
   }, [hackathonId]);
 
-  useEffect(() => {
-    console.log("Team Data Updated:", teamData?.code);
-  }, [teamData]);
+  // useEffect(() => {
+  //   console.log("Team Data Updated:", teamData?.code);
+  // }, [teamData]);
 
   useEffect(() => {
     if (teamData?.code) {
