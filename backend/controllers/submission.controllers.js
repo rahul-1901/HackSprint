@@ -49,10 +49,11 @@ export const submitHackathonSolution = async (req, res) => {
     console.log("req.body =>", req.body);
     console.log("req.files =>", req.files);
 
-    if (!hackathonId || !repoUrl) {
-      return res
-        .status(400)
-        .json({ message: "Hackathon ID and repo URL are required" });
+    // ✅ validate repoUrl is an array with at least one element
+    if (!hackathonId || !Array.isArray(repoUrl) || repoUrl.length === 0) {
+      return res.status(400).json({
+        message: "Hackathon ID and at least one repo URL are required",
+      });
     }
 
     // ✅ check hackathon exists

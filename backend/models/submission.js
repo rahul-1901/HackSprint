@@ -27,7 +27,7 @@ const submissionSchema = new mongoose.Schema({
     required: true,
   },
   repoUrl: {
-    type: String,
+    type: [String],
     required: true,
   },
   hackathonPoints : {
