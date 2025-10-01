@@ -261,12 +261,7 @@ const googleLogin = async (req, res) => {
     );
 
     const { name, email } = userRes.data;
-    if (!isIITJEmail(email)) {
-      return res.status(403).json({
-        message: "Only iitj emails are allowed.",
-        success: false,
-      });
-    }
+    
     if (!isIITJEmail(email)) {
       return res.status(403).json({
         message: "Only iitj emails are allowed.",
