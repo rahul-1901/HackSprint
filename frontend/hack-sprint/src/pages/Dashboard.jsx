@@ -302,10 +302,10 @@ export const UserDashboard = () => {
             return res.data;
           })
         );
-        console.log(results)
+        // console.log(results)
         setSubmission(results);
       } catch (err) {
-        console.error("Error fetching submission:", err);
+        
       }
     };
 
@@ -323,7 +323,7 @@ export const UserDashboard = () => {
             return res.data;
           })
         );
-        console.log(submission)
+        // console.log(submission)
         setHackathon(results);
       } catch (err) {
         console.error("Error fetching hackathon:", err);

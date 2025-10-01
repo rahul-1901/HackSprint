@@ -19,7 +19,7 @@ export const AppContextProvider = (props) => {
         }
       });
 
-      console.log(data);
+      // console.log(data);
       setIsLoggedIn(true);
 
       data.success

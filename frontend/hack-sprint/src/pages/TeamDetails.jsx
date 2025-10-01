@@ -36,7 +36,7 @@ const TeamDetails = () => {
   const [copiedItem, setCopiedItem] = useState(null);
 
   const getStoredTeamCode = useCallback(() => {
-    if(teamId) {
+    if (teamId) {
       return teamId
     } else {
       return localStorage.getItem(`teamDetails_code`);
@@ -47,13 +47,13 @@ const TeamDetails = () => {
     if (!user) return;
 
     const secretCode = getStoredTeamCode();
-    console.log(secretCode)
+    // console.log(secretCode)
 
     try {
       if (secretCode) {
         const teamSearchResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/team/search/${secretCode}`);
         const basicTeamData = teamSearchResponse.data.team;
-        console.log(basicTeamData)
+        // console.log(basicTeamData)
 
         const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: basicTeamData.leader._id });
         setTeamData({ ...basicTeamData, pendingMembers: pendingResponse.data });

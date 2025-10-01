@@ -140,7 +140,7 @@ const AdminProfile = () => {
           setHackathonsLoading(true);
           const response = await getAdminHackathons(adminData.id);
           const allHackathons = response.data;
-          console.log(allHackathons);
+          // console.log(allHackathons);
           const now = new Date();
           const live = [], recent = [], expired = [];
 

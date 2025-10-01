@@ -156,14 +156,22 @@ const UserSubmissionDetailPage = () => {
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Project Links</h2>
             <div className="space-y-4">
-              {submission.repoUrl && (
-                <a href={submission.repoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800/80 transition-colors">
-                  <Github className="h-6 w-6 text-green-400 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-white">GitHub Repository</p>
-                    <p className="text-sm text-gray-400 break-all">{submission.repoUrl}</p>
-                  </div>
-                </a>
+              {submission.repoUrl && submission.repoUrl.length > 0 && (
+                submission.repoUrl.map((url, index) => (
+                  <a
+                    key={index}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800/80 transition-colors"
+                  >
+                    <Github className="h-6 w-6 text-green-400 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-white">GitHub Repository {submission.repoUrl.length > 1 ? index + 1 : ""}</p>
+                      <p className="text-sm text-gray-400 break-all">{url}</p>
+                    </div>
+                  </a>
+                ))
               )}
               {submission.docs?.length > 0 && (
                 <a href={submission.docs[0]} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800/80 transition-colors">

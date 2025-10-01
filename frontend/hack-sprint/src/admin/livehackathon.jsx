@@ -46,7 +46,7 @@ const LiveHackathonsPage = () => {
         try {
           const response = await getAdminHackathons(adminData.id);
           const allHackathons = response.data;
-          console.log(allHackathons)
+          // console.log(allHackathons)
           const now = new Date();
 
           const filtered = allHackathons.filter(h => {

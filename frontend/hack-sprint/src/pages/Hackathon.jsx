@@ -54,7 +54,7 @@ export default function HackathonDetails() {
                 } else {
                     setHackathon(res.data);
                 }
-                console.log(res.data)
+                // console.log(res.data)
             } catch (err) {
                 console.error(err);
                 setError("Failed to load hackathon details. Please try again later.");

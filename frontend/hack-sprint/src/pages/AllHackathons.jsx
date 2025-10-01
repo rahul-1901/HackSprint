@@ -84,11 +84,11 @@ const HackathonCard = ({ hackathon }) => {
   useEffect(() => {
     if (!hackathon.startDate || !hackathon.endDate) return;
     const interval = setInterval(() => {
-      setCountdown(getCountdown(hackathon.status === "upcoming" ? hackathon.startDate : hackathon.endDate))
+      setCountdown(getCountdown(hackathon.status === "upcoming" ? hackathon.startDate : hackathon.submissionEndDate))
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [hackathon.endDate, hackathon.startDate, hackathon.status])
+  }, [hackathon.endDate, hackathon.submissionEndDate, hackathon.startDate, hackathon.status])
 
   const isExpired = hackathon.status === "expired"
   const isUpcoming = hackathon.status === "upcoming"
@@ -111,7 +111,7 @@ const HackathonCard = ({ hackathon }) => {
         if (hackathon.status !== "upcoming") {
           navigate(`/hackathon/${hackathon._id}`)
         } else {
-          
+
         }
       }}
     >
@@ -149,7 +149,7 @@ const HackathonCard = ({ hackathon }) => {
           <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
             <div className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-${statusColor}-500/10 backdrop-blur-sm`}>
               <Timer size={12} className={`text-${statusColor}-400`} />
-              <span className={`font-mono text-xs sm:text-sm text-${statusColor}-400`}>{isExpired ? "0d 0h 0m" : countdown || getCountdown(isUpcoming ? hackathon.startDate : hackathon.endDate)}</span>
+              <span className={`font-mono text-xs sm:text-sm text-${statusColor}-400`}>{isExpired ? "0d 0h 0m" : countdown || getCountdown(isUpcoming ? hackathon.startDate : hackathon.submissionEndDate)}</span>
             </div>
           </div>
           <div className="pr-20 sm:pr-24 md:pr-28 lg:pr-32">
@@ -183,7 +183,7 @@ const HackathonCard = ({ hackathon }) => {
       </div>
       {hackathon.status === "active" && (
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700/50">
-          <div className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300" style={{ width: `${getProgress(hackathon.startDate, hackathon.endDate)}%` }} />
+          <div className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300" style={{ width: `${getProgress(hackathon.startDate, hackathon.submissionEndDate)}%` }} />
         </div>
       )}
     </div>
@@ -232,9 +232,10 @@ const Hackathons = () => {
             techStack: h.techStackUsed || [],
             category: h.category || "General",
             image: h.image || h.imageUrl || null,
-            dates: `${new Date(h.startDate).toLocaleDateString()} - ${new Date(h.endDate).toLocaleDateString()}`,
+            dates: `${new Date(h.startDate).toLocaleDateString()} - ${new Date(h.submissionEndDate).toLocaleDateString()}`,
           }));
 
+        // console.log(upcomingRes)
         // KEY CHANGE: Accessing data from the correct properties
         setActiveHackathons(mapData(activeRes.data.allHackathons, "active"));
         setExpiredHackathons(mapData(expiredRes.data.expiredHackathons, "expired"));

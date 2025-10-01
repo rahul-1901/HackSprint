@@ -27,7 +27,7 @@ const Questions = () => {
             try {
                 const res = await getDashboard();
                 setUserId(res.data.userData._id);
-                console.log(res.data.userData);
+                // console.log(res.data.userData);
             } catch (err) {
                 console.error("Dashboard fetch error:", err);
             }
@@ -293,7 +293,7 @@ const Questions = () => {
             const payload = { userId, quizId };
             try {
                 await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/finishquiz`, payload);
-                console.log("Quiz completion logged due to timer running out");
+                // console.log("Quiz completion logged due to timer running out");
             } catch (err) {
                 console.error("Error logging quiz completion on timeout:", err);
             }
@@ -322,10 +322,10 @@ const Questions = () => {
         try {
             if (correct) {
                 await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/correctanswer`, payload);
-                console.log("Correct answer logged");
+                // console.log("Correct answer logged");
             } else {
                 await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/incorrectanswer`, payload);
-                console.log("Incorrect answer logged");
+                // console.log("Incorrect answer logged");
             }
         } catch (err) {
             console.error("Error posting answer:", err);
@@ -357,7 +357,7 @@ const Questions = () => {
 
         try {
             await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/finishquiz`, payload);
-            console.log("Quiz completion logged");
+            // console.log("Quiz completion logged");
         } catch (err) {
             console.error("Error logging quiz finish:", err);
         }

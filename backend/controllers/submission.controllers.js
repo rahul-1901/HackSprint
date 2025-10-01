@@ -48,7 +48,12 @@ export const submitHackathonSolution = async (req, res) => {
     const { hackathonId, repoUrl, userId } = req.body || {};
     console.log("req.body =>", req.body);
     console.log("req.files =>", req.files);
-
+    // ✅ validate repoUrl is an array with at least one element
+    if (!hackathonId || !Array.isArray(repoUrl) || repoUrl.length === 0) {
+      return res.status(400).json({
+        message: "Hackathon ID and at least one repo URL are required",
+      });
+    }
     if (!hackathonId || !repoUrl) {
       return res
         .status(400)

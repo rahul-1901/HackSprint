@@ -463,12 +463,12 @@ const Home = () => {
                 >
                   Student
                 </button>
-                <button
+                {/* <button
                   onClick={() => navigate("/adminhome")}
                   className="bg-green-400/10 cursor-pointer hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105"
                 >
                   Admin
-                </button>
+                </button> */}
               </>
             )}
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
-import { X, Clock, Calendar, Users, Code, FileVideo, FileText } from "lucide-react";
+import { X, Clock, Calendar, Users, Code, FileVideo, FileText, Plus } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import { getDashboard } from "../backendApis/api";
 import "./Hackathon.css";
@@ -78,7 +78,7 @@ function FileUpload({ label, icon: Icon, accept, file, onFileChange, onRemove, p
 // SubmissionForm component
 const SubmissionForm = ({ isOpen, onClose }) => {
   const { id: hackathonId } = useParams();
-  const [repoUrl, setRepoUrl] = useState("");
+  const [repoUrls, setRepoUrls] = useState([""]); // State now handles an array of URLs
   const [loading, setLoading] = useState(false);
   const [hackathon, setHackathon] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
@@ -160,6 +160,7 @@ const SubmissionForm = ({ isOpen, onClose }) => {
           `${import.meta.env.VITE_API_BASE_URL}/api/submit/status?${params.toString()}`
         );
         const data = await res.json();
+        // console.log(data)
         setSubmissionStatus(data);
       } catch (err) {
         console.error("Error fetching submission status:", err);
@@ -198,6 +199,24 @@ const SubmissionForm = ({ isOpen, onClose }) => {
 
   const handleRemovePdf = () => setPdfFile(null);
 
+  // Handlers for managing multiple URL inputs
+  const handleRepoUrlChange = (index, value) => {
+    const newUrls = [...repoUrls];
+    newUrls[index] = value;
+    setRepoUrls(newUrls);
+  };
+
+  const handleAddRepoUrl = () => {
+    setRepoUrls([...repoUrls, ""]);
+  };
+
+  const handleRemoveRepoUrl = (index) => {
+    if (repoUrls.length > 1) {
+      const newUrls = repoUrls.filter((_, i) => i !== index);
+      setRepoUrls(newUrls);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -207,10 +226,19 @@ const SubmissionForm = ({ isOpen, onClose }) => {
       return;
     }
 
+    const validUrls = repoUrls.filter((url) => url.trim() !== "");
+    if (validUrls.length === 0) {
+      toast.error("Please provide at least one valid URL.", { position: "top-right", theme: "dark" });
+      return;
+    }
+
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append("repoUrl", repoUrl);
+      // Append all valid URLs to the form data
+      validUrls.forEach((url) => {
+        formData.append("repoUrl", url);
+      });
       formData.append("hackathonId", hackathonId);
       formData.append("userId", userData._id);
       if (teamId) formData.append("teamId", teamId);
@@ -225,7 +253,7 @@ const SubmissionForm = ({ isOpen, onClose }) => {
       if (!res.ok) throw new Error("Submission failed");
 
       toast.success("Submission successful!", { position: "top-right" });
-      setRepoUrl("");
+      setRepoUrls([""]); // Reset URL fields
       setVideoFile(null);
       setPdfFile(null);
       onClose();
@@ -287,26 +315,32 @@ const SubmissionForm = ({ isOpen, onClose }) => {
         <p className="text-gray-300 mb-6">{hackathon.description}</p>
 
         {submissionStatus?.submitted ? (
-          <div className="p-4 bg-gray-800 rounded-lg border border-green-500/50 space-y-2">
+          <div className="p-4 bg-gray-800 rounded-lg border border-green-500/50 space-y-4">
             <p className="text-green-400 font-semibold">Already Submitted!</p>
 
-            {/* Repo */}
-            {submissionStatus.submission.repoUrl && (
-              <p>
-                Repo:{" "}
-                <a
-                  href={submissionStatus.submission.repoUrl}
-                  className="text-blue-500 underline"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {submissionStatus.submission.repoUrl}
-                </a>
-              </p>
-            )}
+            {Array.isArray(submissionStatus.submission.repoUrl) &&
+              submissionStatus.submission.repoUrl.length > 0 && (
+                <div>
+                  <p className="font-medium text-gray-300">URLs:</p>
+                  <ul className="list-disc list-inside text-gray-400 space-y-1">
+                    {submissionStatus.submission.repoUrl.map((url, idx) => (
+                      <li key={idx}>
+                        <a
+                          href={url}
+                          className="text-blue-400 underline"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {url}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
             {/* Docs */}
-            {submissionStatus.submission.docs?.length > 0 && (
+            {/* {submissionStatus.submission.docs?.length > 0 && (
               <div>
                 <p className="font-medium text-gray-300">Submitted Documents:</p>
                 <ul className="list-disc list-inside text-gray-400 space-y-1">
@@ -327,10 +361,10 @@ const SubmissionForm = ({ isOpen, onClose }) => {
                   ))}
                 </ul>
               </div>
-            )}
+            )} */}
 
-            {/* Videos */}
-            {submissionStatus.submission.videos?.length > 0 && (
+
+            {/* {submissionStatus.submission.videos?.length > 0 && (
               <div>
                 <p className="font-medium text-gray-300">Submitted Videos:</p>
                 <ul className="list-disc list-inside text-gray-400 space-y-1">
@@ -348,19 +382,47 @@ const SubmissionForm = ({ isOpen, onClose }) => {
                   ))}
                 </ul>
               </div>
-            )}
+            )} */}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              className="border-green-500/30"
-              placeholder="Enter your GitHub repository URL"
-              value={repoUrl}
-              onChange={(e) => setRepoUrl(e.target.value)}
-              required
-            />
+            {/* Section for multiple URL inputs */}
+            <div className="space-y-3">
+              <label className="block text-gray-300">URL(s)</label>
+              {repoUrls.map((url, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <Input
+                    className="border-green-500/30 flex-grow"
+                    placeholder="e.g., https://github.com/your-repo"
+                    value={url}
+                    onChange={(e) => handleRepoUrlChange(index, e.target.value)}
+                    required
+                  />
+                  {repoUrls.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => handleRemoveRepoUrl(index)}
+                      className="p-2"
+                      title="Remove URL"
+                    >
+                      <X className="w-5 h-5 text-red-500" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleAddRepoUrl}
+                className="flex items-center gap-2 w-full justify-center sm:w-auto"
+              >
+                <Plus className="w-4 h-4" />
+                Add another URL
+              </Button>
+            </div>
 
-            <FileUpload
+            {/* <FileUpload
               label="Upload Demo Video"
               icon={FileVideo}
               accept="video/*"
@@ -386,7 +448,7 @@ const SubmissionForm = ({ isOpen, onClose }) => {
               onFileChange={handlePdfFileChange}
               onRemove={handleRemovePdf}
               preview={<FileText className="w-12 h-12 text-blue-500" />}
-            />
+            /> */}
 
             <Button
               type="submit"
