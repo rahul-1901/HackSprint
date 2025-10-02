@@ -88,7 +88,7 @@ export const HeroSection = ({
       try {
         const res = await getDashboard();
         const fetchedUserData = res.data.userData;
-        console.log(fetchedUserData)
+        // console.log(fetchedUserData)
         setUserData(fetchedUserData);
         setIsVerified(fetchedUserData?.isVerified || false);
 
