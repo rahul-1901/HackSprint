@@ -915,7 +915,7 @@ const Home = () => {
                 <div className="grid grid-cols-2 gap-4 sm:gap-6 mb-6">
                   <div className="text-center bg-gray-800/30 rounded-lg p-3 sm:p-4">
                     <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">1</div>
-                    <div className="text-gray-400 text-xs sm:text-sm">Hackathons Live</div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Hackathon</div>
                   </div>
                   <div className="text-center bg-gray-800/30 rounded-lg p-3 sm:p-4">
                     <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">24/7</div>
