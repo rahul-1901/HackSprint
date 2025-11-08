@@ -260,7 +260,7 @@ const Navbar = () => {
                     </div>
                     <div className="flex items-center space-x-1 text-yellow-400">
                       <Coins size={16} />
-                      <span className="text-sm font-semibold">{userInfo?.coins || 10}</span>
+                      <span className="text-sm font-semibold">{coins || 0}</span>
                     </div>
                   </div>
 
