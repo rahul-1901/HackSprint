@@ -438,7 +438,8 @@ const Home = () => {
     <div className="bg-gray-900 relative overflow-hidden min-h-screen -mt-16">
 
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900 backdrop-blur-sm border-b border-gray-800/50">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900/90 backdrop-blur-sm border-b border-green-500/30">
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-60" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-6">
             <button
@@ -463,12 +464,12 @@ const Home = () => {
                 >
                   Student
                 </button>
-                { /* <button
+                <button
                   onClick={() => navigate("/adminhome")}
                   className="bg-green-400/10 cursor-pointer hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105"
                 >
                   Admin
-                </button>  */}
+                </button>
               </>
             )}
 
@@ -487,7 +488,7 @@ const Home = () => {
                 className="bg-green-400/10 cursor-pointer hover:bg-green-400/20 border border-green-400/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105"
               >
                 Admin
-              </button> 
+              </button>
             )}
           </div>
 
@@ -833,7 +834,7 @@ const Home = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  {/* <div className="flex items-center gap-2">
                     {story.social.linkedin && (
                       <button className="w-8 h-8 bg-gray-800/50 hover:bg-green-400/20 rounded-lg flex items-center justify-center transition-colors duration-300">
                         <Linkedin className="w-4 h-4 text-gray-400 hover:text-green-400" />
@@ -849,7 +850,7 @@ const Home = () => {
                         <Github className="w-4 h-4 text-gray-400 hover:text-green-400" />
                       </button>
                     )}
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="mb-6">
@@ -914,7 +915,7 @@ const Home = () => {
 
                 <div className="grid grid-cols-2 gap-4 sm:gap-6 mb-6">
                   <div className="text-center bg-gray-800/30 rounded-lg p-3 sm:p-4">
-                    <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">1</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">0</div>
                     <div className="text-gray-400 text-xs sm:text-sm">Hackathon</div>
                   </div>
                   <div className="text-center bg-gray-800/30 rounded-lg p-3 sm:p-4">
@@ -932,7 +933,7 @@ const Home = () => {
                       </div>
                       <span className="bg-green-400/20 text-green-400 px-2 py-1 rounded text-xs">NEW</span>
                     </div>
-                    <p className="text-gray-400 text-sm">Developers are currently collaborating on projects</p>
+                    <p className="text-gray-400 text-sm">Developers are currently collaborating on projects & quests</p>
                   </div>
 
                   <div className="p-4 bg-green-600/5 border border-green-600/20 rounded-lg">

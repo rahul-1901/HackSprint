@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import "./App.css"
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import GithubAuthHandler from './components/GithubAuthHandler.jsx';
@@ -34,7 +35,7 @@ import UnderConstruction from './pages/Devlopment.jsx'
 import Studenthome from './pages/Studenthome.jsx';
 import Adminhome from './pages/Adminhome.jsx'
 import AdminLogin from './pages/AdminLogin.jsx'
-import AdminSignup from './pages/AdminSignup.jsx'; // --- IMPORT THE NEW PAGE ---
+import AdminSignup from './pages/AdminSignup.jsx';
 import AdminProfile from './pages/AdminProfile.jsx';
 import RecentlyStartedPage from './admin/recenthackathon.jsx';
 import LiveHackathonsPage from './admin/livehackathon.jsx';
@@ -63,8 +64,33 @@ function App() {
     return isAuthenticated ? element : <Navigate to="/account/login" />;
   };
 
+  const [deferredPrompt, setDeferredPrompt] = useState(null)
+  const [showInstall, setShowInstall] = useState(false)
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      setDeferredPrompt(e);
+      setShowInstall(true);
+    };
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+    return () =>
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+  }, [])
+
+  const handleInstallClick = async () => {
+    deferredPrompt.prompt()
+    const result = await deferredPrompt.userChoice
+    if (result.outcome === "accepted") setShowInstall(false)
+    setDeferredPrompt(null)
+  }
+
   return (
     <>
+      {showInstall && (
+        <button className="install-btn bg-gray-800 text-green-400 rounded-lg border-1 border-green-400/20 hover:bg-gray-800/20 duration-400" onClick={handleInstallClick}>
+          Download App
+        </button>
+      )}
       <Router>
         <RouteHandler setIsAuthenticated={setIsAuthenticated} setAuthWait={setAuthWait} />
         <ScrollToTop />
@@ -81,7 +107,7 @@ function App() {
           <Route path="/studenthome" element={<Studenthome />} caseSensitive />
           <Route path="/adminhome" element={<Adminhome />} caseSensitive />
           <Route path="/adminlogin" element={<AdminLogin />} caseSensitive />
-          <Route path="/admin/signup" element={<AdminSignup />} caseSensitive /> {/* --- ADD THE NEW ROUTE --- */}
+          <Route path="/admin/signup" element={<AdminSignup />} caseSensitive />
 
           <Route path="/activehackathons" element={<ActiveHackathons />} caseSensitive></Route>
           <Route path="/expiredhackathons" element={<ExpiredHackathons />} caseSensitive></Route>
@@ -89,7 +115,6 @@ function App() {
           <Route path="/about" element={<About />} caseSensitive />
           <Route path="/hackathons" element={<AllHackathons />} caseSensitive />
 
-          {/* <Route path="/admin" element={<Admin />} caseSensitive /> */}
           <Route path="/hacksprintTeraBaap" element={<Admin />} caseSensitive />
           <Route path="/admin" element={<AuthenticateRoute element={<AdminProfile />} admin={true} authWait={authWait} isAuthenticated={isAuthenticated} />} caseSensitive />
           <Route path="/admin/recentlystarted"

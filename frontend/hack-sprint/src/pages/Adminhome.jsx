@@ -49,9 +49,6 @@ const InteractiveCard = ({ title, desc, icon: Icon, delay = 0 }) => (
     <p className="text-gray-300 text-md leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
       {desc}
     </p>
-    <div className="mt-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-      <ArrowRight className="w-5 h-5 text-emerald-400" />
-    </div>
   </div>
 );
 
@@ -98,8 +95,9 @@ export default function OrganizerHome() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white overflow-hidden">
       {/* Navbar */}
-      <header className="relative z-50 border-b border-gray-800/50 bg-gray-900/80 backdrop-blur-lg sticky top-0">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="relative z-50 bg-gray-900/90 backdrop-blur-sm border-b border-green-500/30 sticky top-0">
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-60" />
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           {/* Logo */}
           <button
             onClick={() => navigate("/")}
