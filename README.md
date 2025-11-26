@@ -95,14 +95,14 @@ HackSprint provides:
 HackSprint
 ├── LICENSE
 ├── backend
-│   ├── src
+│   ├── index.js
+│   ├── allFolders
 │   ├── package.json
-│   ├── .env.example
 │   └── ...
 └── frontend
     └── hack-sprint
+        ├── public
         ├── src
-        ├── .env.example
         ├── package.json
         └── ...
 ```
@@ -154,7 +154,7 @@ cd HackSprint
 ```bash
 cd backend
 npm install
-npm run dev
+nodemon index.js
 ```
 
 ### 3️⃣ Frontend Setup
@@ -169,11 +169,8 @@ npm run dev
 ## 🛠 Available Scripts
 | Purpose            | Command                 |
 | ------------------ | ----------------------- |
-| Run backend        | `npm run dev`           |
+| Run backend        | `nodemon index.js`         |
 | Run frontend       | `npm run dev`           |
-| Run tests          | `npm run test`          |
-| HTML test coverage | `npm run test-cov-html` |
-| Makefile tests     | `make test`             |
 
 ---
 ## 🤝 Contributing
