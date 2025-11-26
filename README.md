@@ -169,6 +169,25 @@ npm run dev
 
 ---
 
+## 🐳 Docker Hub Usage
+- Backend
+Pull the backend image and run it:
+```bash
+docker pull rahul1901/hacksprintserver:latest
+docker run -p 3000:3000 rahul1901/hacksprintserver:latest
+```
+Access the backend at: http://localhost:3000
+
+- Frontend
+Pull the frontend image and run it:
+```bash
+docker pull rahul1901/hacksprint:latest
+docker run -p 5173:80 rahul1901/hacksprint:latest
+```
+Access the frontend at: http://localhost:5173
+
+---
+
 ## 🛠 Available Scripts
 | Purpose            | Command                 |
 | ------------------ | ----------------------- |
