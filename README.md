@@ -109,13 +109,15 @@ HackSprint
 ---
 
 ## 🌐 Frontend (.env.example)
+```bash
 VITE_API_BASE_URL="http://localhost:3000"
 VITE_GOOGLE_CLIENT_ID="your_google_client_id_here"
 VITE_GITHUB_CLIENT_ID="your_github_client_id_here"
-
+```
 ---
 
 ## 🖥 Backend (.env.example)
+```bash
 MONGO_URL="your_mongodb_connection_url"
 
 GOOGLE_CLIENT_ID="your_google_client_id"
@@ -140,6 +142,7 @@ EMAIL_PASS="your_email_password"
 
 FRONTEND_URL="http://localhost:5173"
 PORT=3000
+```
 
 ---
 
@@ -174,17 +177,17 @@ npm run dev
 
 ---
 ## 🤝 Contributing
--Fork the repository
--Clone your fork
--Create a branch
+- Fork the repository
+- Clone your fork
+- Create a branch
 ```bash
 git checkout -b feature/my-feature
 ```
--Commit changes
+- Commit changes
 ```bash
 git commit -m "Added new feature"
 ```
--Push branch
+- Push branch
 ```bash
 git push origin feature/my-feature
 ```
