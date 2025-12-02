@@ -9,7 +9,7 @@
 
 ## 📌 Overview
 
-**HackSprint** is a centralized platform built to foster innovation, collaboration, and hands-on development experience within IIT Jodhpur.  
+**HackSprint** is a centralized ecosystem created to nurture innovation, collaborative work, and hands-on development across IIT Jodhpur. 
 It enables **hackathons**, **daily developer & aptitude challenges**, **Git-based submissions**, and a **transparent leaderboard system** — all designed to build real-world developer habits.
 
 The platform has **two main user roles**:  
@@ -21,7 +21,7 @@ The platform has **two main user roles**:
 
 ## 🧠 Core Idea
 
-> Empowering students to transition from passive learners to active developers, while giving admins control to manage events efficiently.
+> Enabling students to shift from passive learning to active development, while allowing administrators to manage events effectively.
 
 HackSprint provides:  
 - 🚀 Real project-building experience  
