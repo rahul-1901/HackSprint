@@ -1,10 +1,24 @@
-import express from 'express'
-import { Router } from 'express'
-import { sendExpiredHackathons, sendHackathons,sendInactiveHackathons} from '../controllers/hackathon.controllers.js'
+import express from "express";
+import {
+    getActiveHackathons,
+    getExpiredHackathons,
+    getUpcomingHackathons,
+    getHackathonById,
+    createHackathon
+} from "../controllers/hackathon.controllers.js";
 
-const hackathonRoutes = Router();
+const router = express.Router();
 
-hackathonRoutes.get("/", sendHackathons)
-hackathonRoutes.get("/inactiveHackathons",sendInactiveHackathons)
-hackathonRoutes.get("/expiredHackathons",sendExpiredHackathons)
-export default hackathonRoutes
+// --- GET ROUTES FOR HACKATHON LISTS ---
+router.get("/activeHackathons", getActiveHackathons);
+router.get("/expiredHackathons", getExpiredHackathons);
+router.get("/upcomingHackathons", getUpcomingHackathons);
+
+// --- GET A SINGLE HACKATHON ---
+router.get("/:id", getHackathonById);
+
+// --- POST A NEW HACKATHON ---
+// Note: This route is simplified. You might need to add multer middleware here for image uploads.
+// router.post("/", createHackathon);
+
+export default router;

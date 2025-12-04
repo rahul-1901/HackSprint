@@ -6,6 +6,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import GoogleLogin from "../components/GoogleLogin.jsx";
+import GithubLogin from "../components/GithubLogin.jsx";
 
 function Login() {
   const navigate = useNavigate();
@@ -40,7 +41,10 @@ function Login() {
         toast.error(data.message, { className: "text-sm max-w-xs" });
       }
     } catch (err) {
-      toast.error(err.message, { className: "text-sm max-w-xs" });
+      const errorMessage =
+        err.response?.data?.message || err.message || "Something went wrong";
+
+      toast.error(errorMessage, { className: "text-sm max-w-xs" });
     }
   };
 
@@ -82,7 +86,7 @@ function Login() {
             />
           </div>
 
-          <a className="text-sm px-4 text-green-500 cursor-pointer" href="/account/reset-password">
+          <a className="text-sm px-4 text-green-500 cursor-pointer" href="/account/forgot-password">
             Forgot password?
           </a>
 
@@ -103,6 +107,7 @@ function Login() {
         </form>
 
         <GoogleAuthWrapper />
+        {/* <GithubLogin /> */}
       </div>
     </div>
   );

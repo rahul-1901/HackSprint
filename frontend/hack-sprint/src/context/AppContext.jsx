@@ -19,19 +19,15 @@ export const AppContextProvider = (props) => {
         }
       });
 
-      console.log(data);
+      // console.log(data);
       setIsLoggedIn(true);
 
       data.success
         ? setUserData(data.userData)
-        : toast.error(data.message, {
-          className: "text-sm max-w-xs",
-        });
+        : console.log("Error...", data.message)
     } catch (err) {
       setIsLoggedIn(false);
-      toast.error(err.message, {
-        className: "text-sm max-w-xs",
-      });
+      console.log("Error....", err.message)
     }
   };
 

@@ -1,24 +1,37 @@
-import React, { useState, useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const RouteHandler = ({ setIsAuthenticated, setAuthWait }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
 
-    const location = useLocation()
-    const navigate = useNavigate()
+  useEffect(() => {
+    const userToken = localStorage.getItem("token");
+    const adminToken = localStorage.getItem("adminToken");
 
-    useEffect(() => {
-        const userAuthCheck = localStorage.getItem("token")
-        if (!!userAuthCheck) {
-            setIsAuthenticated(true);
-            if (location.pathname === "/account/login" || location.pathname === "/account/signup") {
-                navigate("/dashboard")
-            }
-        } else {
-            setIsAuthenticated(false)
-        }
-        setAuthWait(true)
-    }, [location])
-    return null;
-}
+    if (userToken) {
+      setIsAuthenticated(true);
 
-export default RouteHandler
+      if (
+        location.pathname === "/account/login" ||
+        location.pathname === "/account/signup"
+      ) {
+        navigate("/dashboard");
+      }
+    } else if (adminToken) {
+      setIsAuthenticated(true);
+
+      if (location.pathname === "/admin/login") {
+        navigate("/admin");
+      }
+    } else {
+      setIsAuthenticated(false);
+    }
+
+    setAuthWait(true); 
+  }, [location, navigate, setIsAuthenticated, setAuthWait]);
+
+  return null;
+};
+
+export default RouteHandler;
