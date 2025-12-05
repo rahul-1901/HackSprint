@@ -1,5 +1,6 @@
 import hackathonModel from "../models/hackathon.models.js";
 import cloudinary from "../config/cloudinary.js";
+import SubmissionModel from "../models/submission.js";
 
 // --- GET ACTIVE HACKATHONS ---
 // Finds hackathons where the current date is between the start and end dates.
@@ -90,5 +91,21 @@ export const createHackathon = async (req, res) => {
     res.status(400).json({
       error: err.message,
     });
+  }
+};
+
+// --- GET HACKATHON RESULTS ---
+export const getHackathonResults = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const results = await SubmissionModel.find({ hackathon: id })
+      .sort({ hackathonPoints: -1 }) // Sort by points descending
+      .limit(5)
+      .populate("participant", "name avatar email") // Populate user details
+      .populate("team", "name members"); // Populate team details
+
+    res.status(200).json(results);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching results", error: error.message });
   }
 };

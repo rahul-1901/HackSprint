@@ -4,7 +4,8 @@ import {
     getExpiredHackathons,
     getUpcomingHackathons,
     getHackathonById,
-    createHackathon
+    createHackathon,
+    getHackathonResults
 } from "../controllers/hackathon.controllers.js";
 
 const router = express.Router();
@@ -16,6 +17,7 @@ router.get("/upcomingHackathons", getUpcomingHackathons);
 
 // --- GET A SINGLE HACKATHON ---
 router.get("/:id", getHackathonById);
+router.get("/:id/results", getHackathonResults);
 
 // --- POST A NEW HACKATHON ---
 // Note: This route is simplified. You might need to add multer middleware here for image uploads.
