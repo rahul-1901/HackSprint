@@ -3,6 +3,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
 import { useState } from "react";
+import { toast } from "react-toastify";
 import { googleAuth } from "../backendApis/api";
 
 export default function GoogleLogin() {
@@ -26,8 +27,11 @@ export default function GoogleLogin() {
         setIsLoggedIn(true)
         navigate("/");
       }
-    } catch (error) {
-      console.error("Error while req google", error);
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message || err.message || "Something went wrong";
+
+      toast.error(errorMessage, { className: "text-sm max-w-xs" });
     }
   };
 

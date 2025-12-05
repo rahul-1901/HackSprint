@@ -9,7 +9,7 @@ function ActiveHackathons() {
         async function fetchData() {
             // KEY CHANGE: Call the function with its correct name
             const result = await getActiveHackathons();
-            console.log("activehackatons list = ", result.data.allHackathons);
+            // console.log("activehackatons list = ", result.data.allHackathons);
             setLivehackathon(result.data.allHackathons);
         }
         fetchData();

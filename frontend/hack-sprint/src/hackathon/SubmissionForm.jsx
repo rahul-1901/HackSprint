@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { X, Clock, Calendar, Users, Code, FileVideo, FileText } from "lucide-react";
+import { createPortal } from "react-dom";
+import { X, Clock, Calendar, Users, Code, FileVideo, FileText, Plus } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
-import { getDashboard } from "../backendApis/api"; // your existing API helper
+import { getDashboard } from "../backendApis/api";
+import "./Hackathon.css";
 
 // Input component
 function Input({ className = "", ...props }) {
@@ -73,10 +75,10 @@ function FileUpload({ label, icon: Icon, accept, file, onFileChange, onRemove, p
   );
 }
 
-// SubmissionForm
+// SubmissionForm component
 const SubmissionForm = ({ isOpen, onClose }) => {
   const { id: hackathonId } = useParams();
-  const [repoUrl, setRepoUrl] = useState("");
+  const [repoUrls, setRepoUrls] = useState([""]); // State now handles an array of URLs
   const [loading, setLoading] = useState(false);
   const [hackathon, setHackathon] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
@@ -85,7 +87,10 @@ const SubmissionForm = ({ isOpen, onClose }) => {
   const [submissionStatus, setSubmissionStatus] = useState(null);
   const [userData, setUserData] = useState(null);
   const [isLeader, setIsLeader] = useState(false);
+  const [isTeamMember, setIsTeamMember] = useState(false);
   const [teamId, setTeamId] = useState(null);
+
+  const navigate = useNavigate();
 
   // Fetch hackathon details
   useEffect(() => {
@@ -96,35 +101,58 @@ const SubmissionForm = ({ isOpen, onClose }) => {
       .catch((err) => console.error("Error fetching hackathon:", err));
   }, [hackathonId, isOpen]);
 
-  // Fetch user dashboard data
+  // Fetch user and team info
   useEffect(() => {
     if (!isOpen) return;
-    getDashboard()
-      .then((res) => {
+
+    const fetchUserData = async () => {
+      try {
+        const res = await getDashboard();
         const fetchedUserData = res.data.userData;
         setUserData(fetchedUserData);
-        setTeamId(fetchedUserData.team || null);
-        setIsLeader(fetchedUserData.leaderOfHackathons?.includes(hackathonId));
-      })
-      .catch((err) => console.error("Error fetching user data:", err));
-  }, [isOpen, hackathonId]);
 
-  // Cleanup video URL
-  useEffect(() => {
-    return () => {
-      if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+        const leader = fetchedUserData.leaderOfHackathons?.some(
+          (id) => String(id) === String(hackathonId)
+        );
+        setIsLeader(leader || false);
+
+        if (fetchedUserData.team) {
+          setTeamId(fetchedUserData.team);
+          const teamRes = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/api/team/${fetchedUserData.team}`
+          );
+          const teamData = await teamRes.json();
+          const team = teamData.team;
+
+          if (team?.hackathon?._id && String(team.hackathon._id) === String(hackathonId)) {
+            const member = team.members?.some((m) => String(m._id) === String(fetchedUserData._id));
+            setIsTeamMember(member || false);
+          } else {
+            setIsTeamMember(false);
+          }
+        } else {
+          setIsTeamMember(false);
+        }
+      } catch (err) {
+        console.error("Error fetching user/team:", err);
+        setUserData(null);
+        setIsLeader(false);
+        setIsTeamMember(false);
+      }
     };
-  }, [videoPreviewUrl]);
 
+    fetchUserData();
+  }, [hackathonId, isOpen]);
 
+  // Fetch submission status
   useEffect(() => {
-    if (!hackathonId || !isOpen || !userData) return;
+    if (!hackathonId || !userData) return;
 
     const fetchSubmissionStatus = async () => {
       try {
         const params = new URLSearchParams({
           hackathonId,
-          teamId: userData.team,
+          teamId: userData.team || "",
           userId: userData._id,
         });
 
@@ -132,6 +160,7 @@ const SubmissionForm = ({ isOpen, onClose }) => {
           `${import.meta.env.VITE_API_BASE_URL}/api/submit/status?${params.toString()}`
         );
         const data = await res.json();
+        // console.log(data)
         setSubmissionStatus(data);
       } catch (err) {
         console.error("Error fetching submission status:", err);
@@ -139,8 +168,15 @@ const SubmissionForm = ({ isOpen, onClose }) => {
     };
 
     fetchSubmissionStatus();
-  }, [hackathonId, isOpen, userData]);
+  }, [hackathonId, userData]);
 
+  // Cleanup video preview URL
+  useEffect(
+    () => () => {
+      if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+    },
+    [videoPreviewUrl]
+  );
 
   const handleVideoFileChange = (e) => {
     const file = e.target.files[0];
@@ -163,16 +199,46 @@ const SubmissionForm = ({ isOpen, onClose }) => {
 
   const handleRemovePdf = () => setPdfFile(null);
 
+  // Handlers for managing multiple URL inputs
+  const handleRepoUrlChange = (index, value) => {
+    const newUrls = [...repoUrls];
+    newUrls[index] = value;
+    setRepoUrls(newUrls);
+  };
+
+  const handleAddRepoUrl = () => {
+    setRepoUrls([...repoUrls, ""]);
+  };
+
+  const handleRemoveRepoUrl = (index) => {
+    if (repoUrls.length > 1) {
+      const newUrls = repoUrls.filter((_, i) => i !== index);
+      setRepoUrls(newUrls);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isLeader) {
+
+    const canSubmit = isLeader || !isTeamMember;
+    if (!canSubmit) {
       toast.error("Only team leaders can submit!", { position: "top-right", theme: "dark" });
       return;
     }
+
+    const validUrls = repoUrls.filter((url) => url.trim() !== "");
+    if (validUrls.length === 0) {
+      toast.error("Please provide at least one valid URL.", { position: "top-right", theme: "dark" });
+      return;
+    }
+
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append("repoUrl", repoUrl);
+      // Append all valid URLs to the form data
+      validUrls.forEach((url) => {
+        formData.append("repoUrl", url);
+      });
       formData.append("hackathonId", hackathonId);
       formData.append("userId", userData._id);
       if (teamId) formData.append("teamId", teamId);
@@ -184,79 +250,194 @@ const SubmissionForm = ({ isOpen, onClose }) => {
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Failed to submit");
+      if (!res.ok) throw new Error("Submission failed");
 
-      toast.success("Submission successful!", { position: "top-right", theme: "dark" });
-      setRepoUrl("");
+      toast.success("Submission successful!", { position: "top-right" });
+      setRepoUrls([""]); // Reset URL fields
       setVideoFile(null);
       setPdfFile(null);
       onClose();
     } catch (err) {
       console.error(err);
-      toast.error("Submission failed. Try again.", { position: "top-right", theme: "dark" });
+      toast.error("Submission failed. Try again.", { position: "top-right" });
     } finally {
       setLoading(false);
     }
   };
 
-  const onCloseClick = () => onClose?.();
-
   if (!isOpen || !hackathon || !userData) return null;
 
-  const durationDays = Math.ceil((new Date(hackathon.endDate) - new Date()) / (1000 * 60 * 60 * 24));
+  const durationDays = Math.ceil(
+    (new Date(hackathon.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+  );
 
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 z-50 flex items-start justify-center p-4 pt-30">
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/90 z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+    >
       <ToastContainer />
-      <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-gray-900 rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-green-500/50 text-white max-h-[90vh] overflow-y-auto">
+      <motion.div
+        initial={{ scale: 0.95 }}
+        animate={{ scale: 1 }}
+        exit={{ scale: 0.95 }}
+        className="bg-gray-900 rounded-2xl w-full max-w-2xl max-h-[90vh] p-6 shadow-xl border border-green-500/50 text-white overflow-y-auto scrollbar-hide"
+      >
         {/* Header */}
         <div className="flex justify-between items-start mb-5">
           <div>
             <h2 className="text-2xl font-bold">{hackathon.title}</h2>
             <p className="text-gray-400">{hackathon.subTitle}</p>
           </div>
-          <button onClick={onCloseClick} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-6 h-6" /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white cursor-pointer">
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
-        {/* Hackathon Stats */}
+        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <StatCard icon={Code} label="Prize Pool" value={`₹${hackathon.prizeMoney || 0}`} />
+          <StatCard
+            icon={Code}
+            label="Prize Pool"
+            value={`₹${(
+              (hackathon.prizeMoney1 || 0) +
+              (hackathon.prizeMoney2 || 0) +
+              (hackathon.prizeMoney3 || 0)
+            ).toLocaleString("en-IN")}`}
+          />
           <StatCard icon={Clock} label="Duration" value={`${durationDays} Days`} />
           <StatCard icon={Users} label="Participants" value={hackathon.numParticipants || 0} />
           <StatCard icon={Calendar} label="Difficulty" value={hackathon.difficulty} />
         </div>
 
-        {/* Description */}
         <p className="text-gray-300 mb-6">{hackathon.description}</p>
 
         {submissionStatus?.submitted ? (
-          <div className="p-4 bg-gray-800 rounded-lg border border-green-500/50 space-y-2">
+          <div className="p-4 bg-gray-800 rounded-lg border border-green-500/50 space-y-4">
             <p className="text-green-400 font-semibold">Already Submitted!</p>
-            <p>Repo: <a href={submissionStatus.submission.repoUrl} className="text-blue-500 underline" target="_blank">{submissionStatus.submission.repoUrl}</a></p>
-            {submissionStatus.submission.submittedAt && (
-              <p>Submitted At: {new Date(submissionStatus.submission.submittedAt).toLocaleString()}</p>
-            )}
-            {submissionStatus.submission.docs.length > 0 && <p>Docs uploaded</p>}
-            {submissionStatus.submission.videos.length > 0 && <p>Video uploaded</p>}
+
+            {Array.isArray(submissionStatus.submission.repoUrl) &&
+              submissionStatus.submission.repoUrl.length > 0 && (
+                <div>
+                  <p className="font-medium text-gray-300">URLs:</p>
+                  <ul className="list-disc list-inside text-gray-400 space-y-1">
+                    {submissionStatus.submission.repoUrl.map((url, idx) => (
+                      <li key={idx}>
+                        <a
+                          href={url}
+                          className="text-blue-400 underline"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {url}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+            {/* Docs */}
+            {/* {submissionStatus.submission.docs?.length > 0 && (
+              <div>
+                <p className="font-medium text-gray-300">Submitted Documents:</p>
+                <ul className="list-disc list-inside text-gray-400 space-y-1">
+                  {submissionStatus.submission.docs.map((doc) => (
+                    <li key={doc._id}>
+                      <a
+                        href={doc.url}
+                        className="text-blue-400 underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {doc.original_filename || "Document"}
+                      </a>
+                      <span className="ml-2 text-xs text-gray-500">
+                        ({(doc.size / 1024).toFixed(1)} KB)
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )} */}
+
+
+            {/* {submissionStatus.submission.videos?.length > 0 && (
+              <div>
+                <p className="font-medium text-gray-300">Submitted Videos:</p>
+                <ul className="list-disc list-inside text-gray-400 space-y-1">
+                  {submissionStatus.submission.videos.map((vid) => (
+                    <li key={vid._id}>
+                      <a
+                        href={vid.url}
+                        className="text-blue-400 underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {vid.original_filename || "Video"}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )} */}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              className="border-green-500/30"
-              placeholder="Enter your GitHub repository URL"
-              value={repoUrl}
-              onChange={(e) => setRepoUrl(e.target.value)}
-              required
-            />
+            {/* Section for multiple URL inputs */}
+            <div className="space-y-3">
+              <label className="block text-gray-300">URL(s)</label>
+              {repoUrls.map((url, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <Input
+                    className="border-green-500/30 flex-grow"
+                    placeholder="e.g., https://github.com/your-repo"
+                    value={url}
+                    onChange={(e) => handleRepoUrlChange(index, e.target.value)}
+                    required
+                  />
+                  {repoUrls.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => handleRemoveRepoUrl(index)}
+                      className="p-2"
+                      title="Remove URL"
+                    >
+                      <X className="w-5 h-5 text-red-500" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleAddRepoUrl}
+                className="flex items-center gap-2 w-full justify-center sm:w-auto"
+              >
+                <Plus className="w-4 h-4" />
+                Add another URL
+              </Button>
+            </div>
 
-            <FileUpload
+            {/* <FileUpload
               label="Upload Demo Video"
               icon={FileVideo}
               accept="video/*"
               file={videoFile}
               onFileChange={handleVideoFileChange}
               onRemove={handleRemoveVideo}
-              preview={videoFile && <video src={videoPreviewUrl} controls className="rounded-lg w-full max-h-24 object-contain" />}
+              preview={
+                videoFile && (
+                  <video
+                    src={videoPreviewUrl}
+                    controls
+                    className="rounded-lg w-full max-h-24 object-contain"
+                  />
+                )
+              }
             />
 
             <FileUpload
@@ -266,12 +447,12 @@ const SubmissionForm = ({ isOpen, onClose }) => {
               file={pdfFile}
               onFileChange={handlePdfFileChange}
               onRemove={handleRemovePdf}
-              preview={pdfFile && <FileText className="w-12 h-12 text-blue-500" />}
-            />
+              preview={<FileText className="w-12 h-12 text-blue-500" />}
+            /> */}
 
             <Button
               type="submit"
-              disabled={loading || !isLeader}
+              disabled={loading || (!isLeader && isTeamMember)}
               className="cursor-pointer group w-full bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
             >
               {loading ? "Submitting..." : "Submit Project"}
@@ -279,7 +460,8 @@ const SubmissionForm = ({ isOpen, onClose }) => {
           </form>
         )}
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 };
 

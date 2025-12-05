@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom"
 import Loader from "../components/Loader"
 import { Users, Calendar, Timer, Code, Trophy, Zap, Search, Filter, X } from "lucide-react"
 // KEY CHANGE: Import the functions from your api.js file
-import { getActiveHackathons, getExpiredHackathons, getUpcomingHackathons } from "../backendApis/api"
+import { useHackathons } from "../hooks/useHackathons"
 
 const GridBackground = () => (
   <div className="absolute inset-0 opacity-10  pointer-events-none">
@@ -84,11 +84,11 @@ const HackathonCard = ({ hackathon }) => {
   useEffect(() => {
     if (!hackathon.startDate || !hackathon.endDate) return;
     const interval = setInterval(() => {
-      setCountdown(getCountdown(hackathon.status === "upcoming" ? hackathon.startDate : hackathon.endDate))
+      setCountdown(getCountdown(hackathon.status === "upcoming" ? hackathon.startDate : hackathon.submissionEndDate))
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [hackathon.endDate, hackathon.startDate, hackathon.status])
+  }, [hackathon.endDate, hackathon.submissionEndDate, hackathon.startDate, hackathon.status])
 
   const isExpired = hackathon.status === "expired"
   const isUpcoming = hackathon.status === "upcoming"
@@ -107,7 +107,13 @@ const HackathonCard = ({ hackathon }) => {
         }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => navigate(`/hackathon/${hackathon._id}`)}
+      onClick={() => {
+        if (hackathon.status !== "upcoming") {
+          navigate(`/hackathon/${hackathon._id}`)
+        } else {
+
+        }
+      }}
     >
       <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-green-400/20 to-transparent transform -skew-x-12 transition-transform duration-1000 ${isHovered ? "translate-x-full" : "-translate-x-full"}`} />
       <div className="absolute inset-0 bg-gradient-to-r from-green-400/0 via-green-400/5 to-green-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -143,7 +149,7 @@ const HackathonCard = ({ hackathon }) => {
           <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
             <div className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-${statusColor}-500/10 backdrop-blur-sm`}>
               <Timer size={12} className={`text-${statusColor}-400`} />
-              <span className={`font-mono text-xs sm:text-sm text-${statusColor}-400`}>{isExpired ? "0d 0h 0m" : countdown || getCountdown(isUpcoming ? hackathon.startDate : hackathon.endDate)}</span>
+              <span className={`font-mono text-xs sm:text-sm text-${statusColor}-400`}>{isExpired ? "0d 0h 0m" : countdown || getCountdown(isUpcoming ? hackathon.startDate : hackathon.submissionEndDate)}</span>
             </div>
           </div>
           <div className="pr-20 sm:pr-24 md:pr-28 lg:pr-32">
@@ -160,7 +166,16 @@ const HackathonCard = ({ hackathon }) => {
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 lg:gap-8">
               <div className="flex items-center text-xs sm:text-sm"><Users size={14} className="text-gray-500" /><span className="ml-1 text-gray-400">{hackathon.participants} participants</span></div>
-              <div className="flex items-center text-xs sm:text-sm"><Trophy size={14} className="text-gray-500" /><span className="ml-1 text-gray-400">₹{hackathon.prize}</span></div>
+              <div className="flex items-center text-xs sm:text-sm">
+                <Trophy size={14} className="text-gray-500" />
+                <span className="ml-1 text-gray-400">
+                  ₹{(
+                    (hackathon.prizeMoney1 || 0) +
+                    (hackathon.prizeMoney2 || 0) +
+                    (hackathon.prizeMoney3 || 0)
+                  ).toLocaleString("en-IN")}
+                </span>
+              </div>
               <div className="flex items-center text-xs sm:text-sm"><Calendar size={14} className="text-gray-500" /><span className="ml-1 text-gray-400">{hackathon.dates}</span></div>
             </div>
           </div>
@@ -168,7 +183,7 @@ const HackathonCard = ({ hackathon }) => {
       </div>
       {hackathon.status === "active" && (
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700/50">
-          <div className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300" style={{ width: `${getProgress(hackathon.startDate, hackathon.endDate)}%` }} />
+          <div className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300" style={{ width: `${getProgress(hackathon.startDate, hackathon.submissionEndDate)}%` }} />
         </div>
       )}
     </div>
@@ -176,62 +191,30 @@ const HackathonCard = ({ hackathon }) => {
 }
 
 const Hackathons = () => {
+  const { data: hackathonsData, isLoading } = useHackathons();
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("active")
-  const [activeHackathons, setActiveHackathons] = useState([])
-  const [expiredHackathons, setExpiredHackathons] = useState([])
-  const [upcomingHackathons, setUpcomingHackathons] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("")
   const [selectedDifficulty, setSelectedDifficulty] = useState("")
   const [showFilters, setShowFilters] = useState(false)
 
+  const activeHackathons = hackathonsData?.active || [];
+  const expiredHackathons = hackathonsData?.expired || [];
+  const upcomingHackathons = hackathonsData?.upcoming || [];
+
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000)
-    return () => clearTimeout(timer)
-  }, [])
+    if (!isLoading) {
+      const timer = setTimeout(() => setLoading(false), 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading])
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => { entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add("fade-in") } }) }, { threshold: 0.1 },)
     const sections = document.querySelectorAll(".fade-section")
     sections.forEach((section) => observer.observe(section))
     return () => { sections.forEach((section) => observer.unobserve(section)) }
-  }, [])
-
-  useEffect(() => {
-    const fetchHackathons = async () => {
-      try {
-        // KEY CHANGE: Using functions from api.js instead of direct axios calls
-        const [activeRes, expiredRes, upcomingRes] = await Promise.all([
-          getActiveHackathons(),
-          getExpiredHackathons(),
-          getUpcomingHackathons(),
-        ]);
-
-        const mapData = (data, status) =>
-          (data || []).map((h) => ({
-            ...h,
-            status: status,
-            participants: h.numParticipants || 0,
-            prize: h.prizeMoney,
-            techStack: h.techStackUsed || [],
-            category: h.category || "General",
-            image: h.image || h.imageUrl || null,
-            dates: `${new Date(h.startDate).toLocaleDateString()} - ${new Date(h.endDate).toLocaleDateString()}`,
-          }));
-
-        // KEY CHANGE: Accessing data from the correct properties
-        setActiveHackathons(mapData(activeRes.data.allHackathons, "active"));
-        setExpiredHackathons(mapData(expiredRes.data.expiredHackathons, "expired"));
-        setUpcomingHackathons(mapData(upcomingRes.data.upcomingHackathons, 'upcoming'));
-      } catch (error) {
-        console.error("Error fetching hackathons:", error)
-        if (error.response?.status === 404 && error.config.url.includes("upcomingHackathons")) {
-          setUpcomingHackathons([])
-        }
-      }
-    }
-    fetchHackathons()
   }, [])
 
   const getCurrentHackathons = () => {

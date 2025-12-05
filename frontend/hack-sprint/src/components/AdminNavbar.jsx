@@ -51,7 +51,7 @@ const AdminNavbar = () => {
         <nav className="hidden md:flex items-center space-x-4">
           {isAdminLoggedIn ? (
             <>
-              <Button onClick={() => navigate("/Hacksprintkaadminprofile")}>
+              <Button onClick={() => navigate("/admin")}>
                 <span>Dashboard</span>
               </Button>
               <Button
@@ -79,14 +79,14 @@ const AdminNavbar = () => {
       </div>
 
       {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 border-b-1 right-0 bg-gray-900 border-t border-gray-800 shadow-lg">
+        <div className="md:hidden absolute top-full z-50 left-0 border-b-1 right-0 bg-gray-900 border-t border-gray-800 shadow-lg">
           <div className="p-4 space-y-4 flex flex-col">
             {isAdminLoggedIn ? (
               <>
                 <Button
                   className="w-full justify-between"
                   onClick={() => {
-                    navigate("/Hacksprintkaadminprofile");
+                    navigate("/admin");
                     setIsMenuOpen(false);
                   }}
                 >

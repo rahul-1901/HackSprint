@@ -6,19 +6,19 @@ const HideAdminRoutes = ({ children }) => {
   const [showNavbar, setShowNavbar] = useState(false);
 
   const adminVisibleRoutes = [
-    "/Hacksprintkaadminprofile",
-    "/Hacksprintkaadminprofile/endedhackathons",
-    "/Hacksprintkaadminprofile/recentlystarted",
-    "/Hacksprintkaadminprofile/livehackathons",
+    "/admin",
+    "/admin/endedhackathons",
+    "/admin/recentlystarted",
+    "/admin/livehackathons",
     "/createHackathon"
   ];
 
   useEffect(() => {
     const isAdminDynamic = matchPath(
-      { path: "/Hacksprintkaadminprofile/:slug", exact: true },
+      { path: "/admin/:slug", exact: true },
       location.pathname
     );
-    const isAdminSubmissionsDynamic = matchPath({ path: "/Hacksprintkaadminprofile/:slug/usersubmissions", exact: true }, location.pathname);
+    const isAdminSubmissionsDynamic = matchPath({ path: "/admin/:slug/usersubmissions", exact: true }, location.pathname);
 
     if (adminVisibleRoutes.includes(location.pathname) || isAdminDynamic || isAdminSubmissionsDynamic) {
       setShowNavbar(true);

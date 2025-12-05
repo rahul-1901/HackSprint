@@ -8,18 +8,18 @@ import { ChevronRight, User, Users, Plus, Link as LinkIcon, Copy, Check } from "
 
 // Consistent grid background from other pages
 const GridBackground = () => (
-    <div className="absolute inset-0 opacity-10 pointer-events-none">
-        <div
-            className="absolute inset-0"
-            style={{
-                backgroundImage: `
+  <div className="absolute inset-0 opacity-10 pointer-events-none">
+    <div
+      className="absolute inset-0"
+      style={{
+        backgroundImage: `
         linear-gradient(rgba(34, 197, 94, 0.2) 1px, transparent 1px),
         linear-gradient(90deg, rgba(34, 197, 94, 0.2) 1px, transparent 1px)
       `,
-                backgroundSize: "30px 30px",
-            }}
-        />
-    </div>
+        backgroundSize: "30px 30px",
+      }}
+    />
+  </div>
 );
 
 const FormRow = ({ label, required, children }) => (
@@ -39,71 +39,87 @@ const baseInputStyles = "w-full bg-gray-800/50 border border-green-500/20 rounde
 const inputStyles = `${baseInputStyles} read-only:opacity-60 read-only:cursor-not-allowed`;
 
 // Custom styles for select dropdowns to provide a themed appearance and correct cursor behavior
-const selectStyles = `${baseInputStyles} cursor-pointer appearance-none bg-no-repeat bg-right pr-8 bg-[url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="%2322c55e" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 8l4 4 4-4"/></svg>')] [&:invalid]:text-gray-500`;
+const selectStyles = `
+  ${baseInputStyles}
+  cursor-pointer
+  appearance-none
+  pr-10
+  bg-no-repeat
+  text-white
+  focus:outline-none
+  focus:ring-2
+  focus:ring-green-500
+  focus:border-green-500
+  bg-no-repeat
+  bg-right
+  bg-[length:1.25rem_1.25rem]
+  bg-[url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'><path stroke='%2322c55e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/></svg>")]
+  [&:invalid]:text-white
+`;
 
 // Modal to display team code and link after creation
 const TeamInfoModal = ({ details, onClose }) => {
-    const [copiedCode, setCopiedCode] = useState(false);
-    const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
-    const handleCopy = (text, type) => {
-        navigator.clipboard.writeText(text);
-        if (type === 'code') {
-            setCopiedCode(true);
-            setTimeout(() => setCopiedCode(false), 2000);
-        } else {
-            setCopiedLink(true);
-            setTimeout(() => setCopiedLink(false), 2000);
-        }
-        toast.success("Copied to clipboard!");
-    };
+  const handleCopy = (text, type) => {
+    navigator.clipboard.writeText(text);
+    if (type === 'code') {
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2000);
+    } else {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+    toast.success("Copied to clipboard!");
+  };
 
-    return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="relative z-10 w-full max-w-md mx-auto bg-gray-900 border border-green-500/30 rounded-xl p-8 shadow-2xl shadow-green-500/20 text-center">
-                <h2 className="text-2xl font-bold text-white mb-3">Team Created Successfully!</h2>
-                <p className="text-gray-400 mb-6">Share the following code or link with your teammates to have them join.</p>
-                
-                <div className="space-y-4 mb-8">
-                    <div>
-                        <label className="text-sm font-medium text-gray-300 block mb-2">Invite Code</label>
-                        <div className="flex items-center gap-2">
-                            <p className="flex-1 text-lg font-mono tracking-widest bg-gray-800/60 border border-green-500/20 rounded-md p-2.5 text-green-300">{details.code}</p>
-                            <Button onClick={() => handleCopy(details.code, 'code')} className="p-2.5 bg-gray-700 hover:bg-gray-600 transition">
-                                {copiedCode ? <Check size={20} className="text-green-400" /> : <Copy size={20} />}
-                            </Button>
-                        </div>
-                    </div>
-                     <div>
-                        <label className="text-sm font-medium text-gray-300 block mb-2">Invite Link</label>
-                        <div className="flex items-center gap-2">
-                            <p className="flex-1 text-sm truncate bg-gray-800/60 border border-green-500/20 rounded-md p-2.5 text-green-300">{details.link}</p>
-                            <Button onClick={() => handleCopy(details.link, 'link')} className="p-2.5 bg-gray-700 hover:bg-gray-600 transition">
-                                {copiedLink ? <Check size={20} className="text-green-400" /> : <Copy size={20} />}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="relative z-10 w-full max-w-md mx-auto bg-gray-900 border border-green-500/30 rounded-xl p-8 shadow-2xl shadow-green-500/20 text-center">
+        <h2 className="text-2xl font-bold text-white mb-3">Team Created Successfully!</h2>
+        <p className="text-gray-400 mb-6">Share the following code or link with your teammates to have them join.</p>
 
-                <Button onClick={onClose} className="group w-full bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 transform hover:scale-105 px-8 py-3 text-base">
-                    <span className="flex items-center justify-center gap-2">
-                        Proceed to Team Page
-                        <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                    </span>
-                </Button>
+        <div className="space-y-4 mb-8">
+          <div>
+            <label className="text-sm font-medium text-gray-300 block mb-2">Invite Code</label>
+            <div className="flex items-center gap-2">
+              <p className="flex-1 text-lg font-mono tracking-widest bg-gray-800/60 border border-green-500/20 rounded-md p-2.5 text-green-300">{details.code}</p>
+              <Button onClick={() => handleCopy(details.code, 'code')} className="p-2.5 bg-gray-700 hover:bg-gray-600 transition">
+                {copiedCode ? <Check size={20} className="text-green-400" /> : <Copy size={20} />}
+              </Button>
             </div>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-300 block mb-2">Invite Link</label>
+            <div className="flex items-center gap-2">
+              <p className="flex-1 text-sm truncate bg-gray-800/60 border border-green-500/20 rounded-md p-2.5 text-green-300">{details.link}</p>
+              <Button onClick={() => handleCopy(details.link, 'link')} className="p-2.5 bg-gray-700 hover:bg-gray-600 transition">
+                {copiedLink ? <Check size={20} className="text-green-400" /> : <Copy size={20} />}
+              </Button>
+            </div>
+          </div>
         </div>
-    );
+
+        <Button onClick={onClose} className="group w-full bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 transform hover:scale-105 px-8 py-3 text-base">
+          <span className="flex items-center justify-center gap-2">
+            Proceed to Team Page
+            <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+          </span>
+        </Button>
+      </div>
+    </div>
+  );
 };
 
-export const RegistrationForm = ({ onSubmit = () => {} }) => {
+export const RegistrationForm = ({ onSubmit = () => { } }) => {
   const { id: hackathonId } = useParams();
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [formType, setFormType] = useState("individual");
+  const [formType, setFormType] = useState("team");
   const [teamOption, setTeamOption] = useState("create"); // 'create' or 'join'
-  
+
   // State for the team info modal
   const [showTeamInfo, setShowTeamInfo] = useState(false);
   const [teamDetails, setTeamDetails] = useState({ code: '', link: '', id: '' });
@@ -132,8 +148,8 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
   });
 
   const [joinTeamForm, setJoinTeamForm] = useState({
-      code: "",
-      link: ""
+    code: "",
+    link: ""
   });
 
   useEffect(() => {
@@ -190,12 +206,12 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
         };
         url = `${import.meta.env.VITE_API_BASE_URL}/api/register/${hackathonId}`;
         const response = await axios.post(url, payload);
-        
+
         // Assuming success on non-error response, as backend might not send `success` key
         toast.success(response.data.message || "Registration successful!");
         onSubmit(individualForm);
         navigate(`/hackathon/${hackathonId}`);
-        
+
       } else if (type === "team-create") {
         payload = {
           name: teamForm.teamName,
@@ -211,33 +227,33 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
           gender: teamForm.gender,
         };
         url = `${import.meta.env.VITE_API_BASE_URL}/api/team/create`;
-        
+
         const response = await axios.post(url, payload);
-        
+
         // On success, show modal with team info instead of navigating directly
         if (response.data && response.data.team) {
-            toast.success(response.data.message || "Team created successfully!");
-            onSubmit(teamForm);
-            
-            const teamData = {
-                code: response.data.secretCode,
-                link: response.data.team.secretLink,
-                id: response.data.team._id
-            };
-            
-            // Store secret code in localStorage for persistence
-            // Note: In Claude.ai artifacts, localStorage is not supported
-            // For your own environment, uncomment the lines below:
-            // localStorage.setItem('teamSecretCode', response.data.secretCode);
-            // localStorage.setItem('teamData', JSON.stringify(teamData));
-            // localStorage.setItem('hackathonId', hackathonId);
-            
-            setTeamDetails(teamData);
-            setShowTeamInfo(true); // Show the modal
+          toast.success(response.data.message || "Team created successfully!");
+          onSubmit(teamForm);
+
+          const teamData = {
+            code: response.data.secretCode,
+            link: response.data.team.secretLink,
+            id: response.data.team._id
+          };
+
+          // Store secret code in localStorage for persistence
+          // Note: In Claude.ai artifacts, localStorage is not supported
+          // For your own environment, uncomment the lines below:
+          // localStorage.setItem('teamSecretCode', response.data.secretCode);
+          // localStorage.setItem('teamData', JSON.stringify(teamData));
+          // localStorage.setItem('hackathonId', hackathonId);
+
+          setTeamDetails(teamData);
+          setShowTeamInfo(true); // Show the modal
         } else {
-             toast.error(response.data.message || "Team creation failed");
+          toast.error(response.data.message || "Team creation failed");
         }
-        
+
       } else if (type === "team-join") {
         let code = joinTeamForm.code;
         if (!code && joinTeamForm.link) {
@@ -246,16 +262,16 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
             code = linkMatch[1];
           }
         }
-        
+
         payload = {
           userId: userData?._id,
           code: code
         };
         url = `${import.meta.env.VITE_API_BASE_URL}/api/team/join`;
         payload.hackathon = hackathonId;
-        
+
         const response = await axios.post(url, payload);
-        
+
         // Store joined team info in localStorage
         // Note: In Claude.ai artifacts, localStorage is not supported
         // For your own environment, uncomment the lines below:
@@ -264,13 +280,13 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
         //   localStorage.setItem('joinedTeamData', JSON.stringify(response.data.team));
         //   localStorage.setItem('hackathonId', hackathonId);
         // }
-        
+
         // Assuming success on non-error response
         toast.success(response.data.message || "Join request sent successfully!");
         onSubmit(joinTeamForm);
         navigate(`/hackathon/${hackathonId}`);
       }
-      
+
     } catch (err) {
       console.error(`${type} registration error:`, err);
       const errorMessage = err.response?.data?.message || err.message || "An error occurred";
@@ -284,47 +300,47 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
     <div className="min-h-screen bg-gray-900 p-4 md:p-8 flex items-center justify-center relative">
       <GridBackground />
       {showTeamInfo && (
-          <TeamInfoModal
-              details={teamDetails}
-              onClose={() => {
-                  setShowTeamInfo(false);
+        <TeamInfoModal
+          details={teamDetails}
+          onClose={() => {
+            setShowTeamInfo(false);
 
-                  // *** FIX APPLIED HERE ***
-                  // Navigate to the team page and pass the details in the state object.
-                  // This allows the TeamDetails component to read it from location.state
-                  // and save it to localStorage.
-                  navigate(`/hackathon/${hackathonId}/team/${teamDetails.code}`, {
-                    state: {
-                      secretCode: teamDetails.code
-                    }
-                  });
+            // *** FIX APPLIED HERE ***
+            // Navigate to the team page and pass the details in the state object.
+            // This allows the TeamDetails component to read it from location.state
+            // and save it to localStorage.
+            navigate(`/hackathon/${hackathonId}/team/${teamDetails.code}`, {
+              state: {
+                secretCode: teamDetails.code
+              }
+            });
 
-              }}
-          />
+          }}
+        />
       )}
       <div className="relative z-10 w-full max-w-4xl mx-auto bg-gray-900/80 backdrop-blur-md border border-green-500/20 rounded-xl p-6 md:p-10 shadow-2xl shadow-green-500/10">
-        
+
         <div className="text-center mb-8 border-b border-green-500/20 pb-6">
           <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Hackathon Registration</h1>
           <p className="text-md text-gray-400 mt-2">Forge the Future: Ends on Sep 07, 2025</p>
         </div>
 
         <div className="flex justify-center gap-4 mb-8">
-          <Button
+          {/* <Button
             className={`px-6 py-2.5 font-bold rounded-lg transition-all duration-300 flex items-center gap-2 ${formType === "individual" ? "bg-green-500 text-gray-900 shadow-lg shadow-green-500/20" : "bg-transparent text-green-300 border border-green-500/50 hover:bg-green-500/10"}`}
             onClick={() => setFormType("individual")}
           >
             <User size={16} /> Individual
-          </Button>
+          </Button> */}
           <Button
-            className={`px-6 py-2.5 font-bold rounded-lg transition-all duration-300 flex items-center gap-2 ${formType === "team" ? "bg-green-500 text-gray-900 shadow-lg shadow-green-500/20" : "bg-transparent text-green-300 border border-green-500/50 hover:bg-green-500/10"}`}
+            className={`px-6 py-2.5 font-bold rounded-lg transition-all cursor-pointer duration-300 flex items-center gap-2 ${formType === "team" ? "bg-green-500 text-gray-900 shadow-lg shadow-green-500/20" : "bg-transparent text-green-300 border border-green-500/50 hover:bg-green-500/10"}`}
             onClick={() => setFormType("team")}
           >
             <Users size={16} /> Team
           </Button>
         </div>
 
-        {formType === "individual" && (
+        {/* {formType === "individual" && (
           <form onSubmit={(e) => handleSubmit(e, "individual")}>
             <div className="grid md:grid-cols-2 gap-x-6">
               <FormRow label="Full Name" required>
@@ -342,7 +358,7 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
               <FormRow label="Contact Number" required>
                 <input type="tel" name="contactNumber" value={individualForm.contactNumber} onChange={(e) => handleChange(e, setIndividualForm)} className={inputStyles} required />
               </FormRow>
-               <FormRow label="Gender" required>
+              <FormRow label="Gender" required>
                 <select name="gender" value={individualForm.gender} onChange={(e) => handleChange(e, setIndividualForm)} className={selectStyles} required>
                   <option value="" disabled>Select Gender</option>
                   <option value="male">Male</option>
@@ -359,12 +375,12 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
                   <option value="5+">5+ Years</option>
                 </select>
               </FormRow>
-               <FormRow label="Work Email Address (Optional)">
+              <FormRow label="Work Email Address (Optional)">
                 <input type="email" name="workEmail" value={individualForm.workEmail} onChange={(e) => handleChange(e, setIndividualForm)} className={inputStyles} />
               </FormRow>
             </div>
             <div className="mt-8 text-center">
-              <Button type="submit" className="group w-full md:w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-8 py-3 text-base" disabled={loading}>
+              <Button type="submit" className="group w-full cursor-pointer md:w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-8 py-3 text-base" disabled={loading}>
                 <span className="flex items-center justify-center gap-2">
                   {loading ? "Submitting..." : "Submit Registration"}
                   {!loading && <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />}
@@ -372,109 +388,109 @@ export const RegistrationForm = ({ onSubmit = () => {} }) => {
               </Button>
             </div>
           </form>
-        )}
+        )} */}
 
         {formType === "team" && (
           <div>
             <div className="flex justify-center gap-2 mb-8 p-1 bg-gray-800/50 border border-green-500/20 rounded-lg">
-                <Button
-                    className={`flex-1 px-4 py-2 text-sm font-bold rounded-md transition-all duration-300 flex items-center justify-center gap-2 ${teamOption === "create" ? "bg-green-500 text-gray-900 shadow-md shadow-green-500/10" : "bg-transparent text-gray-300 hover:bg-green-500/10"}`}
-                    onClick={() => setTeamOption("create")}
-                >
-                    <Plus size={16} /> Create Team
-                </Button>
-                <Button
-                    className={`flex-1 px-4 py-2 text-sm font-bold rounded-md transition-all duration-300 flex items-center justify-center gap-2 ${teamOption === "join" ? "bg-green-500 text-gray-900 shadow-md shadow-green-500/10" : "bg-transparent text-gray-300 hover:bg-green-500/10"}`}
-                    onClick={() => setTeamOption("join")}
-                >
-                    <LinkIcon size={16} /> Join with Code/Link
-                </Button>
+              <Button
+                className={`flex-1 px-4 py-2 text-sm font-bold rounded-md cursor-pointer transition-all duration-300 flex items-center justify-center gap-2 ${teamOption === "create" ? "bg-green-500 text-gray-900 shadow-md shadow-green-500/10" : "bg-transparent text-gray-300 hover:bg-green-500/10"}`}
+                onClick={() => setTeamOption("create")}
+              >
+                <Plus size={16} /> Create Team
+              </Button>
+              <Button
+                className={`flex-1 px-4 py-2 text-sm font-bold rounded-md cursor-pointer transition-all duration-300 flex items-center justify-center gap-2 ${teamOption === "join" ? "bg-green-500 text-gray-900 shadow-md shadow-green-500/10" : "bg-transparent text-gray-300 hover:bg-green-500/10"}`}
+                onClick={() => setTeamOption("join")}
+              >
+                <LinkIcon size={16} /> Join with Code/Link
+              </Button>
             </div>
 
             {teamOption === 'create' && (
-                <form onSubmit={(e) => handleSubmit(e, "team-create")}>
-                    <div className="grid md:grid-cols-2 gap-x-6">
-                        <FormRow label="Team Name" required>
-                            <input type="text" name="teamName" value={teamForm.teamName} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required />
-                        </FormRow>
-                        <FormRow label="Team Lead Name" required>
-                            <input type="text" name="teamLead" value={teamForm.teamLead} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required readOnly={!!userData?.name} />
-                        </FormRow>
-                        <FormRow label="Team Lead Email" required>
-                            <input type="email" name="teamLeadEmail" value={teamForm.teamLeadEmail} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required readOnly={!!userData?.email} />
-                        </FormRow>
-                        <FormRow label="Contact Number" required>
-                            <input type="tel" name="contactNumber" value={teamForm.contactNumber} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required />
-                        </FormRow>
-                         <FormRow label="Gender" required>
-                            <select name="gender" value={teamForm.gender} onChange={(e) => handleChange(e, setTeamForm)} className={selectStyles} required>
-                                <option value="" disabled>Select Gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </FormRow>
-                         <FormRow label="City" required>
-                            <input type="text" name="city" value={teamForm.city} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required />
-                        </FormRow>
-                        <FormRow label="State" required>
-                            <input type="text" name="state" value={teamForm.state} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required />
-                        </FormRow>
-                        <FormRow label="Years of Work Experience" required>
-                            <select name="experience" value={teamForm.experience} onChange={(e) => handleChange(e, setTeamForm)} className={selectStyles} required>
-                                <option value="" disabled>Select Experience</option>
-                                <option value="0-1">0-1 Years</option>
-                                <option value="1-3">1-3 Years</option>
-                                <option value="3-5">3-5 Years</option>
-                                <option value="5+">5+ Years</option>
-                            </select>
-                        </FormRow>
-                        <FormRow label="Work Email Address (Optional)">
-                            <input type="email" name="workEmail" value={teamForm.workEmail} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} />
-                        </FormRow>
-                    </div>
-                    <div className="mt-8 text-center">
-                        <Button type="submit" className="group w-full md:w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-8 py-3 text-base" disabled={loading}>
-                            <span className="flex items-center justify-center gap-2">
-                            {loading ? "Creating..." : "Create Team & Register"}
-                            {!loading && <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />}
-                            </span>
-                        </Button>
-                    </div>
-                </form>
+              <form onSubmit={(e) => handleSubmit(e, "team-create")}>
+                <div className="grid md:grid-cols-2 gap-x-6">
+                  <FormRow label="Team Name" required>
+                    <input type="text" name="teamName" value={teamForm.teamName} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required />
+                  </FormRow>
+                  <FormRow label="Team Lead Name" required>
+                    <input type="text" name="teamLead" value={teamForm.teamLead} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required readOnly={!!userData?.name} />
+                  </FormRow>
+                  <FormRow label="Team Lead Email" required>
+                    <input type="email" name="teamLeadEmail" value={teamForm.teamLeadEmail} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required readOnly={!!userData?.email} />
+                  </FormRow>
+                  <FormRow label="Contact Number" required>
+                    <input type="tel" name="contactNumber" value={teamForm.contactNumber} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required />
+                  </FormRow>
+                  <FormRow label="Gender" required>
+                    <select name="gender" value={teamForm.gender} onChange={(e) => handleChange(e, setTeamForm)} className={selectStyles} required>
+                      <option value="" disabled>Select Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </FormRow>
+                  <FormRow label="City" required>
+                    <input type="text" name="city" value={teamForm.city} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required />
+                  </FormRow>
+                  <FormRow label="State" required>
+                    <input type="text" name="state" value={teamForm.state} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} required />
+                  </FormRow>
+                  <FormRow label="Years of Work Experience" required>
+                    <select name="experience" value={teamForm.experience} onChange={(e) => handleChange(e, setTeamForm)} className={selectStyles} required>
+                      <option value="" disabled>Select Experience</option>
+                      <option value="0-1">0-1 Years</option>
+                      <option value="1-3">1-3 Years</option>
+                      <option value="3-5">3-5 Years</option>
+                      <option value="5+">5+ Years</option>
+                    </select>
+                  </FormRow>
+                  <FormRow label="Work Email Address (Optional)">
+                    <input type="email" name="workEmail" value={teamForm.workEmail} onChange={(e) => handleChange(e, setTeamForm)} className={inputStyles} />
+                  </FormRow>
+                </div>
+                <div className="mt-8 text-center">
+                  <Button type="submit" className="group w-full md:w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-8 py-3 text-base" disabled={loading}>
+                    <span className="flex items-center justify-center gap-2">
+                      {loading ? "Creating..." : "Create Team & Register"}
+                      {!loading && <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />}
+                    </span>
+                  </Button>
+                </div>
+              </form>
             )}
 
             {teamOption === 'join' && (
-                <form onSubmit={(e) => handleSubmit(e, "team-join")}>
-                    <div className="max-w-md mx-auto">
-                        <FormRow label="Team Invite Code">
-                            <input 
-                                type="text" 
-                                name="code" 
-                                placeholder="Enter team code (e.g., ABC123XY)" 
-                                value={joinTeamForm.code} 
-                                onChange={(e) => handleChange(e, setJoinTeamForm)} 
-                                className={inputStyles} 
-                            />
-                        </FormRow>
-                        <p className="text-center text-gray-400 my-4">OR</p>
-                        <FormRow label="Team Invite Link">
-                            <input type="url" name="link" placeholder="Paste team invite link" value={joinTeamForm.link} onChange={(e) => handleChange(e, setJoinTeamForm)} className={inputStyles} />
-                        </FormRow>
-                    </div>
-                     <div className="mt-8 text-center">
-                        <Button 
-                            type="submit" 
-                            className="group w-full md:w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-8 py-3 text-base" 
-                            disabled={loading || (!joinTeamForm.code && !joinTeamForm.link)}
-                        >
-                            <span className="flex items-center justify-center gap-2">
-                            {loading ? "Joining..." : "Join Team & Register"}
-                            {!loading && <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />}
-                            </span>
-                        </Button>
-                    </div>
-                </form>
+              <form onSubmit={(e) => handleSubmit(e, "team-join")}>
+                <div className="max-w-md mx-auto">
+                  <FormRow label="Team Invite Code">
+                    <input
+                      type="text"
+                      name="code"
+                      placeholder="Enter team code (e.g., ABC123XY)"
+                      value={joinTeamForm.code}
+                      onChange={(e) => handleChange(e, setJoinTeamForm)}
+                      className={inputStyles}
+                    />
+                  </FormRow>
+                  <p className="text-center text-gray-400 my-4">OR</p>
+                  <FormRow label="Team Invite Link">
+                    <input type="url" name="link" placeholder="Paste team invite link" value={joinTeamForm.link} onChange={(e) => handleChange(e, setJoinTeamForm)} className={inputStyles} />
+                  </FormRow>
+                </div>
+                <div className="mt-8 text-center">
+                  <Button
+                    type="submit"
+                    className="group w-full md:w-auto bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-8 py-3 text-base"
+                    disabled={loading || (!joinTeamForm.code && !joinTeamForm.link)}
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      {loading ? "Joining..." : "Join Team & Register"}
+                      {!loading && <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />}
+                    </span>
+                  </Button>
+                </div>
+              </form>
             )}
           </div>
         )}

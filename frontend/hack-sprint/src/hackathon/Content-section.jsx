@@ -35,6 +35,28 @@ export const ContentSection = ({ activeSection, hackathon }) => {
     </div>
   );
 
+  const SimpleContentSectionRef = ({ title, content }) => (
+    <div>
+      <SectionHeader>{title}</SectionHeader>
+      <SectionCard>
+        <div className="text-gray-300 whitespace-pre-line leading-relaxed prose max-w-none">
+          {content ? (
+            <a
+              href={content}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline"
+            >
+              {content}
+            </a>
+          ) : (
+            `No ${title.toLowerCase()} information provided.`
+          )}
+        </div>
+      </SectionCard>
+    </div>
+  );
+
   // NEW: Component specifically for sections with array content to display as a list
   const ListContentSection = ({ title, content }) => {
     const isContentAvailable = Array.isArray(content) && content.length > 0;
@@ -75,16 +97,34 @@ export const ContentSection = ({ activeSection, hackathon }) => {
               <h4 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-green-400" /> Event Timeline
               </h4>
+
               <div className="relative pl-6 space-y-8 border-l-2 border-green-500/20">
-                <div className="absolute -left-[11px] top-1 w-5 h-5 bg-green-400 rounded-full border-4 border-gray-900"></div>
-                <div className="absolute -left-[11px] bottom-1 w-5 h-5 bg-green-500 rounded-full border-4 border-gray-900"></div>
-                <div>
-                  <div className="font-bold text-white">Registration & Start</div>
-                  <div className="text-gray-400 text-sm">{formatDateTime(hackathon.startDate)}</div>
+                <div className="relative">
+                  <div>
+                    <div className="font-bold text-white">Registration Opens</div>
+                    <div className="text-gray-400 text-sm">{formatDateTime(hackathon.startDate)}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-bold text-white">Submission Deadline</div>
-                  <div className="text-gray-400 text-sm">{formatDateTime(hackathon.endDate)}</div>
+
+                <div className="relative">
+                  <div>
+                    <div className="font-bold text-white">Registration Closes</div>
+                    <div className="text-gray-400 text-sm">{formatDateTime(hackathon.endDate)}</div>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div>
+                    <div className="font-bold text-white">Submission Opens</div>
+                    <div className="text-gray-400 text-sm">{formatDateTime(hackathon.submissionStartDate)}</div>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div>
+                    <div className="font-bold text-white">Submission Deadline</div>
+                    <div className="text-gray-400 text-sm">{formatDateTime(hackathon.submissionEndDate)}</div>
+                  </div>
                 </div>
               </div>
             </SectionCard>
@@ -133,12 +173,40 @@ export const ContentSection = ({ activeSection, hackathon }) => {
 
       // --- These sections still use SimpleContentSection for string data ---
       case "prizes":
-        const prizeContent = hackathon.prizeMoney
-          ? `The total prize pool for this event is $${hackathon.prizeMoney.toLocaleString()}. Further details on prize distribution will be provided by the organizers.`
-          : null;
+        const totalPrize = (hackathon.prizeMoney1 || 0) +
+          (hackathon.prizeMoney2 || 0) +
+          (hackathon.prizeMoney3 || 0);
+
+        const prizeContent = totalPrize > 0 ? (
+          <div className="space-y-2 text-gray-300">
+            <p>
+              The total prize pool for this event is
+              <span className="ml-1 text-green-400 font-semibold">
+                ₹{totalPrize.toLocaleString("en-IN")}
+              </span>.
+            </p>
+            <ul className="list-disc pl-6 space-y-1">
+              <li>
+                <span className="font-medium text-white">1st Prize:</span>{" "}
+                ₹{(hackathon.prizeMoney1 || 0).toLocaleString("en-IN")}
+              </li>
+              <li>
+                <span className="font-medium text-white">2nd Prize:</span>{" "}
+                ₹{(hackathon.prizeMoney2 || 0).toLocaleString("en-IN")}
+              </li>
+              <li>
+                <span className="font-medium text-white">3rd Prize:</span>{" "}
+                ₹{(hackathon.prizeMoney3 || 0).toLocaleString("en-IN")}
+              </li>
+            </ul>
+          </div>
+        ) : null;
+
         return <SimpleContentSection title="Prizes" content={prizeContent} />;
       case "about":
         return <SimpleContentSection title="About" content={hackathon.aboutUs} />;
+      case "refMaterial":
+        return <SimpleContentSectionRef title="Reference Material" content={hackathon.refMaterial} />;
 
       case "faqs":
         const rawFaqs = hackathon.FAQs || [];
@@ -192,7 +260,7 @@ export const ContentSection = ({ activeSection, hackathon }) => {
               <Users className="w-16 h-16 mx-auto mb-4 text-green-400/50" />
               <p className="text-lg text-white font-semibold">Join the conversation!</p>
               <p className="text-gray-400 mt-2 mb-6">Connect with fellow participants on our Discord server.</p>
-              <a href="https://discord.gg/JHSRmuQu" target="_blank">
+              <a href="https://discord.com/channels/789426842410680365/985360797729423400" target="_blank">
                 <Button className="border border-green-500 text-white font-bold hover:bg-green-500/10 cursor-pointer">
                   Join Discord Community
                 </Button>

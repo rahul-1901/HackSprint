@@ -128,7 +128,7 @@ const Quest = () => {
     const fetchTodayQuiz = async () => {
       const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/dailyquiz/today`)
       setTodayQuiz(response.data.dailyQuiz);
-      console.log(response.data.dailyQuiz);
+      // console.log(response.data.dailyQuiz);
     }
 
     fetchTodayQuiz();
@@ -148,7 +148,7 @@ const Quest = () => {
           topic: item.topic,
         }))
         setQuestions(formattedQuestions)
-        console.log(response.data)
+        // console.log(response.data)
       } catch (err) {
         console.error("Error fetching questions:", err)
       }

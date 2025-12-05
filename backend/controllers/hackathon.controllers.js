@@ -8,7 +8,7 @@ export const getActiveHackathons = async (req, res) => {
     const now = new Date();
     const allHackathons = await hackathonModel.find({
       startDate: { $lte: now },
-      endDate: { $gte: now },
+      submissionEndDate: { $gte: now },
     }).sort({ endDate: 1 }); // Sort by ending soonest
 
     res.status(200).json({ allHackathons });
@@ -24,7 +24,7 @@ export const getExpiredHackathons = async (req, res) => {
     const now = new Date();
     const expiredHackathons = await hackathonModel.find({
       status: false,
-      // submissionEndDate: { $lt: currentTime },
+      submissionEndDate: { $lt: now },
     });
     res.status(200).json({
       expiredHackathons,

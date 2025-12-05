@@ -1,6 +1,6 @@
 body {
-  overflow: auto; 
-  scrollbar-width: none; 
+  overflow: auto;
+  scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
@@ -8,3 +8,39 @@ body::-webkit-scrollbar {
   display: none;
 }
 
+.install-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 9999;
+  animation: shake 1.5s infinite ease-in-out;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  20% {
+    transform: translateY(-8px) rotate(-2deg);
+  }
+
+  40% {
+    transform: translateY(4px) rotate(1deg);
+  }
+
+  60% {
+    transform: translateY(-6px) rotate(-1deg);
+  }
+
+  80% {
+    transform: translateY(3px) rotate(1deg);
+  }
+
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}

@@ -60,11 +60,12 @@ export const createTeam = async (req, res) => {
       hackathon,
       members: [],
       secretCode: code,
-      secretLink: `${process.env.BASE_URL}/join/${code}` // optional link
+      secretLink: `${process.env.FRONTEND_URL}/join/${code}` // optional link
     });
 
     await UserModel.findByIdAndUpdate(leader, {
-      $addToSet: { registeredHackathons: hackathon, leaderOfHackathons : hackathon }
+      $addToSet: { registeredHackathons: hackathon, leaderOfHackathons: hackathon },
+      team: team._id
     });
     await hackathonModel.findByIdAndUpdate(hackathon, {
       $addToSet: { registeredParticipants: leader },
@@ -206,7 +207,7 @@ export const searchTeamByCode = async (req, res) => {
   try {
     const { secretCode } = req.params;
 
-    const team = await TeamModel.findOne({ secretCode })  
+    const team = await TeamModel.findOne({ secretCode })
       .populate("leader")//, "name email")
       .populate("members")//, "name email rollNo phone branch year")   // populate members
       .populate("pendingMembers")//, "name email rollNo phone branch year"); // populate pending requests
@@ -228,8 +229,8 @@ export const searchTeamByCode = async (req, res) => {
         pendingRequestsCount: team.pendingMembers.length,
         createdAt: team.createdAt,
         updatedAt: team.updatedAt,
-        secretLink : team.secretLink,
-        maxTeamSize : team.maxTeamSize
+        secretLink: team.secretLink,
+        maxTeamSize: team.maxTeamSize
       },
     });
   } catch (error) {
@@ -263,5 +264,47 @@ export const getPendingRequests = async (req, res) => {
     res.json(team.pendingMembers);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+// Find team by ID
+export const getTeamById = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+
+    const team = await TeamModel.findById(teamId)
+      .populate("leader")
+      .populate("members")
+      .populate("pendingMembers")
+      .populate("hackathon")
+
+    if (!team) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    return res.status(200).json({
+      message: "Team found successfully",
+      team: {
+        id: team._id,
+        name: team.name,
+        code: team.secretCode,
+        leader: team.leader,
+        members: team.members,
+        pendingMembers: team.pendingMembers,
+        membersCount: team.members.length,
+        pendingRequestsCount: team.pendingMembers.length,
+        createdAt: team.createdAt,
+        updatedAt: team.updatedAt,
+        secretLink: team.secretLink,
+        maxTeamSize: team.maxTeamSize,
+        hackathon: team.hackathon
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching team by ID:", error);
+    res.status(500).json({
+      message: "Something went wrong while fetching the team!",
+      error: error.message,
+    });
   }
 };

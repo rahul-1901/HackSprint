@@ -9,120 +9,228 @@
 
 ## 📌 Overview
 
-**HackSprint** is a dynamic, all-in-one web platform built to ignite a culture of innovation, collaboration, and hands-on technical learning within the student community of **IIT Jodhpur**.
+**HackSprint** is a centralized ecosystem created to nurture innovation, collaborative work, and hands-on development across IIT Jodhpur. 
+It enables **hackathons**, **daily developer & aptitude challenges**, **Git-based submissions**, and a **transparent leaderboard system** — all designed to build real-world developer habits.
 
-Designed by students, for students — the platform enables structured **bi-weekly hackathons**, **daily coding & aptitude challenges**, and a **public peer-reviewed leaderboard system** — all crafted to build real-world tech skills.
+The platform has **two main user roles**:  
+
+1. **Students** – can participate in hackathons, daily quizzes, and track their leaderboard points.  
+2. **Admins** – can create hackathon events (subject to approval by hackSprint admin), assign points, review submissions, and declare results.
 
 ---
 
 ## 🧠 Core Idea
 
-> Empowering students to transition from passive learners to **active developers**.
+> Enabling students to shift from passive learning to active development, while allowing administrators to manage events effectively.
 
-HackSprint is a **centralized ecosystem** where students:
-- 🚧 Build real-world projects
-- 🧩 Solve daily coding & logic-based challenges
-- 🔁 Compete in hackathons regularly
-- 📈 Track growth through a transparent leaderboard
-- 🌐 Gain exposure to full-stack technologies
+HackSprint provides:  
+- 🚀 Real project-building experience  
+- 🧠 Daily dev & aptitude challenges  
+- 🏆 Hackathons with submission tracking  
+- 📊 Transparent leaderboard system  
+- 🌐 Peer-reviewed submissions  
+- 💻 Admin controls: approval, points assignment, result declaration  
 
 ---
 
 ## 🎯 Why HackSprint?
 
-- 🎓 **Built for IITJ**: Homegrown and aligned with campus culture
-- 🔄 **Closes the Gap**: Brings consistency in practice and team collaboration
-- 🌍 **Community Learning**: Transparent, peer-reviewed, and open-sourced
-- 🧠 **Real Experience**: Mimics industry-style development cycles
+- 🎓 Tailored for **IITJ culture**  
+- 🔄 Builds **consistency** in coding and event participation  
+- 🌍 Transparent & community-driven  
+- 🛠 Real-world industry-style development style  
+- 📈 Helps build portfolio + placement-ready skillset  
+- 🖥 Admin-friendly: manage events, review submissions, assign points  
 
 ---
 
 ## 💡 Key Features
 
-### 🛠️ Bi-Weekly Hackathons
-- Realistic, themed problem statements
-- GitHub + Live deployment (e.g., Vercel, Netlify)
-- Judged on completeness, innovation, and code quality
-- Top performers climb the leaderboard
+### 🛠 Hackathons
+- Students can participate in hackathons  
+- Submission via GitHub + Deployment URL  
+- Admins can create hackathons (requires platform admin approval to go live)  
+- Admins can see all submissions, URLs, and participant details  
+- Points can be assigned to each team/participant  
+- Results can be declared by admins  
 
-### ⚡ Daily Dev & Aptitude Challenges
-- Tech questions across full-stack topics
-- Aptitude & logical puzzles
-- Immediate feedback & learning explanations
-- Designed for brain training and upskilling
+### ⚡ Daily Developer & Aptitude Challenges
+- Students solve MCQs on software dev, logic, and aptitude  
+- Instant feedback and scoring  
 
-### 📊 Leaderboard System
-- Tracks participation, consistency, and performance
-- Encourages healthy competition and visibility
-- Public submissions help peer learning & review
+### 📊 Leaderboard
+- Rankings based on hackathons + daily challenges + points  
+- Tracks student performance and consistency  
+- Public leaderboard visible to all users  
 
----
+### 🔐 Authentication
+- Google OAuth  
+- GitHub OAuth  
 
-## 🌱 What You'll Gain
-
-- ✅ Stronger development habits
-- ✅ Real-world Git & CI/CD experience
-- ✅ Better problem-solving approach
-- ✅ A portfolio full of practical work
-- ✅ Readiness for internships, placements & startup roles
-
----
-
-## 🔐 Authentication
-
-- Login via **Google** or **GitHub OAuth**.
-- Access restricted pages (like submitting solutions or viewing questions) require authentication.
-- After login, users are redirected to a personalized dashboard.
+### 🖥 Admin Features
+- Create hackathons and events  
+- Approve/reject events for publishing(Only HackSprint Platform Admin)  
+- View all submissions per event  
+- Assign points to participants or teams  
+- Declare final results  
 
 ---
 
 ## 🧪 Tech Stack
 
-The HackSprint platform is built using a modern, scalable, and efficient technology stack:
-
-- **Frontend**: `React.js` — for building responsive, component-based UI  
-- **Backend**: `Node.js` with `Express.js` — for handling APIs and server logic  
-- **Database**:
-  - `MongoDB` — as the primary NoSQL database  
-  - `Redis` — for caching and fast session management  
-- **Automation**: `Kestra` — for workflow orchestration, background job handling, and automated pipelines  
-- **OAuth**: Google and GitHub login integrated using APIs  
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | React + Vite |
+| **Backend** | Node.js + Express |
+| **Database** | MongoDB + Redis |
+| **Automation** | Kestra |
+| **OAuth** | Google, GitHub |
+| **Deployment** | Vercel |
 
 ---
 
-## 🌐 Platform Structure
+## 📁 Folder Structure
 
-### 1️⃣ **User Login**
-- Social login options (Google/GitHub).
-- Once logged in, user is redirected to the **Home Page**.
-
-### 2️⃣ **Application Home Section**
-- Navigation for:
-  - **Live Hackathons**
-  - **Expired Hackathons**
-  - **Leaderboard**
-  - **Daily Dev Quests**
-- Displays user-specific content and submission history.
-
-### 3️⃣ **Brief Hackathon Detail**
-- Detailed problem statement
-- Reference materials
-- "Submit Here" section with GitHub/Deployment link upload
-
-### 4️⃣ **Dev Quest Section**
-- Aptitude and reasoning MCQs
-- Displays question with 4 options
-- Immediate feedback after each answer
-- Encourages analytical thinking
-  
+```text
+HackSprint
+├── LICENSE
+├── backend
+│   ├── index.js
+│   ├── allFolders
+│   ├── package.json
+│   └── ...
+└── frontend
+    └── hack-sprint
+        ├── public
+        ├── src
+        ├── package.json
+        └── ...
+```
 ---
+
+## 🌐 Frontend (.env.example)
+```bash
+VITE_API_BASE_URL="http://localhost:3000"
+VITE_GOOGLE_CLIENT_ID="your_google_client_id_here"
+VITE_GITHUB_CLIENT_ID="your_github_client_id_here"
+```
+---
+
+## 🖥 Backend (.env.example)
+```bash
+MONGO_URL="your_mongodb_connection_url"
+
+GOOGLE_CLIENT_ID="your_google_client_id"
+GOOGLE_CLIENT_SECRET="your_google_client_secret"
+
+GITHUB_CLIENT_ID="your_github_client_id"
+GITHUB_CLIENT_SECRET="your_github_client_secret"
+
+SECRET_KEY="your_jwt_secret_key"
+JWT_EXPIRE_TIME="24h"
+
+SMTP_USER="your_smtp_username"
+SMTP_PASS="your_smtp_password"
+SENDER_EMAIL="your_sender_email_address"
+
+CLOUDINARY_CLOUD_NAME="your_cloud_name"
+CLOUDINARY_API_KEY="your_cloudinary_api_key"
+CLOUDINARY_API_SECRET="your_cloudinary_api_secret"
+
+EMAIL="your_email"
+EMAIL_PASS="your_email_password"
+
+FRONTEND_URL="http://localhost:5173"
+PORT=3000
+```
+
+---
+
+## 🚀 Setup Instructions
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/devlup-labs/HackSprint.git
+cd HackSprint
+```
+
+### 2️⃣ Backend Setup
+```bash
+cd backend
+npm install
+nodemon index.js
+```
+
+### 3️⃣ Frontend Setup
+```bash
+cd frontend/hack-sprint
+npm install
+npm run dev
+```
+
+---
+
+## 🐳 Docker Hub Usage
+- Backend
+Pull the backend image and run it:
+```bash
+docker pull rahul1901/hacksprintserver:latest
+docker run -p 3000:3000 rahul1901/hacksprintserver:latest
+```
+Access the backend at: http://localhost:3000
+
+- Frontend
+Pull the frontend image and run it:
+```bash
+docker pull rahul1901/hacksprint:latest
+docker run -p 5173:80 rahul1901/hacksprint:latest
+```
+Access the frontend at: http://localhost:5173
+
+---
+
+## 🛠 Available Scripts
+| Purpose            | Command                 |
+| ------------------ | ----------------------- |
+| Run backend        | `nodemon index.js`         |
+| Run frontend       | `npm run dev`           |
+
+---
+## 🤝 Contributing
+- Fork the repository
+- Clone your fork
+- Create a branch
+```bash
+git checkout -b feature/my-feature
+```
+- Commit changes
+```bash
+git commit -m "Added new feature"
+```
+- Push branch
+```bash
+git push origin feature/my-feature
+```
+
+---
+        
+## 🌐 Architecture Diagram
 
 ```mermaid
 flowchart TD
-    A[👤 User Registration/Login] --> B[📅 Dashboard]
-    B --> C[⚙️ Hackathons Explore]
-    B --> G[🧠 Dev Quests]
-    B --> H[🏆 Leaderboard Scoring & Peer Review]
-    C --> D[🔗 GitHub Code & Deployment Submission]
-    G --> E[🧪 Aptitude & Software Devlopment Challenges]
-    E --> F[🧳 Personal Portfolio Growth]
+    subgraph STUDENT
+        A[👤 Student Login] --> B[🏠 Dashboard]
+        B --> C[🛠 Participate in Hackathons]
+        B --> D[🧠 Daily Quizzes & Challenges]
+        B --> E[🏆 View Leaderboard]
+        C --> F[🔗 Submit GitHub + Deployment URLs]
+    end
+
+    subgraph ADMIN
+        X[👤 Admin Login] --> Y[🛠 Create Hackathons / Events]
+        Y --> Z[✅ Platform Admin Approval]
+        Z --> B
+        F --> M[📊 Admin Views Submissions]
+        M --> N[💯 Assign Points]
+        N --> E
+        N --> O[📢 Declare Results]
+    end

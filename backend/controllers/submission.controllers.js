@@ -48,7 +48,12 @@ export const submitHackathonSolution = async (req, res) => {
     const { hackathonId, repoUrl, userId } = req.body || {};
     console.log("req.body =>", req.body);
     console.log("req.files =>", req.files);
-
+    // ✅ validate repoUrl is an array with at least one element
+    if (!hackathonId || !Array.isArray(repoUrl) || repoUrl.length === 0) {
+      return res.status(400).json({
+        message: "Hackathon ID and at least one repo URL are required",
+      });
+    }
     if (!hackathonId || !repoUrl) {
       return res
         .status(400)
@@ -164,7 +169,7 @@ export const submitHackathonSolution = async (req, res) => {
       await hackathon.save();
 
       await UserModel.findByIdAndUpdate(userId, {
-        $push: { submissions: submission._id },
+        $push: { submittedHackathons: submission._id },
       });
     }
 
@@ -189,11 +194,13 @@ export const getSubmissionStatus = async (req, res) => {
         .json({ message: "hackathonId and teamId or userId are required" });
     }
 
+    // Look for either team submission or individual submission
     const submission = await SubmissionModel.findOne({
       hackathon: hackathonId,
       $or: [
-        { team: teamId || null }
-      ],
+        teamId ? { team: teamId } : null,
+        userId ? { participant: userId } : null
+      ].filter(Boolean),
     });
 
     if (!submission) {
@@ -210,6 +217,7 @@ export const getSubmissionStatus = async (req, res) => {
   }
 };
 
+
 export const getSubmissionById = async (req, res) => {
   try {
     const submission = await SubmissionModel.findById(req.params.id);
@@ -218,6 +226,50 @@ export const getSubmissionById = async (req, res) => {
     }
     return res.json(submission);
   } catch (err) {
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const getSubmissionsByHackathon = async (req, res) => {
+  try {
+    const { hackathonId } = req.params;
+
+    if (!hackathonId) {
+      return res.status(400).json({ message: "hackathonId is required" });
+    }
+
+    const hackathon = await hackathonModel.findById(hackathonId);
+    if (!hackathon) {
+      return res.status(404).json({ message: "Hackathon not found" });
+    }
+
+    const submissions = await SubmissionModel.find({ hackathon: hackathonId })
+      .populate({
+        path: "participant",
+        select: "name email",
+      })
+      .populate({
+        path: "team",
+        select: "name secretCode members leader",
+        populate: {
+          path: "members leader",
+          select: "name email",
+        },
+      })
+      .sort({ hackathonPoints: -1, submittedAt: 1 });
+
+    const rankedSubmissions = submissions.map((sub, index) => ({
+      rank: index + 1,
+      ...sub.toObject(),
+    }));
+
+    return res.status(200).json({
+      hackathon: hackathon.name,
+      totalSubmissions: submissions.length,
+      submissions: rankedSubmissions,
+    });
+  } catch (err) {
+    console.error("Error fetching hackathon submissions:", err);
     return res.status(500).json({ message: "Server error", error: err.message });
   }
 };

@@ -5,13 +5,13 @@ const HideRouteFooter = ({ children }) => {
     const location = useLocation();
     const [showNavbar, setShowNavbar] = useState(true);
 
-    const footerVisible = ["/createHackathon", "/", "/studenthome", "/adminhome", "/dashboard", "/quest", "/about", "/hackathons", "/hackathon/:id", "/hackathon/RegistrationForm/:id", "/leaderboard", "/hackathon/:hackathonId/team/:teamId", "/Hacksprintkaadminprofile", "/Hacksprintkaadminprofile/livehackathons", "/Hacksprintkaadminprofile/recentlystarted", "/Hacksprintkaadminprofile/endedhackathons"];
+    const footerVisible = ["/createHackathon", "/", "/studenthome", "/adminhome", "/dashboard", "/quest", "/about", "/hackathons", "/hackathon/:id", "/hackathon/RegistrationForm/:id", "/leaderboard", "/hackathon/:hackathonId/team/:teamId", "/admin", "/admin/livehackathons", "/admin/recentlystarted", "/admin/endedhackathons"];
 
     useEffect(() => {
         const isHackathonDynamic = matchPath({ path: "/hackathon/:id", exact: true }, location.pathname);
         const isRegistrationDynamic = matchPath({ path: "/hackathon/RegistrationForm/:id", exact: true }, location.pathname);
         const isTeamDynamic = matchPath({ path: "/hackathon/:hackathonId/team/:teamId", exact: true }, location.pathname);
-        const isAdminSubmissionsDynamic = matchPath({ path: "/Hacksprintkaadminprofile/:slug/usersubmissions", exact: true }, location.pathname);
+        const isAdminSubmissionsDynamic = matchPath({ path: "/admin/:slug/usersubmissions", exact: true }, location.pathname);
 
         // --- KEY CHANGE: Added a new matchPath for the user submission route ---
         const isUserSubmissionDynamic = matchPath({ path: "/hackathon/:slug/submission/:userId", exact: true }, location.pathname);

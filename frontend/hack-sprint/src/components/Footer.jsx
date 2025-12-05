@@ -71,9 +71,9 @@ const Footer = () => {
 
 
     const socialLinks = [
-        { name: 'GitHub', icon: <Github size={20} />, url: 'https://github.com/devlup-labs/' },
-        { name: 'Instagram', icon: <Instagram size={20} />, url: 'https://www.instagram.com/devluplabs/' },
-        { name: 'LinkedIn', icon: <Linkedin size={20} />, url: 'https://www.linkedin.com/company/devlup-labs/' },
+        { name: 'GitHub', icon: <Github size={20} />, url: 'https://github.com/devlup-labs/HackSprint' },
+        { name: 'Instagram', icon: <Instagram size={20} />, url: 'https://www.instagram.com/hack.sprint?igsh=MWN6bjlldTV2Z2Nqdg==' },
+        { name: 'LinkedIn', icon: <Linkedin size={20} />, url: 'https://www.linkedin.com/company/hacksprintiitj/' },
         { name: 'Twitter', icon: <Twitter size={20} />, url: 'https://x.com/devluplabs' },
         { name: 'Facebook', icon: <Facebook size={20} />, url: 'https://www.facebook.com/devluplabs/' }
     ];
