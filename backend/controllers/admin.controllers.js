@@ -56,13 +56,20 @@ export const getMyHackathon = async (req, res) => {
 
     // 4. Manually link submissions to their corresponding individual participants
     const participantsWithSubmissions = participants.map(p => {
-        // For each participant, find their submission in the submissions array
-        // Note: We link by the user's ID (p.user._id)
-        const submission = submissions.find(s => s.participant?.toString() === p.user._id.toString());
+      // For each participant, find their submission in the submissions array
+      // Note: We link by the user's ID (p.user._id)
+      if (!p.user?._id) {
         return {
-            ...p,
-            submission: submission || null // Attach the submission object, or null if none exists
-        }
+          ...p,
+          user: { name: "Deleted User", email: "" },
+          submission: null,
+        };
+      }
+      const submission = submissions.find(s => s.participant?.toString() === p.user._id.toString());
+      return {
+        ...p,
+        submission: submission || null // Attach the submission object, or null if none exists
+      }
     })
 
     // 5. Send the final, combined data to the frontend
@@ -71,7 +78,7 @@ export const getMyHackathon = async (req, res) => {
       participantsWithoutTeam: participantsWithSubmissions.filter(p => !p.team),
       teams: teamsWithSubmissions,
     });
-    
+
   } catch (err) {
     console.error("Error in getMyHackathon:", err);
     res.status(500).json({ error: err.message });
@@ -328,7 +335,7 @@ export const getAdminDetails = async (req, res) => {
   try {
     // The admin object is attached to the request by the adminAuth middleware
     const admin = req.admin;
-    
+
     if (!admin) {
       // This is a safeguard, but adminAuth should have already handled it
       return res.status(401).json({ success: false, message: "Not authenticated" });

@@ -91,7 +91,7 @@ const Admin = () => {
         // Simulate API call
         // await new Promise(resolve => setTimeout(resolve, 1000));
 
-        console.log('DevQuest Form Data:', devQuestForm);
+        // console.log('DevQuest Form Data:', devQuestForm);
         alert('DevQuest question added successfully!');
 
         // Reset form
@@ -124,7 +124,7 @@ const Admin = () => {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-            console.log('Hackathon Form Data:', Object.fromEntries(formData));
+            // console.log('Hackathon Form Data:', Object.fromEntries(formData));
             alert(response.data.message); // Display backend success message
 
             // Create FormData for API submission (if needed)
@@ -152,14 +152,14 @@ const Admin = () => {
                 formData.append('image', hackathonForm.image);
             }
 
-            console.log('Hackathon Form Data:', Object.fromEntries(formData)); // Log for debugging
+            // console.log('Hackathon Form Data:', Object.fromEntries(formData)); // Log for debugging
             alert('Hackathon created successfully!');
         } catch (error) {
             console.error('Error submitting hackathon:', error);
             alert('Failed to create hackathon: ' + (error.response?.data?.error || 'Unknown error'));
         }
 
-        console.log('Hackathon Form Data:', hackathonForm);
+        // console.log('Hackathon Form Data:', hackathonForm);
         alert('Hackathon created successfully!');
 
         // Reset form

@@ -36,50 +36,27 @@ const TeamDetails = () => {
   const [copiedItem, setCopiedItem] = useState(null);
 
   const getStoredTeamCode = useCallback(() => {
-    return localStorage.getItem(`teamDetails_code`);
+    if (teamId) {
+      return teamId
+    } else {
+      return localStorage.getItem(`teamDetails_code`);
+    }
   }, [teamId]);
 
   const fetchTeamData = useCallback(async (user) => {
     if (!user) return;
 
     const secretCode = getStoredTeamCode();
+    // console.log(secretCode)
 
     try {
       if (secretCode) {
         const teamSearchResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/team/search/${secretCode}`);
         const basicTeamData = teamSearchResponse.data.team;
-        console.log(basicTeamData)
+        // console.log(basicTeamData)
 
         const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: basicTeamData.leader._id });
         setTeamData({ ...basicTeamData, pendingMembers: pendingResponse.data });
-      } else {
-        try {
-          const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: user._id });
-
-          const partialTeamData = {
-            name: "Your Team",
-            leader: user,
-            members: [],
-            pendingMembers: pendingResponse.data,
-            secretCode: null,
-            secretLink: null,
-            maxMembers: 4,
-            createdAt: user.createdAt,
-          };
-          setTeamData(partialTeamData);
-        } catch (fallbackError) {
-          const minimalTeamData = {
-            name: "Your Team",
-            leader: user,
-            members: [],
-            pendingMembers: [],
-            secretCode: null,
-            secretLink: null,
-            maxMembers: 4,
-            createdAt: user.createdAt,
-          };
-          setTeamData(minimalTeamData);
-        }
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error fetching team data.');
@@ -130,7 +107,6 @@ const TeamDetails = () => {
   const handleCopy = (text, type) => {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
-      toast.success("Copied to clipboard!");
       setCopiedItem(type);
       setTimeout(() => setCopiedItem(null), 2000);
     });
@@ -243,8 +219,10 @@ const TeamDetails = () => {
   }
 
   const currentMembers = [teamData.leader, ...teamData.members];
-  const spotsRemaining = teamData.maxMembers - currentMembers.length;
-  const showInviteSection = teamData.secretCode && teamData.secretLink;
+  const spotsRemaining = teamData.maxTeamSize - currentMembers.length;
+  const showInviteSection = teamData.code && teamData.secretLink;
+  // console.log(currentMembers.length)
+  // console.log(teamData.maxTeamSize)
 
   return (
     <div className="min-h-screen bg-gray-900 relative">
@@ -260,27 +238,50 @@ const TeamDetails = () => {
         {isLeader && (
           <>
             {spotsRemaining > 0 && (
-              <div className="bg-gray-800/30 border border-green-500/20 rounded-lg p-6 mb-8">
+              <div className="bg-gray-800/30 border border-green-500/20 overflow-hidden rounded-lg p-6 mb-8">
                 <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                   <LinkIcon className="w-5 h-5 text-green-400" />
                   Invite Team Members
                 </h2>
                 <div className="grid md:grid-cols-2 gap-4">
+                  {/* Invite Code */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Invite Code</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Invite Code
+                    </label>
                     <div className="flex items-center gap-2 p-3 bg-gray-700/50 border border-green-500/20 rounded-lg">
-                      <span className="flex-1 font-mono text-green-300">{teamData.secretCode}</span>
-                      <Button onClick={() => handleCopy(teamData.secretCode, 'code')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
-                        {copiedItem === 'code' ? <Check size={16} /> : <Copy size={16} />}
+                      <span
+                        className="flex-1 font-mono text-green-300 break-all md:truncate"
+                        title={teamData.code} // shows full value on hover if truncated
+                      >
+                        {teamData.code}
+                      </span>
+                      <Button
+                        onClick={() => handleCopy(teamData.code, "code")}
+                        className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20"
+                      >
+                        {copiedItem === "code" ? <Check size={16} /> : <Copy size={16} />}
                       </Button>
                     </div>
                   </div>
+
+                  {/* Invite Link */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Invite Link</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Invite Link
+                    </label>
                     <div className="flex items-center gap-2 p-3 bg-gray-700/50 border border-green-500/20 rounded-lg">
-                      <span className="flex-1 font-mono text-green-300 truncate">{teamData.secretLink}</span>
-                      <Button onClick={() => handleCopy(teamData.secretLink, 'link')} className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20">
-                        {copiedItem === 'link' ? <Check size={16} /> : <Copy size={16} />}
+                      <span
+                        className="flex-1 font-mono text-green-300 break-all md:truncate"
+                        title={teamData.secretLink} // shows full link on hover if truncated
+                      >
+                        {teamData.secretLink}
+                      </span>
+                      <Button
+                        onClick={() => handleCopy(teamData.secretLink, "link")}
+                        className="p-2 bg-green-500/10 text-green-300 hover:bg-green-500/20"
+                      >
+                        {copiedItem === "link" ? <Check size={16} /> : <Copy size={16} />}
                       </Button>
                     </div>
                   </div>

@@ -22,7 +22,7 @@ const RouteHandler = ({ setIsAuthenticated, setAuthWait }) => {
       setIsAuthenticated(true);
 
       if (location.pathname === "/admin/login") {
-        navigate("/Hacksprintkaadminprofile");
+        navigate("/admin");
       }
     } else {
       setIsAuthenticated(false);
