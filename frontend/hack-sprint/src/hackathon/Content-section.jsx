@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
 import { Clock, Code, Users, ChevronDown, ChevronUp } from "lucide-react";
+import ChatInterface from "../components/Chat/ChatInterface";
+
 
 export const ContentSection = ({ activeSection, hackathon }) => {
   const [expandedFAQ, setExpandedFAQ] = useState(null);
@@ -256,16 +258,7 @@ export const ContentSection = ({ activeSection, hackathon }) => {
         return (
           <div>
             <SectionHeader>Community Discussion</SectionHeader>
-            <SectionCard className="text-center">
-              <Users className="w-16 h-16 mx-auto mb-4 text-green-400/50" />
-              <p className="text-lg text-white font-semibold">Join the conversation!</p>
-              <p className="text-gray-400 mt-2 mb-6">Connect with fellow participants on our Discord server.</p>
-              <a href="https://discord.com/channels/789426842410680365/985360797729423400" target="_blank">
-                <Button className="border border-green-500 text-white font-bold hover:bg-green-500/10 cursor-pointer">
-                  Join Discord Community
-                </Button>
-              </a>
-            </SectionCard>
+            <ChatInterface hackathonId={hackathon._id} />
           </div>
         );
 
