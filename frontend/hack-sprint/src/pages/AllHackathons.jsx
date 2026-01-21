@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom"
 import Loader from "../components/Loader"
 import { Users, Calendar, Timer, Code, Trophy, Zap, Search, Filter, X } from "lucide-react"
 // KEY CHANGE: Import the functions from your api.js file
-import { getActiveHackathons, getExpiredHackathons, getUpcomingHackathons } from "../backendApis/api"
+import { useHackathons } from "../hooks/useHackathons"
 
 const GridBackground = () => (
   <div className="absolute inset-0 opacity-10  pointer-events-none">
@@ -191,63 +191,30 @@ const HackathonCard = ({ hackathon }) => {
 }
 
 const Hackathons = () => {
+  const { data: hackathonsData, isLoading } = useHackathons();
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("active")
-  const [activeHackathons, setActiveHackathons] = useState([])
-  const [expiredHackathons, setExpiredHackathons] = useState([])
-  const [upcomingHackathons, setUpcomingHackathons] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("")
   const [selectedDifficulty, setSelectedDifficulty] = useState("")
   const [showFilters, setShowFilters] = useState(false)
 
+  const activeHackathons = hackathonsData?.active || [];
+  const expiredHackathons = hackathonsData?.expired || [];
+  const upcomingHackathons = hackathonsData?.upcoming || [];
+
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000)
-    return () => clearTimeout(timer)
-  }, [])
+    if (!isLoading) {
+      const timer = setTimeout(() => setLoading(false), 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading])
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => { entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add("fade-in") } }) }, { threshold: 0.1 },)
     const sections = document.querySelectorAll(".fade-section")
     sections.forEach((section) => observer.observe(section))
     return () => { sections.forEach((section) => observer.unobserve(section)) }
-  }, [])
-
-  useEffect(() => {
-    const fetchHackathons = async () => {
-      try {
-        // KEY CHANGE: Using functions from api.js instead of direct axios calls
-        const [activeRes, expiredRes, upcomingRes] = await Promise.all([
-          getActiveHackathons(),
-          getExpiredHackathons(),
-          getUpcomingHackathons(),
-        ]);
-
-        const mapData = (data, status) =>
-          (data || []).map((h) => ({
-            ...h,
-            status: status,
-            participants: h.numParticipants || 0,
-            prize: h.prizeMoney,
-            techStack: h.techStackUsed || [],
-            category: h.category || "General",
-            image: h.image || h.imageUrl || null,
-            dates: `${new Date(h.startDate).toLocaleDateString()} - ${new Date(h.submissionEndDate).toLocaleDateString()}`,
-          }));
-
-        // console.log(upcomingRes)
-        // KEY CHANGE: Accessing data from the correct properties
-        setActiveHackathons(mapData(activeRes.data.allHackathons, "active"));
-        setExpiredHackathons(mapData(expiredRes.data.expiredHackathons, "expired"));
-        setUpcomingHackathons(mapData(upcomingRes.data.upcomingHackathons, 'upcoming'));
-      } catch (error) {
-        console.error("Error fetching hackathons:", error)
-        if (error.response?.status === 404 && error.config.url.includes("upcomingHackathons")) {
-          setUpcomingHackathons([])
-        }
-      }
-    }
-    fetchHackathons()
   }, [])
 
   const getCurrentHackathons = () => {

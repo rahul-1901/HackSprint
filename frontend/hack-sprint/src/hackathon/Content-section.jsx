@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
 import { Clock, Code, Users, ChevronDown, ChevronUp } from "lucide-react";
+import ChatInterface from "../components/Chat/ChatInterface";
+
 
 export const ContentSection = ({ activeSection, hackathon }) => {
   const [expandedFAQ, setExpandedFAQ] = useState(null);
@@ -256,18 +258,12 @@ export const ContentSection = ({ activeSection, hackathon }) => {
         return (
           <div>
             <SectionHeader>Community Discussion</SectionHeader>
-            <SectionCard className="text-center">
-              <Users className="w-16 h-16 mx-auto mb-4 text-green-400/50" />
-              <p className="text-lg text-white font-semibold">Join the conversation!</p>
-              <p className="text-gray-400 mt-2 mb-6">Connect with fellow participants on our Discord server.</p>
-              <a href="https://discord.com/channels/789426842410680365/985360797729423400" target="_blank">
-                <Button className="border border-green-500 text-white font-bold hover:bg-green-500/10 cursor-pointer">
-                  Join Discord Community
-                </Button>
-              </a>
-            </SectionCard>
+            <ChatInterface hackathonId={hackathon._id} />
           </div>
         );
+
+      case "results":
+        return <ResultsSection hackathonId={hackathon._id} />;
 
       default:
         return (
@@ -276,6 +272,65 @@ export const ContentSection = ({ activeSection, hackathon }) => {
           </div>
         );
     }
+  };
+
+  const ResultsSection = ({ hackathonId }) => {
+    const [results, setResults] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+      const fetchResults = async () => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${hackathonId}/results`);
+          if (!response.ok) throw new Error("Failed to fetch results");
+          const data = await response.json();
+          setResults(data);
+        } catch (err) {
+          setError("Results not announced yet or failed to load.");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchResults();
+    }, [hackathonId]);
+
+    if (loading) return <div className="text-center text-white">Loading results...</div>;
+    if (error) return <SectionCard><p className="text-gray-400">{error}</p></SectionCard>;
+    if (results.length === 0) return <SectionCard><p className="text-gray-400">No results announced yet.</p></SectionCard>;
+
+    return (
+      <div>
+        <SectionHeader>Hackathon Results</SectionHeader>
+        <div className="space-y-4">
+          {results.map((submission, index) => (
+            <SectionCard key={submission._id} className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl ${index === 0 ? "bg-yellow-500/20 text-yellow-500" :
+                  index === 1 ? "bg-gray-400/20 text-gray-400" :
+                    index === 2 ? "bg-orange-500/20 text-orange-500" :
+                      "bg-green-500/10 text-green-400"
+                  }`}>
+                  #{index + 1}
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold text-white">
+                    {submission.team ? submission.team.name : submission.participant?.name || "Unknown"}
+                  </h4>
+                  <p className="text-sm text-gray-400">
+                    {submission.team ? "Team Submission" : "Individual Submission"}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-green-400">{submission.hackathonPoints}</div>
+                <div className="text-xs text-gray-500 uppercase">Points</div>
+              </div>
+            </SectionCard>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (

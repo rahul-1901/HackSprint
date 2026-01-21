@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import compression from 'compression'
 import dotenv from 'dotenv'
 import connectDB from './db/database.js'
 import hackathonRoutes from './routes/hackathon.routes.js'
@@ -15,8 +16,65 @@ import adminRoutes from "./routes/admin.routes.js";
 import "./controllers/dailyQuiz.js";
 import teamRoutes from './routes/team.routes.js'
 import { githubDataRoutes } from './routes/githubData.routes.js'
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import { Message } from "./models/message.model.js";
+import chatRoutes from "./routes/chat.routes.js"; 
+
 
 const app = express()
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Allow all origins for now, or restrict to frontend URL
+  }
+});
+
+
+io.on("connection", (socket) => {
+    console.log("A user connected:", socket.id);
+
+    // Join a chat room
+    socket.on("join_room", (chatId) => {
+        socket.join(chatId);
+        console.log(`User ${socket.id} joined room ${chatId}`);
+    });
+
+    // Leave a chat room
+    socket.on("leave_room", (chatId) => {
+        socket.leave(chatId);
+        console.log(`User ${socket.id} left room ${chatId}`);
+    });
+
+    // Send a message
+    socket.on("send_message", async (data) => {
+        // data expects: { chatId, senderId, content, type }
+        console.log("Message received:", data);
+        
+        try {
+            const newMessage = new Message({
+                sender: data.senderId,
+                content: data.content,
+                chatId: data.chatId,
+                type: data.type || 'group',
+                participants: data.participants || []
+            });
+            
+            await newMessage.save();
+            
+            await newMessage.populate("sender", "name profilePicture email username");
+
+            io.to(data.chatId).emit("receive_message", newMessage);
+        } catch (err) {
+            console.error("Error saving message:", err);
+        }
+    });
+
+    socket.on("disconnect", () => {
+        console.log("User disconnected:", socket.id);
+    });
+});
+
 dotenv.config()
 connectDB()
 
@@ -25,6 +83,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(compression());
 app.use(express.json());
 
 
@@ -42,9 +101,10 @@ app.use("/api", githubRoutes)
 app.use("/api", oauthRoutes)
 app.use("/api/account", authRoutes)
 app.use("/api/team", teamRoutes);
+app.use("/api/chat", chatRoutes); // Use chat routes
 
 
 // --- SERVER START ---
 
 const PORT = process.env.PORT || 3000
-app.listen(PORT, () => console.log(`Server running on ${PORT}`))
+server.listen(PORT, () => console.log(`Server running on ${PORT}`))
