@@ -16,6 +16,7 @@ import adminRoutes from "./routes/admin.routes.js";
 import "./controllers/dailyQuiz.js";
 import teamRoutes from './routes/team.routes.js'
 import { githubDataRoutes } from './routes/githubData.routes.js'
+import voteRoutes from './routes/vote.routes.js'
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { Message } from "./models/message.model.js";
@@ -102,6 +103,7 @@ app.use("/api", oauthRoutes)
 app.use("/api/account", authRoutes)
 app.use("/api/team", teamRoutes);
 app.use("/api/chat", chatRoutes); // Use chat routes
+app.use("/api/votes", voteRoutes); // Use vote routes
 
 
 // --- SERVER START ---
