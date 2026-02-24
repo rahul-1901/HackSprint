@@ -35,7 +35,7 @@ const uploadFiles = async (files, resourceType, hackathonId) => {
         await s3Client.send(putObjectCommand);
 
         // ✅ Generate S3 URL
-        const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com/${key}`;
+        const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION || "ap-southeast-2"}.amazonaws.com/${key}`;
 
         return {
           public_id: key,

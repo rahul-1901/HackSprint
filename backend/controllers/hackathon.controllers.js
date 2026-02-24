@@ -1,5 +1,5 @@
 import hackathonModel from "../models/hackathon.models.js";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import s3Client from "../config/aws.js";
 import SubmissionModel from "../models/submission.js";
 import fs from "fs";
@@ -179,22 +179,39 @@ export const addGalleryImages = async (req, res) => {
       return res.status(404).json({ message: "Hackathon not found" });
     }
 
-    // Upload images to Cloudinary
-    const uploadPromises = req.files.map(file =>
-      cloudinary.uploader.upload(file.path, {
-        folder: `hackathons/${hackathonId}/gallery`
-      })
-    );
+    // ✅ Upload images to AWS S3
+    const uploadPromises = req.files.map(async file => {
+      try {
+        const timestamp = Date.now();
+        const randomString = Math.random().toString(36).substring(2, 9);
+        const key = `hackathons/${hackathonId}/gallery/${timestamp}-${randomString}-${file.originalname}`;
 
-    const uploadResults = await Promise.all(uploadPromises);
+        const putObjectCommand = new PutObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: key,
+          Body: fs.readFileSync(file.path),
+          ContentType: file.mimetype,
+        });
 
-    // Add images to gallery array
-    const newImages = uploadResults.map(result => ({
-      public_id: result.public_id,
-      url: result.secure_url,
-      caption: caption || "",
-      uploadedAt: new Date()
-    }));
+        await s3Client.send(putObjectCommand);
+        const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION || "ap-southeast-2"}.amazonaws.com/${key}`;
+
+        // Clean up uploaded file
+        fs.unlinkSync(file.path);
+
+        return {
+          public_id: key,
+          url: url,
+          caption: caption || "",
+          uploadedAt: new Date()
+        };
+      } catch (error) {
+        console.error(`Error uploading file ${file.originalname}:`, error);
+        throw error;
+      }
+    });
+
+    const newImages = await Promise.all(uploadPromises);
 
     hackathon.gallery.push(...newImages);
     await hackathon.save();
@@ -227,9 +244,14 @@ export const deleteGalleryImage = async (req, res) => {
       return res.status(404).json({ message: "Image not found in gallery" });
     }
 
-    // Delete from Cloudinary
-    const publicId = hackathon.gallery[imageIndex].public_id;
-    await cloudinary.uploader.destroy(publicId);
+    // ✅ Delete from AWS S3
+    const s3Key = hackathon.gallery[imageIndex].public_id;
+    const deleteObjectCommand = new DeleteObjectCommand({
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: s3Key,
+    });
+    await s3Client.send(deleteObjectCommand);
+    console.log(`Deleted file from S3: ${s3Key}`);
 
     // Remove from gallery array
     hackathon.gallery.splice(imageIndex, 1);

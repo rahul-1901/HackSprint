@@ -260,7 +260,7 @@ export const ContentSection = ({ activeSection, hackathon }) => {
       case "discussion":
         return (
           <div>
-            <SectionHeader>Community Discussion</SectionHeader>
+            {/* <SectionHeader>Community Discussion</SectionHeader> */}
             <ChatInterface hackathonId={hackathon._id} />
           </div>
         );

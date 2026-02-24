@@ -6,7 +6,7 @@ import RegisteredParticipantsModel from "../models/registeredParticipants.js";
 import PendingHackathon from "../models/pendingHackathon.model.js";
 import Admin from "../models/admin.model.js";
 import TeamModel from "../models/team.js";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import s3Client from "../config/aws.js";
 import fs from "fs";
 // import cloudinary from "../config/cloudinary.js"; // COMMENTED OUT - REPLACED WITH AWS S3
@@ -122,7 +122,7 @@ export const createPendingHackathon = async (req, res) => {
         });
 
         await s3Client.send(putObjectCommand);
-        imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com/${key}`;
+        imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION || "ap-southeast-2"}.amazonaws.com/${key}`;
 
         // Clean up uploaded file
         fs.unlinkSync(req.file.path);
@@ -211,7 +211,7 @@ export const approveHackathon = async (req, res) => {
     const { pendingHackathonId, adminId } = req.body;
     console.log("Pending Hackathon ID:", pendingHackathonId);
     console.log("Admin ID:", adminId);
-    
+
     const admin = await Admin.findById(adminId);
     console.log("Admin found:", admin ? admin.adminName : "Not found");
     console.log("Is controller:", admin?.controller);
@@ -247,11 +247,11 @@ export const approveHackathon = async (req, res) => {
 
     if (allApproved) {
       console.log("All controllers approved! Moving to main collection...");
-      
+
       // Convert pending hackathon to plain object and clean it
       const pendingData = pending.toObject();
       console.log("Pending data fields:", Object.keys(pendingData));
-      
+
       // Remove fields that don't belong in the main hackathon model
       delete pendingData._id;
       delete pendingData.approvals;
@@ -259,23 +259,23 @@ export const approveHackathon = async (req, res) => {
       delete pendingData.createdAt;
       delete pendingData.updatedAt;
       delete pendingData.__v;
-      
+
       // Add gallery field (empty array) if not present
       if (!pendingData.gallery) {
         pendingData.gallery = [];
       }
-      
+
       // Determine the correct status based on dates
       const now = new Date();
       console.log("Current date:", now);
       console.log("Start date:", pendingData.startDate);
       console.log("Submission end date:", pendingData.submissionEndDate);
-      
+
       const isActive = pendingData.startDate <= now && pendingData.submissionEndDate >= now;
       pendingData.status = isActive;
       console.log("Is active?", isActive);
       console.log("Setting status to:", pendingData.status);
-      
+
       // Create and save the hackathon
       const hackathon = new hackathonModel(pendingData);
       await hackathon.save();
@@ -297,7 +297,7 @@ export const approveHackathon = async (req, res) => {
 
     console.log("Not all controllers approved yet");
     console.log("=== END APPROVAL REQUEST ===");
-    
+
     res.status(200).json({
       success: true,
       message: "Hackathon approved. Waiting for other controller approvals.",
