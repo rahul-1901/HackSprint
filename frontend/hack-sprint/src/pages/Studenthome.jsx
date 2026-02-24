@@ -1,8 +1,24 @@
 import React, { useState, useEffect } from "react";
-import {Link} from 'react-router-dom'
-import { Calendar, Users, Trophy, Github, ArrowRight, ChevronDown, Sparkles, Code, Target, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  Calendar,
+  Users,
+  Trophy,
+  Github,
+  ArrowRight,
+  ChevronDown,
+  Sparkles,
+  Code,
+  Target,
+  Clock,
+} from "lucide-react";
 
-const Button = ({ children, className = "", variant = "default", ...props }) => {
+const Button = ({
+  children,
+  className = "",
+  variant = "default",
+  ...props
+}) => {
   const variants = {
     default:
       "bg-gradient-to-r from-emerald-600 to-green-700 text-gray-900 hover:from-emerald-600 hover:to-green-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-emerald-400/25",
@@ -10,13 +26,23 @@ const Button = ({ children, className = "", variant = "default", ...props }) => 
       "border-2 border-gray-700 text-gray-300 hover:text-white hover:border-emerald-400 hover:bg-emerald-400/10 transform hover:scale-105 transition-all duration-200",
   };
   return (
-    <button className={`px-6 py-3 rounded-lg font-medium ${variants[variant]} ${className}`} {...props}>
+    <button
+      className={`px-6 py-3 rounded-lg font-medium ${variants[variant]} ${className}`}
+      {...props}
+    >
       {children}
     </button>
   );
 };
 
-const InteractiveCard = ({ title, desc, icon: Icon, className = "", delay = 0, onClick }) => {
+const InteractiveCard = ({
+  title,
+  desc,
+  icon: Icon,
+  className = "",
+  delay = 0,
+  onClick,
+}) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
 
@@ -28,19 +54,33 @@ const InteractiveCard = ({ title, desc, icon: Icon, className = "", delay = 0, o
 
   return (
     <div
-      className={`group p-8 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-gray-700 hover:border-emerald-400 hover:shadow-2xl hover:shadow-emerald-400/20 transform hover:-translate-y-2 transition-all duration-300 cursor-pointer ${isClicked ? "scale-95" : ""}`}
+      className={`group p-8 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-gray-700 hover:border-emerald-400 hover:shadow-2xl hover:shadow-emerald-400/20 transform hover:-translate-y-2 transition-all duration-300 cursor-pointer ${
+        isClicked ? "scale-95" : ""
+      }`}
       style={{ animationDelay: `${delay}ms` }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleClick}
     >
       <div className="flex items-center mb-4">
-        <div className={`p-3 rounded-lg bg-emerald-400/10 mr-4 transition-all duration-300 ${isHovered ? "bg-emerald-400/20 scale-110" : ""}`}>
-          <Icon className={`w-8 h-8 text-emerald-400 transition-all duration-300 ${isHovered ? "text-emerald-300 scale-110" : ""}`} />
+        <div
+          className={`p-3 rounded-lg bg-emerald-400/10 mr-4 transition-all duration-300 ${
+            isHovered ? "bg-emerald-400/20 scale-110" : ""
+          }`}
+        >
+          <Icon
+            className={`w-8 h-8 text-emerald-400 transition-all duration-300 ${
+              isHovered ? "text-emerald-300 scale-110" : ""
+            }`}
+          />
         </div>
-        <h3 className="font-semibold text-xl group-hover:text-emerald-300 transition-colors duration-300">{title}</h3>
+        <h3 className="font-semibold text-xl group-hover:text-emerald-300 transition-colors duration-300">
+          {title}
+        </h3>
       </div>
-      <p className="text-gray-300 text-md leading-relaxed group-hover:text-gray-200 transition-colors duration-300">{desc}</p>
+      <p className="text-gray-300 text-md leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
+        {desc}
+      </p>
       <div className="mt-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
         <ArrowRight className="w-5 h-5 text-emerald-400" />
       </div>
@@ -48,7 +88,14 @@ const InteractiveCard = ({ title, desc, icon: Icon, className = "", delay = 0, o
   );
 };
 
-const HackathonCard = ({ title, date, desc, status = "upcoming", participants = 0, delay = 0 }) => {
+const HackathonCard = ({
+  title,
+  date,
+  desc,
+  status = "upcoming",
+  participants = 0,
+  delay = 0,
+}) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const statusColors = {
@@ -67,7 +114,9 @@ const HackathonCard = ({ title, date, desc, status = "upcoming", participants = 
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center">
           <Calendar className="w-6 h-6 text-emerald-400 mr-3" />
-          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusColors[status]}`}>
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium border ${statusColors[status]}`}
+          >
             {status.charAt(0).toUpperCase() + status.slice(1)}
           </span>
         </div>
@@ -79,9 +128,13 @@ const HackathonCard = ({ title, date, desc, status = "upcoming", participants = 
         )}
       </div>
 
-      <h3 className="font-semibold text-xl mb-2 group-hover:text-emerald-300 transition-colors duration-300">{title}</h3>
+      <h3 className="font-semibold text-xl mb-2 group-hover:text-emerald-300 transition-colors duration-300">
+        {title}
+      </h3>
       <p className="text-emerald-400 font-medium mb-3">{date}</p>
-      <p className="text-gray-300 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">{desc}</p>
+      <p className="text-gray-300 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
+        {desc}
+      </p>
 
       <div className="mt-6 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
         <Button variant="outline" className="text-sm py-2 px-4 bg-transparent">
@@ -97,17 +150,30 @@ const FAQItem = ({ q, a, delay = 0 }) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className={`bg-gradient-to-r from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 hover:border-emerald-400 transition-all duration-300`} style={{ animationDelay: `${delay}ms` }}>
+    <div
+      className={`bg-gradient-to-r from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 hover:border-emerald-400 transition-all duration-300`}
+      style={{ animationDelay: `${delay}ms` }}
+    >
       <button
         className="w-full flex justify-between items-center font-semibold text-left group"
         onClick={() => setOpen(!open)}
       >
-        <span className="group-hover:text-emerald-300 transition-colors duration-200">{q}</span>
-        <div className={`p-2 rounded-full bg-emerald-400/10 transition-all duration-300 ${open ? "bg-emerald-400/20 rotate-180" : ""}`}>
+        <span className="group-hover:text-emerald-300 transition-colors duration-200">
+          {q}
+        </span>
+        <div
+          className={`p-2 rounded-full bg-emerald-400/10 transition-all duration-300 ${
+            open ? "bg-emerald-400/20 rotate-180" : ""
+          }`}
+        >
           <ChevronDown className="w-5 h-5 text-emerald-400" />
         </div>
       </button>
-      <div className={`overflow-hidden transition-all duration-300 ${open ? "max-h-96 opacity-100 mt-4" : "max-h-0 opacity-0"}`}>
+      <div
+        className={`overflow-hidden transition-all duration-300 ${
+          open ? "max-h-96 opacity-100 mt-4" : "max-h-0 opacity-0"
+        }`}
+      >
         <p className="text-gray-300 leading-relaxed pl-2">{a}</p>
       </div>
     </div>
@@ -152,11 +218,19 @@ export default function StudentHome() {
       {/* Hero Section */}
       <section className="relative py-32 overflow-hidden">
         <div className="container mx-auto px-6 text-center relative z-10">
-          <div className={`transition-all duration-1000 transform ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}>
+          <div
+            className={`transition-all duration-1000 transform ${
+              isVisible
+                ? "translate-y-0 opacity-100"
+                : "translate-y-10 opacity-0"
+            }`}
+          >
             <div className="flex justify-center mb-6">
               <div className="flex items-center space-x-2 bg-emerald-400/10 px-4 py-2 rounded-full border border-emerald-400/20">
                 <Sparkles className="w-4 h-4 text-emerald-400" />
-                <span className="text-emerald-300 font-medium ZaptronFont">Join the Innovation</span>
+                <span className="text-emerald-300 font-medium ZaptronFont">
+                  Join the Innovation
+                </span>
               </div>
             </div>
 
@@ -164,7 +238,9 @@ export default function StudentHome() {
               Hackathons for Students & Innovators
             </h1>
             <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
-              Join hackathons, learn new skills, collaborate with peers, and bring your ideas to life. Build real projects, gain mentorship, and enhance your portfolio with hands-on experience.
+              Join hackathons, learn new skills, collaborate with peers, and
+              bring your ideas to life. Build real projects, gain mentorship,
+              and enhance your portfolio with hands-on experience.
             </p>
 
             {/* <div className="flex justify-center space-x-8 mb-8">
@@ -334,7 +410,7 @@ export default function StudentHome() {
               {
                 q: "How do I submit my project?",
                 a: "Submit your project through the provided portal before the deadline. Make sure to include your code, demo, and presentation materials.",
-              }
+              },
             ].map((faq, i) => (
               <FAQItem key={i} {...faq} delay={i * 100} />
             ))}

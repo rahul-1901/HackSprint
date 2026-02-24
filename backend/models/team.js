@@ -3,58 +3,58 @@ import mongoose from "mongoose";
 const teamSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
 
   leader: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "users",
-    required: true
+    required: true,
   },
-  leaderName : {
-    type : String,
-    required : true
+  leaderName: {
+    type: String,
+    required: true,
   },
-  leaderEmail : {
-    type : String,
-    required : true
+  leaderEmail: {
+    type: String,
+    required: true,
   },
   members: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "users"
-    }
+      ref: "users",
+    },
   ],
-  secretCode:{
-    type : String
+  secretCode: {
+    type: String,
   },
-  secretLink:{
-    type : String
+  secretLink: {
+    type: String,
   },
-  pendingMembers : [
+  pendingMembers: [
     {
-      type : mongoose.Schema.Types.ObjectId,
-      ref : "users"
-    }
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+    },
   ],
 
   hackathon: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "hackathons",
-    required: true
+    required: true,
   },
-  
+
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
-  teamSize : {
-    type : Number
-  },
-  maxTeamSize : {
+  teamSize: {
     type: Number,
-    default : 4
-  }
+  },
+  maxTeamSize: {
+    type: Number,
+    default: 4,
+  },
 });
 
 teamSchema.pre("save", function (next) {
