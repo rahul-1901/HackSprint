@@ -3,6 +3,7 @@ import { Badge } from "./Badge";
 import { Button } from "./Button";
 import { Clock, Code, Users, ChevronDown, ChevronUp } from "lucide-react";
 import ChatInterface from "../components/Chat/ChatInterface";
+import Upvote from "./Upvote";
 
 
 export const ContentSection = ({ activeSection, hackathon }) => {
@@ -259,6 +260,14 @@ export const ContentSection = ({ activeSection, hackathon }) => {
           <div>
             <SectionHeader>Community Discussion</SectionHeader>
             <ChatInterface hackathonId={hackathon._id} />
+          </div>
+        );
+
+      case "upvote":
+        return (
+          <div>
+            <SectionHeader>Upvote Submissions</SectionHeader>
+            <Upvote />
           </div>
         );
 

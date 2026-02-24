@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Award, FileText, Scale, CircleHelp, Info, MessagesSquare, NotebookPen, Target as ThemeIcon
+  LayoutDashboard, Award, FileText, Scale, CircleHelp, Info, MessagesSquare, NotebookPen, Target as ThemeIcon, ThumbsUp
 } from "lucide-react";
 
 export const SidebarNav = ({ activeSection, onSectionChange }) => {
@@ -10,6 +10,7 @@ export const SidebarNav = ({ activeSection, onSectionChange }) => {
     { id: "submission-guide", label: "Submission", icon: NotebookPen },
     { id: "judging", label: "Judging", icon: Scale },
     { id: "results", label: "Results", icon: Award },
+    { id: "upvote", label: "Upvote", icon: ThumbsUp },
     { id: "rules", label: "Rules", icon: FileText },
     { id: "faqs", label: "FAQs", icon: CircleHelp },
     { id: "about", label: "About", icon: Info },
