@@ -100,6 +100,14 @@ const pendingHackathonSchema = new mongoose.Schema({
     images: { type: [String], default: ["jpg", "jpeg", "png"] },
     videos: { type: [String], default: ["mp4"] },
   },
+  gallery: [
+    {
+      public_id: { type: String, required: true },
+      url: { type: String, required: true },
+      caption: { type: String, default: "" },
+      uploadedAt: { type: Date, default: Date.now }
+    }
+  ],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Admin",

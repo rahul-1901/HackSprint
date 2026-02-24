@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Code, Trophy, Calendar, DollarSign, Users, BookOpen, Settings, CheckCircle, AlertCircle, Info, Star, FileText, Target, Award } from 'lucide-react';
+import { Plus, Code, Trophy, Calendar, DollarSign, Users, BookOpen, Settings, CheckCircle, AlertCircle, Info, Star, FileText, Target, Award, Images, X } from 'lucide-react';
 
 const Admin = () => {
     const [activeTab, setActiveTab] = useState('devquest');
@@ -32,6 +32,7 @@ const Admin = () => {
         TandCforHackathon: [],
         evaluationCriteria: [],
         registeredParticipants: [],
+        gallery: [], // Gallery images array
         image: null, // Add image field for file
         imagePreview: '' // Add imagePreview for displaying the image
     });
@@ -43,6 +44,7 @@ const Admin = () => {
     const [newTheme, setnewTheme] = useState('');
     const [newTandC, setNewTandC] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [galleryPreviews, setGalleryPreviews] = useState([]);
 
     const difficultyOptions = ['Expert', 'Advanced', 'Intermediate', 'Beginner'];
     const categoryOptions = ['Web Dev', 'AI/ML', 'Blockchain', 'IoT', 'Other'];
@@ -81,8 +83,95 @@ const Admin = () => {
             if (hackathonForm.imagePreview) {
                 URL.revokeObjectURL(hackathonForm.imagePreview);
             }
+            // Cleanup gallery previews
+            galleryPreviews.forEach(preview => {
+                if (preview.url) {
+                    URL.revokeObjectURL(preview.url);
+                }
+            });
         };
-    }, [hackathonForm.imagePreview]);
+    }, [hackathonForm.imagePreview, galleryPreviews]);
+
+    const handleGalleryUpload = (e) => {
+        const files = Array.from(e.target.files);
+        
+        // Validate total number of images (max 10)
+        if (files.length + hackathonForm.gallery.length > 10) {
+            alert('You can upload a maximum of 10 gallery images.');
+            return;
+        }
+
+        const validFiles = [];
+        const validPreviews = [];
+
+        files.forEach(file => {
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                alert(`Image ${file.name} is too large. Maximum size is 5MB.`);
+                return;
+            }
+
+            // Validate file type
+            const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validImageTypes.includes(file.type)) {
+                alert(`${file.name} is not a valid image file.`);
+                return;
+            }
+
+            validFiles.push(file);
+            validPreviews.push({
+                file,
+                url: URL.createObjectURL(file),
+                caption: ''
+            });
+        });
+
+        // Update state
+        setHackathonForm({
+            ...hackathonForm,
+            gallery: [...hackathonForm.gallery, ...validFiles]
+        });
+        setGalleryPreviews([...galleryPreviews, ...validPreviews]);
+    };
+
+    const removeGalleryImage = (index) => {
+        // Cleanup preview URL
+        if (galleryPreviews[index]?.url) {
+            URL.revokeObjectURL(galleryPreviews[index].url);
+        }
+
+        // Remove from both arrays
+        const newGallery = hackathonForm.gallery.filter((_, i) => i !== index);
+        const newPreviews = galleryPreviews.filter((_, i) => i !== index);
+
+        setHackathonForm({ ...hackathonForm, gallery: newGallery });
+        setGalleryPreviews(newPreviews);
+    };
+
+    const uploadGalleryImages = async (hackathonId) => {
+        try {
+            for (let i = 0; i < hackathonForm.gallery.length; i++) {
+                const formData = new FormData();
+                formData.append('image', hackathonForm.gallery[i]);
+                formData.append('caption', galleryPreviews[i]?.caption || '');
+
+                await axios.post(
+                    `${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${hackathonId}/gallery`,
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            Authorization: `Bearer ${localStorage.getItem('token')}`
+                        }
+                    }
+                );
+            }
+            console.log('Gallery images uploaded successfully');
+        } catch (error) {
+            console.error('Error uploading gallery images:', error);
+            alert('Hackathon created but some gallery images failed to upload.');
+        }
+    };
 
     const handleDevQuestSubmit = async (e) => {
         e.preventDefault();
@@ -118,16 +207,7 @@ const Admin = () => {
         setIsSubmitting(true);
 
         try {
-            // Simulate API call
-            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-            // console.log('Hackathon Form Data:', Object.fromEntries(formData));
-            alert(response.data.message); // Display backend success message
-
-            // Create FormData for API submission (if needed)
+            // Create FormData for API submission
             const formData = new FormData();
             formData.append('title', hackathonForm.title);
             formData.append('subTitle', hackathonForm.subTitle);
@@ -148,53 +228,69 @@ const Admin = () => {
             formData.append('TandCforHackathon', JSON.stringify(hackathonForm.TandCforHackathon));
             formData.append('evaluationCriteria', JSON.stringify(hackathonForm.evaluationCriteria));
             formData.append('registeredParticipants', JSON.stringify(hackathonForm.registeredParticipants));
+            
+            // Add main hackathon image
             if (hackathonForm.image) {
                 formData.append('image', hackathonForm.image);
             }
 
-            // console.log('Hackathon Form Data:', Object.fromEntries(formData)); // Log for debugging
-            alert('Hackathon created successfully!');
+            // Add gallery images (Note: Gallery images will be uploaded separately after hackathon creation)
+            // For now, we'll initialize with empty gallery array
+            formData.append('gallery', JSON.stringify([]));
+
+            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            
+            alert(response.data.message || 'Hackathon created successfully!');
+
+            // If there are gallery images, upload them separately
+            if (hackathonForm.gallery.length > 0 && response.data.hackathon?._id) {
+                await uploadGalleryImages(response.data.hackathon._id);
+            }
+
+            // Reset form after successful submission
+            setHackathonForm({
+                title: '',
+                subTitle: '',
+                description: '',
+                startDate: '',
+                endDate: '',
+                refMaterial: '',
+                // status: false,
+                difficulty: 'Intermediate',
+                category: [],
+                prizeMoney: '',
+                techStackUsed: [],
+                overview: '',
+                themes: [],
+                FAQs: [],
+                teams: [],
+                aboutUs: '',
+                projectSubmission: [],
+                TandCforHackathon: [],
+                evaluationCriteria: [],
+                registeredParticipants: [],
+                gallery: [],
+                image: null,
+                imagePreview: ''
+            });
+            setCustomCategory('');
+            setCustomTechStack('');
+            setCustomTheme('');
+            setNewFAQ({ question: '', answer: '' });
+            setNewEvalCriteria('');
+            setnewTheme('');
+            setNewTandC('');
+            setGalleryPreviews([]);
         } catch (error) {
             console.error('Error submitting hackathon:', error);
             alert('Failed to create hackathon: ' + (error.response?.data?.error || 'Unknown error'));
+        } finally {
+            setIsSubmitting(false);
         }
-
-        // console.log('Hackathon Form Data:', hackathonForm);
-        alert('Hackathon created successfully!');
-
-        // Reset form
-        setHackathonForm({
-            title: '',
-            subTitle: '',
-            description: '',
-            startDate: '',
-            endDate: '',
-            refMaterial: '',
-            // status: false,
-            difficulty: 'Intermediate',
-            category: [],
-            prizeMoney: '',
-            techStackUsed: [],
-            overview: '',
-            themes: [],
-            FAQs: [],
-            teams: [],
-            aboutUs: '',
-            projectSubmission: [],
-            TandCforHackathon: [],
-            evaluationCriteria: [],
-            registeredParticipants: [],
-            image: null,
-            imagePreview: ''
-        });
-        setCustomCategory('');
-        setCustomTechStack('');
-        setCustomTheme('');
-        setNewFAQ({ question: '', answer: '' });
-        setNewEvalCriteria('');
-        setnewTheme('');
-        setNewTandC('');
-        setIsSubmitting(false);
     };
 
     const handleOptionChange = (index, value) => {
@@ -635,6 +731,55 @@ const Admin = () => {
                                         >
                                             Remove Image
                                         </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Gallery Images Upload */}
+                            <div className="space-y-2">
+                                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                                    <Images className="h-4 w-4 text-purple-400" />
+                                    <span>Upload Gallery Images (Optional - Max 10)</span>
+                                </label>
+                                <p className="text-sm text-gray-400 mb-2">
+                                    Upload images to showcase in the hackathon gallery. You can upload up to 10 images.
+                                </p>
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/gif,image/webp"
+                                    multiple
+                                    onChange={handleGalleryUpload}
+                                    disabled={hackathonForm.gallery.length >= 10}
+                                    className="w-full px-4 py-3 bg-gray-800/80 border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 transition-all duration-300 hover:border-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                />
+                                
+                                {galleryPreviews.length > 0 && (
+                                    <div className="mt-4 space-y-3">
+                                        <p className="text-sm text-gray-300 font-semibold">
+                                            Gallery Preview ({galleryPreviews.length}/10 images)
+                                        </p>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                            {galleryPreviews.map((preview, index) => (
+                                                <div key={index} className="relative group">
+                                                    <img
+                                                        src={preview.url}
+                                                        alt={`Gallery ${index + 1}`}
+                                                        className="w-full h-32 object-cover rounded-lg border border-gray-700/50 shadow-lg"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeGalleryImage(index)}
+                                                        className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                                        title="Remove image"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </button>
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center rounded-b-lg">
+                                                        Image {index + 1}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>

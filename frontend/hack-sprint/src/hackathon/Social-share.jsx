@@ -1,3 +1,4 @@
+import React from "react";
 import { Share2, Instagram, GithubIcon, Linkedin, Link2, Heart, Github } from "lucide-react";
 import { Button } from "./Button";
 import { useState } from "react";

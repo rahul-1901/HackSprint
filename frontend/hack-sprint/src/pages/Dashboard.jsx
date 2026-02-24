@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getDashboard, addEducation, editEducation, deleteEducation, deleteConnectedApp, addConnectedApp, editConnectedApp, addLanguages, deleteLanguages, addSkills, deleteSkills } from "../backendApis/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Eye, CheckCircle, MessageSquare, Star, Coins, User } from "lucide-react";
+import { Eye, CheckCircle, MessageSquare, Star, Coins, User, Heart, ExternalLink, FileText, Video, RefreshCw } from "lucide-react";
 import { School, Clock, Laptop, MapPin, Edit } from "lucide-react";
 import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
@@ -49,6 +49,14 @@ export const UserDashboard = () => {
   const [submission, setSubmission] = useState([]);
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [selectedHackathonId, setSelectedHackathonId] = useState(null);
+  const [likedSubmissions, setLikedSubmissions] = useState([]);
+  const [loadingWishlist, setLoadingWishlist] = useState(false);
+
+  // Debug: Log whenever likedSubmissions changes
+  useEffect(() => {
+    console.log("👉 likedSubmissions state updated:", likedSubmissions);
+    console.log("👉 Number of items:", likedSubmissions.length);
+  }, [likedSubmissions]);
 
   const navigate = useNavigate();
 
@@ -312,6 +320,57 @@ export const UserDashboard = () => {
     if (data?.submittedHackathons.length > 0) {
       fetchSubmissions();
     }
+  }, [data]);
+
+  // Fetch user's liked submissions (wishlist)
+  const fetchWishlist = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.log("No token found, skipping wishlist fetch");
+      return;
+    }
+
+    console.log("=== FETCHING WISHLIST ===");
+    setLoadingWishlist(true);
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/votes/wishlist`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      console.log("Wishlist API response:", res.data);
+      console.log("Number of liked submissions:", res.data.likedSubmissions?.length);
+      
+      if (res.data.success) {
+        console.log("Setting liked submissions:", res.data.likedSubmissions);
+        setLikedSubmissions(res.data.likedSubmissions);
+      } else {
+        console.log("API call succeeded but success flag is false");
+      }
+    } catch (err) {
+      console.error("Error fetching wishlist:", err);
+      if (err.response) {
+        console.error("Error response status:", err.response.status);
+        console.error("Error response data:", err.response.data);
+      }
+    } finally {
+      setLoadingWishlist(false);
+      console.log("=== END FETCHING WISHLIST ===");
+    }
+  };
+
+  useEffect(() => {
+    console.log("Wishlist useEffect triggered, data:", !!data);
+    if (data) {
+      fetchWishlist();
+    }
+  }, [data]);
+
+  useEffect(() => {
   }, [data]);
 
   useEffect(() => {
@@ -910,6 +969,122 @@ export const UserDashboard = () => {
                 })
               ) : (
                 <p className="text-gray-500">No hackathons submitted yet.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Liked Submissions (Wishlist) */}
+          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-green-400 flex items-center gap-2">
+                <Heart className="w-5 h-5" />
+                Liked Submissions
+              </h3>
+              <button
+                onClick={() => fetchWishlist()}
+                disabled={loadingWishlist}
+                className="flex items-center gap-2 px-3 py-1.5 bg-green-500/20 border border-green-500/40 rounded-lg text-green-400 hover:bg-green-500/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Refresh wishlist"
+              >
+                <RefreshCw className={`w-4 h-4 ${loadingWishlist ? 'animate-spin' : ''}`} />
+                <span className="text-sm">Refresh</span>
+              </button>
+            </div>
+            <div className="space-y-4 mt-2">
+              {loadingWishlist ? (
+                <p className="text-gray-400 text-sm">Loading liked submissions...</p>
+              ) : likedSubmissions.length > 0 ? (
+                likedSubmissions.map((submission) => {
+                  const likedDate = submission.likedAt
+                    ? new Date(submission.likedAt).toLocaleDateString()
+                    : "-";
+                  const submittedDate = submission.submittedAt
+                    ? new Date(submission.submittedAt).toLocaleDateString()
+                    : "-";
+
+                  return (
+                    <div
+                      key={submission._id}
+                      className="flex flex-col md:flex-row items-start bg-white/5 border border-green-500/20 rounded-xl p-4 hover:border-green-400 transition-all"
+                    >
+                      {/* Hackathon Image */}
+                      {submission.hackathon?.image && (
+                        <div className="w-full md:w-32 h-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden mr-4 mb-3 md:mb-0">
+                          <img
+                            src={submission.hackathon.image}
+                            alt={submission.hackathon.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+
+                      {/* Submission Details */}
+                      <div className="flex-1">
+                        <div className="mb-2">
+                          <h4 className="text-base font-semibold text-white">
+                            {submission.teamName || submission.participantName || "Unknown"}
+                          </h4>
+                          <p className="text-sm text-gray-400">
+                            {submission.hackathon?.title || "Unknown Hackathon"}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 mb-2">
+                          <span className="flex items-center gap-1">
+                            <Heart className="w-3 h-3 text-pink-400 fill-pink-400" />
+                            Liked: {likedDate}
+                          </span>
+                          <span>Submitted: {submittedDate}</span>
+                          {submission.hackathonPoints > 0 && (
+                            <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400">
+                              {submission.hackathonPoints} pts
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Links */}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {submission.repoUrl && submission.repoUrl.length > 0 && (
+                            <a
+                              href={submission.repoUrl[0]}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center gap-1 px-3 py-1 bg-blue-500/20 border border-blue-500/40 rounded-lg text-blue-400 hover:bg-blue-500/30 text-xs transition-all"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              Repository
+                            </a>
+                          )}
+                          {submission.docs && submission.docs.length > 0 && (
+                            <span className="flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-lg text-green-400 text-xs">
+                              <FileText className="w-3 h-3" />
+                              {submission.docs.length} Doc{submission.docs.length > 1 ? "s" : ""}
+                            </span>
+                          )}
+                          {submission.videos && submission.videos.length > 0 && (
+                            <span className="flex items-center gap-1 px-3 py-1 bg-purple-500/20 border border-purple-500/40 rounded-lg text-purple-400 text-xs">
+                              <Video className="w-3 h-3" />
+                              {submission.videos.length} Video{submission.videos.length > 1 ? "s" : ""}
+                            </span>
+                          )}
+                          {submission.hackathon?._id && (
+                            <button
+                              onClick={() => navigate(`/hackathon/${submission.hackathon._id}`)}
+                              className="flex items-center gap-1 px-3 py-1 bg-gray-500/20 border border-gray-500/40 rounded-lg text-gray-400 hover:bg-gray-500/30 text-xs transition-all cursor-pointer"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              View Hackathon
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-gray-500 text-sm">
+                  No liked submissions yet. Visit the Upvote section in hackathons to like submissions!
+                </p>
               )}
             </div>
           </div>

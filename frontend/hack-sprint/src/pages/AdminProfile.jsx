@@ -94,18 +94,61 @@ const HackathonCard = ({ hackathon }) => {
   );
 };
 
-const PendingHackathonCard = ({ hackathon, onApprove, onReject }) => (
-  <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-    <div>
-      <p className="font-bold text-white">{hackathon.title}</p>
-      <p className="text-sm text-gray-400">Submitted: {new Date(hackathon.createdAt).toLocaleDateString()}</p>
+const PendingHackathonCard = ({ hackathon, onApprove, onReject }) => {
+  const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
+
+  const handleApproveClick = async () => {
+    if (isApproving || isRejecting) return;
+    setIsApproving(true);
+    try {
+      await onApprove(hackathon._id);
+    } finally {
+      setIsApproving(false);
+    }
+  };
+
+  const handleRejectClick = async () => {
+    if (isApproving || isRejecting) return;
+    setIsRejecting(true);
+    try {
+      await onReject(hackathon._id);
+    } finally {
+      setIsRejecting(false);
+    }
+  };
+
+  return (
+    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div>
+        <p className="font-bold text-white">{hackathon.title}</p>
+        <p className="text-sm text-gray-400">Submitted: {new Date(hackathon.createdAt).toLocaleDateString()}</p>
+      </div>
+      <div className="flex-shrink-0 flex gap-2">
+        <button 
+          onClick={handleApproveClick} 
+          disabled={isApproving || isRejecting}
+          className={`bg-green-500/20 hover:bg-green-500/40 text-green-300 font-bold p-2 rounded-full transition-colors ${
+            isApproving || isRejecting ? 'opacity-50 cursor-not-allowed' : ''
+          }`} 
+          title="Approve"
+        >
+          {isApproving ? <Clock size={20} className="animate-spin" /> : <Check size={20} />}
+        </button>
+        <button 
+          onClick={handleRejectClick} 
+          disabled={isApproving || isRejecting}
+          className={`bg-red-500/20 hover:bg-red-500/40 text-red-300 font-bold p-2 rounded-full transition-colors ${
+            isApproving || isRejecting ? 'opacity-50 cursor-not-allowed' : ''
+          }`} 
+          title="Reject"
+        >
+          {isRejecting ? <Clock size={20} className="animate-spin" /> : <X size={20} />}
+        </button>
+      </div>
     </div>
-    <div className="flex-shrink-0 flex gap-2">
-      <button onClick={() => onApprove(hackathon._id)} className="bg-green-500/20 hover:bg-green-500/40 text-green-300 font-bold p-2 rounded-full transition-colors" title="Approve"><Check size={20} /></button>
-      <button onClick={() => onReject(hackathon._id)} className="bg-red-500/20 hover:bg-red-500/40 text-red-300 font-bold p-2 rounded-full transition-colors" title="Reject"><X size={20} /></button>
-    </div>
-  </div>
-);
+  );
+};
 
 const AdminProfile = () => {
   const navigate = useNavigate();
@@ -187,10 +230,17 @@ const AdminProfile = () => {
 
   const handleApprove = async (pendingId) => {
     try {
-      await approveHackathon({ pendingHackathonId: pendingId, adminId: adminData.id });
-      toast.success("Hackathon approved!");
-      setPendingHackathons(prev => prev.filter(h => h._id !== pendingId));
+      console.log("Approving hackathon:", pendingId, "Admin:", adminData.id);
+      const response = await approveHackathon({ pendingHackathonId: pendingId, adminId: adminData.id });
+      console.log("Approval response:", response.data);
+      toast.success(response.data.message || "Hackathon approved!");
+      
+      // Only remove if fully approved and moved to main collection
+      if (response.data.success && response.data.hackathon) {
+        setPendingHackathons(prev => prev.filter(h => h._id !== pendingId));
+      }
     } catch (error) {
+      console.error("Approval error:", error.response?.data);
       toast.error(error.response?.data?.message || "Approval failed.");
     }
   };

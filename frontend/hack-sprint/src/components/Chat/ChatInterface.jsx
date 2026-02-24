@@ -3,20 +3,53 @@ import io from "socket.io-client";
 import { Send, Hash, MessageSquare, User, Loader2 } from "lucide-react";
 import MessageBubble from "./MessageBubble";
 import { toast } from "react-toastify";
-import { jwtDecode } from "jwt-decode"; // Move import to top
+import { jwtDecode } from "jwt-decode";
 
 const SOCKET_URL = import.meta.env.VITE_API_BASE_URL.replace('/api', '');
-const socket = io(SOCKET_URL);
+let socket = null;
 
 const ChatInterface = ({ hackathonId }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [isLoading, setIsLoading] = useState(true);
-    const [currentChatId, setCurrentChatId] = useState(hackathonId); // Default to hackathon group
-    const [activeTab, setActiveTab] = useState("group"); // 'group' or 'direct'
+    const [currentChatId, setCurrentChatId] = useState(hackathonId);
+    const [activeTab, setActiveTab] = useState("group");
     const [currentUser, setCurrentUser] = useState(null);
+    const [socketConnected, setSocketConnected] = useState(false);
 
     const messagesEndRef = useRef(null);
+
+    // Initialize socket connection
+    useEffect(() => {
+        if (!socket) {
+            socket = io(SOCKET_URL, {
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionAttempts: 5
+            });
+
+            socket.on('connect', () => {
+                console.log('Socket connected:', socket.id);
+                setSocketConnected(true);
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Socket disconnected');
+                setSocketConnected(false);
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('Socket connection error:', error);
+                setSocketConnected(false);
+            });
+        }
+
+        return () => {
+            // Don't disconnect socket on unmount, just clean up listeners
+            // socket?.disconnect();
+        };
+    }, []);
 
     useEffect(() => {
         const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
@@ -33,7 +66,7 @@ const ChatInterface = ({ hackathonId }) => {
     }, []);
 
     useEffect(() => {
-        if (!currentChatId) return;
+        if (!currentChatId || !socket || !socketConnected) return;
 
         // Join room
         socket.emit("join_room", currentChatId);
@@ -62,18 +95,20 @@ const ChatInterface = ({ hackathonId }) => {
         fetchHistory();
 
         // Listen for incoming messages
-        socket.on("receive_message", (message) => {
+        const handleReceiveMessage = (message) => {
             // Only append if it belongs to current chat
             if (message.chatId === currentChatId) {
                 setMessages((prev) => [...prev, message]);
             }
-        });
+        };
+
+        socket.on("receive_message", handleReceiveMessage);
 
         return () => {
             socket.emit("leave_room", currentChatId);
-            socket.off("receive_message");
+            socket.off("receive_message", handleReceiveMessage);
         };
-    }, [currentChatId]);
+    }, [currentChatId, socketConnected]);
 
     useEffect(() => {
         scrollToBottom();
@@ -154,8 +189,14 @@ const ChatInterface = ({ hackathonId }) => {
                         <Hash className="w-5 h-5 text-green-400" />
                         <h3 className="font-bold text-white">General Discussion</h3>
                     </div>
-                    <div className="text-xs text-gray-400">
-                        {messages.length} messages
+                    <div className="flex items-center gap-3">
+                        <div className="text-xs text-gray-400">
+                            {messages.length} messages
+                        </div>
+                        <div className={`flex items-center gap-1.5 text-xs ${socketConnected ? 'text-green-400' : 'text-red-400'}`}>
+                            <span className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></span>
+                            {socketConnected ? 'Connected' : 'Disconnected'}
+                        </div>
                     </div>
                 </div>
 
