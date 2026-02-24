@@ -6,7 +6,10 @@ import RegisteredParticipantsModel from "../models/registeredParticipants.js";
 import PendingHackathon from "../models/pendingHackathon.model.js";
 import Admin from "../models/admin.model.js";
 import TeamModel from "../models/team.js";
-import cloudinary from "../config/cloudinary.js";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import s3Client from "../config/aws.js";
+import fs from "fs";
+// import cloudinary from "../config/cloudinary.js"; // COMMENTED OUT - REPLACED WITH AWS S3
 
 // Get all hackathons created by a specific admin
 export const getAllHackathons = async (req, res) => {
@@ -104,6 +107,67 @@ export const createPendingHackathon = async (req, res) => {
   try {
     let imageUrl = "";
     if (req.file) {
+      try {
+        // ✅ AWS S3 Upload
+        const fileContent = fs.readFileSync(req.file.path);
+        const timestamp = Date.now();
+        const randomString = Math.random().toString(36).substring(2, 9);
+        const key = `hackathons/images/${timestamp}-${randomString}-${req.file.originalname}`;
+
+        const putObjectCommand = new PutObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: key,
+          Body: fileContent,
+          ContentType: req.file.mimetype,
+        });
+
+        await s3Client.send(putObjectCommand);
+        imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com/${key}`;
+
+        // Clean up uploaded file
+        fs.unlinkSync(req.file.path);
+      } catch (error) {
+        console.error("Error uploading to AWS S3:", error);
+        throw new Error(`File upload failed: ${error.message}`);
+      }
+    }
+
+    const data = req.body;
+
+    // ----- START of NECESSARY CHANGE -----
+    // This safely parses the fields that were sent as JSON strings from the frontend
+    const arrayFields = ['techStackUsed', 'category', 'themes', 'problems', 'TandCforHackathon', 'evaluationCriteria', 'FAQs'];
+    arrayFields.forEach(field => {
+      if (data[field] && typeof data[field] === 'string') {
+        data[field] = JSON.parse(data[field]);
+      }
+    });
+    // ----- END of NECESSARY CHANGE -----
+
+    data.createdBy = req.body.adminId;
+    delete data.adminId;
+    data.image = imageUrl || "";
+
+    const pendingHackathon = new PendingHackathon(data);
+    await pendingHackathon.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Hackathon created and waiting for approval",
+      pendingHackathon,
+    });
+  } catch (err) {
+    res.status(400).json({
+      error: err.message,
+    });
+  }
+};
+
+/* ✅ OLD CLOUDINARY CODE (COMMENTED OUT)
+export const createPendingHackathon = async (req, res) => {
+  try {
+    let imageUrl = "";
+    if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, { folder: "hackathons" });
       imageUrl = result.secure_url;
     }
@@ -138,6 +202,7 @@ export const createPendingHackathon = async (req, res) => {
     });
   }
 };
+*/
 
 // Approve a pending hackathon (controller-only)
 export const approveHackathon = async (req, res) => {

@@ -1,3 +1,4 @@
+// ✅ COMMENTED OUT - REPLACED WITH AWS S3
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
 
@@ -10,3 +11,5 @@ cloudinary.config({
 });
 
 export default cloudinary;
+
+// This file is deprecated. Use config/aws.js instead.

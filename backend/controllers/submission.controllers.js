@@ -1,47 +1,92 @@
 import path from "path";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import SubmissionModel from "../models/submission.js";
 import hackathonModel from "../models/hackathon.models.js";
 import TeamModel from "../models/team.js";
 import UserModel from "../models/user.models.js";
-import cloudinary from "../config/cloudinary.js";
+import s3Client from "../config/aws.js";
+// import cloudinary from "../config/cloudinary.js"; // COMMENTED OUT - USING AWS S3
 
 // helper: get file extension
 function getFileExtension(filename) {
   return path.extname(filename).slice(1).toLowerCase(); // e.g. ".pdf" → "pdf"
 }
 
-// ✅ helper: upload files to Cloudinary
+// ✅ helper: upload files to AWS S3
 const uploadFiles = async (files, resourceType, hackathonId) => {
   if (!files || files.length === 0) return [];
 
   const uploads = await Promise.all(
-    files.map(
-      (file) =>
-        new Promise((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            {
-              resource_type: resourceType,
-              folder: `hackathons/${hackathonId}`,
-            },
-            (error, result) => {
-              if (error) return reject(error);
-              resolve({
-                public_id: result.public_id,
-                url: result.secure_url,
-                resource_type: result.resource_type,
-                format: result.format,
-                original_filename: result.original_filename,
-                size: result.bytes,
-              });
-            }
-          );
-          stream.end(file.buffer); // 👈 Multer memoryStorage buffer
-        })
-    )
+    files.map(async (file) => {
+      try {
+        const fileExtension = getFileExtension(file.originalname);
+        const timestamp = Date.now();
+        const randomString = Math.random().toString(36).substring(2, 9);
+        const key = `hackathons/${hackathonId}/${resourceType}/${timestamp}-${randomString}-${file.originalname}`;
+
+        // ✅ Upload to AWS S3
+        const putObjectCommand = new PutObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: key,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        });
+
+        await s3Client.send(putObjectCommand);
+
+        // ✅ Generate S3 URL
+        const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com/${key}`;
+
+        return {
+          public_id: key,
+          url: url,
+          resource_type: resourceType,
+          format: fileExtension,
+          original_filename: file.originalname,
+          size: file.size,
+        };
+      } catch (error) {
+        console.error(`Error uploading file ${file.originalname}:`, error);
+        throw error;
+      }
+    })
   );
 
   return uploads;
 };
+// /* ✅ OLD CLOUDINARY CODE (COMMENTED OUT)
+// const uploadFiles = async (files, resourceType, hackathonId) => {
+//   if (!files || files.length === 0) return [];
+//
+//   const uploads = await Promise.all(
+//     files.map(
+//       (file) =>
+//         new Promise((resolve, reject) => {
+//           const stream = cloudinary.uploader.upload_stream(
+//             {
+//               resource_type: resourceType,
+//               folder: `hackathons/${hackathonId}`,
+//             },
+//             (error, result) => {
+//               if (error) return reject(error);
+//               resolve({
+//                 public_id: result.public_id,
+//                 url: result.secure_url,
+//                 resource_type: result.resource_type,
+//                 format: result.format,
+//                 original_filename: result.original_filename,
+//                 size: result.bytes,
+//               });
+//             }
+//           );
+//           stream.end(file.buffer);
+//         })
+//     )
+//   );
+//
+//   return uploads;
+// };
+// */
 
 export const submitHackathonSolution = async (req, res) => {
   try {
