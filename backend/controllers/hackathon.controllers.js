@@ -1,6 +1,9 @@
 import hackathonModel from "../models/hackathon.models.js";
-import cloudinary from "../config/cloudinary.js";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import s3Client from "../config/aws.js";
 import SubmissionModel from "../models/submission.js";
+import fs from "fs";
+// import cloudinary from "../config/cloudinary.js"; // COMMENTED OUT - REPLACED WITH AWS S3
 
 // --- GET ACTIVE HACKATHONS ---
 // Finds hackathons where the current date is between the start and end dates.
@@ -69,6 +72,56 @@ export const createHackathon = async (req, res) => {
     let imageUrl = "";
 
     if (req.file) {
+      try {
+        // ✅ AWS S3 Upload
+        const fileContent = fs.readFileSync(req.file.path);
+        const timestamp = Date.now();
+        const randomString = Math.random().toString(36).substring(2, 9);
+        const key = `hackathons/images/${timestamp}-${randomString}-${req.file.originalname}`;
+
+        const putObjectCommand = new PutObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: key,
+          Body: fileContent,
+          ContentType: req.file.mimetype,
+        });
+
+        await s3Client.send(putObjectCommand);
+        imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com/${key}`;
+
+        // Clean up uploaded file
+        fs.unlinkSync(req.file.path);
+      } catch (error) {
+        console.error("Error uploading to AWS S3:", error);
+        throw new Error(`File upload failed: ${error.message}`);
+      }
+    }
+
+    const hackathonData = new hackathonModel({
+      ...req.body,
+      image: imageUrl,
+      createdBy: req.body.adminId // Assuming adminId is passed
+    });
+
+    await hackathonData.save();
+
+    res.status(201).json({
+      message: "Hackathon Added Successfully",
+      data: hackathonData,
+    });
+  } catch (err) {
+    res.status(400).json({
+      error: err.message,
+    });
+  }
+};
+
+/* ✅ OLD CLOUDINARY CODE (COMMENTED OUT)
+export const createHackathon = async (req, res) => {
+  try {
+    let imageUrl = "";
+
+    if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: "hackathons"
       });
@@ -93,6 +146,7 @@ export const createHackathon = async (req, res) => {
     });
   }
 };
+*/
 
 // --- GET HACKATHON RESULTS ---
 export const getHackathonResults = async (req, res) => {
