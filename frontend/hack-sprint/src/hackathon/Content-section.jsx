@@ -1,9 +1,11 @@
+import React from "react";
 import { useState, useEffect } from "react";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
 import { Clock, Code, Users, ChevronDown, ChevronUp } from "lucide-react";
 import ChatInterface from "../components/Chat/ChatInterface";
 import Upvote from "./Upvote";
+import Gallery from "./Gallery";
 
 
 export const ContentSection = ({ activeSection, hackathon }) => {
@@ -268,6 +270,14 @@ export const ContentSection = ({ activeSection, hackathon }) => {
           <div>
             <SectionHeader>Upvote Submissions</SectionHeader>
             <Upvote />
+          </div>
+        );
+
+      case "gallery":
+        return (
+          <div>
+            <SectionHeader>Event Gallery</SectionHeader>
+            <Gallery />
           </div>
         );
 

@@ -207,8 +207,14 @@ export const createPendingHackathon = async (req, res) => {
 // Approve a pending hackathon (controller-only)
 export const approveHackathon = async (req, res) => {
   try {
+    console.log("=== APPROVAL REQUEST ===");
     const { pendingHackathonId, adminId } = req.body;
+    console.log("Pending Hackathon ID:", pendingHackathonId);
+    console.log("Admin ID:", adminId);
+    
     const admin = await Admin.findById(adminId);
+    console.log("Admin found:", admin ? admin.adminName : "Not found");
+    console.log("Is controller:", admin?.controller);
 
     if (!admin || !admin.controller) {
       return res.status(403).json({ success: false, message: "Not a controller admin" });
@@ -218,39 +224,88 @@ export const approveHackathon = async (req, res) => {
     if (!pending) {
       return res.status(404).json({ success: false, message: "Pending hackathon not found" });
     }
+    console.log("Pending hackathon found:", pending.title);
 
     if (pending.approvals.includes(adminId)) {
-      return res.status(400).json({ success: false, message: "Already approved" });
+      console.log("Already approved - returning 400");
+      console.log("=== END APPROVAL REQUEST ===");
+      res.status(400).json({ success: false, message: "Already approved" });
     }
 
     pending.approvals.push(adminId);
     await pending.save();
+    console.log("Approval added. Total approvals:", pending.approvals.length);
 
     const controllers = await Admin.find({ controller: true }).select("_id");
+    console.log("Total controllers:", controllers.length);
     const allControllerIds = controllers.map(c => c._id.toString());
     const approvedIds = pending.approvals.map(a => a.toString());
+    console.log("Controller IDs:", allControllerIds);
+    console.log("Approved IDs:", approvedIds);
     const allApproved = allControllerIds.every(id => approvedIds.includes(id));
+    console.log("All approved?", allApproved);
 
     if (allApproved) {
-      const hackathon = new hackathonModel(pending.toObject());
-      delete hackathon._id; // Let MongoDB generate a new _id
+      console.log("All controllers approved! Moving to main collection...");
+      
+      // Convert pending hackathon to plain object and clean it
+      const pendingData = pending.toObject();
+      console.log("Pending data fields:", Object.keys(pendingData));
+      
+      // Remove fields that don't belong in the main hackathon model
+      delete pendingData._id;
+      delete pendingData.approvals;
+      delete pendingData.rejectedBy;
+      delete pendingData.createdAt;
+      delete pendingData.updatedAt;
+      delete pendingData.__v;
+      
+      // Add gallery field (empty array) if not present
+      if (!pendingData.gallery) {
+        pendingData.gallery = [];
+      }
+      
+      // Determine the correct status based on dates
+      const now = new Date();
+      console.log("Current date:", now);
+      console.log("Start date:", pendingData.startDate);
+      console.log("Submission end date:", pendingData.submissionEndDate);
+      
+      const isActive = pendingData.startDate <= now && pendingData.submissionEndDate >= now;
+      pendingData.status = isActive;
+      console.log("Is active?", isActive);
+      console.log("Setting status to:", pendingData.status);
+      
+      // Create and save the hackathon
+      const hackathon = new hackathonModel(pendingData);
       await hackathon.save();
+      console.log("Hackathon saved with ID:", hackathon._id);
+      console.log("Hackathon status:", hackathon.status);
 
+      // Delete the pending hackathon
       await PendingHackathon.findByIdAndDelete(pendingHackathonId);
+      console.log("Pending hackathon deleted");
+      console.log("=== END APPROVAL REQUEST ===");
 
       return res.status(200).json({
         success: true,
         message: "Hackathon approved by all controllers and moved to main collection",
         hackathon,
+        isActive: isActive ? "Hackathon is now active" : "Hackathon is upcoming or expired"
       });
     }
 
+    console.log("Not all controllers approved yet");
+    console.log("=== END APPROVAL REQUEST ===");
+    
     res.status(200).json({
       success: true,
       message: "Hackathon approved. Waiting for other controller approvals.",
-      approvals: pending.approvals.length,
+      approvals: pending?.approvals?.length,
     });
   } catch (err) {
+    console.error("Approval error:", err);
+    console.log("=== END APPROVAL REQUEST (ERROR) ===");
     res.status(500).json({ success: false, message: err.message });
   }
 };

@@ -163,3 +163,104 @@ export const getHackathonResults = async (req, res) => {
     res.status(500).json({ message: "Error fetching results", error: error.message });
   }
 };
+
+// --- ADD IMAGES TO GALLERY ---
+export const addGalleryImages = async (req, res) => {
+  try {
+    const { hackathonId } = req.params;
+    const { caption } = req.body;
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No images provided" });
+    }
+
+    const hackathon = await hackathonModel.findById(hackathonId);
+    if (!hackathon) {
+      return res.status(404).json({ message: "Hackathon not found" });
+    }
+
+    // Upload images to Cloudinary
+    const uploadPromises = req.files.map(file =>
+      cloudinary.uploader.upload(file.path, {
+        folder: `hackathons/${hackathonId}/gallery`
+      })
+    );
+
+    const uploadResults = await Promise.all(uploadPromises);
+
+    // Add images to gallery array
+    const newImages = uploadResults.map(result => ({
+      public_id: result.public_id,
+      url: result.secure_url,
+      caption: caption || "",
+      uploadedAt: new Date()
+    }));
+
+    hackathon.gallery.push(...newImages);
+    await hackathon.save();
+
+    res.status(200).json({
+      message: "Images added to gallery successfully",
+      gallery: hackathon.gallery
+    });
+  } catch (error) {
+    console.error("Add gallery images error:", error);
+    res.status(500).json({ message: "Error adding images to gallery", error: error.message });
+  }
+};
+
+// --- DELETE IMAGE FROM GALLERY ---
+export const deleteGalleryImage = async (req, res) => {
+  try {
+    const { hackathonId, imageId } = req.params;
+
+    const hackathon = await hackathonModel.findById(hackathonId);
+    if (!hackathon) {
+      return res.status(404).json({ message: "Hackathon not found" });
+    }
+
+    const imageIndex = hackathon.gallery.findIndex(
+      img => img._id.toString() === imageId
+    );
+
+    if (imageIndex === -1) {
+      return res.status(404).json({ message: "Image not found in gallery" });
+    }
+
+    // Delete from Cloudinary
+    const publicId = hackathon.gallery[imageIndex].public_id;
+    await cloudinary.uploader.destroy(publicId);
+
+    // Remove from gallery array
+    hackathon.gallery.splice(imageIndex, 1);
+    await hackathon.save();
+
+    res.status(200).json({
+      message: "Image deleted from gallery successfully",
+      gallery: hackathon.gallery
+    });
+  } catch (error) {
+    console.error("Delete gallery image error:", error);
+    res.status(500).json({ message: "Error deleting image from gallery", error: error.message });
+  }
+};
+
+// --- GET HACKATHON GALLERY ---
+export const getHackathonGallery = async (req, res) => {
+  try {
+    const { hackathonId } = req.params;
+
+    const hackathon = await hackathonModel.findById(hackathonId).select('gallery');
+    if (!hackathon) {
+      return res.status(404).json({ message: "Hackathon not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      gallery: hackathon.gallery || []
+    });
+  } catch (error) {
+    console.error("Get gallery error:", error);
+    res.status(500).json({ message: "Error fetching gallery", error: error.message });
+  }
+};

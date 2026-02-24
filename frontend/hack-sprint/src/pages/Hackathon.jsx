@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect } from "react";
+import React,{ useState, useEffect } from "react";
 import { HeroSection } from "../hackathon/Hero-section";
 import { SidebarNav } from "../hackathon/Sidebar-nav";
 import { ContentSection } from "../hackathon/Content-section";

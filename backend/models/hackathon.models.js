@@ -103,6 +103,12 @@ const hackathonSchema = new mongoose.Schema({
         images: { type: [String], default: ["jpg", "jpeg", "png"] }, // default images
         videos: { type: [String], default: ["mp4"] }, // default videos
     },
+    gallery: [
+  {
+    type: String,
+    required: true
+  }
+],
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Admin"

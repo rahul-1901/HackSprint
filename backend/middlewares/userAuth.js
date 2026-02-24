@@ -48,11 +48,15 @@ const verifyAuth = async (req, res, next) => {
     });
   }
 
-
   try {
     const decoded = jwt.verify(verifyToken, process.env.SECRET_KEY);
 
     if (decoded._id) {
+      // For GET requests, req.body might be undefined, so set it on req.user instead
+      req.user = decoded;
+      req.userId = decoded._id;
+      // Also set on req.body for backward compatibility with POST requests
+      if (!req.body) req.body = {};
       req.body.userId = decoded._id;
       next();
     } else {
