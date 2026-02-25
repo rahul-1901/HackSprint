@@ -208,6 +208,12 @@ export const ContentSection = ({ activeSection, hackathon }) => {
 
   return <SimpleContentSection title="Prizes" content={prizeContent} />;
 
+          case "about":
+        return <SimpleContentSection title="About" content={hackathon.aboutUs} />;
+      case "refMaterial":
+        return <SimpleContentSectionRef title="Reference Material" content={hackathon.refMaterial} />;
+
+
       // case "faqs":
       //   const rawFaqs = hackathon.FAQs || [];
       //   const faqs = [];
