@@ -127,7 +127,7 @@ const Navbar = () => {
               className="flex items-center space-x-2 sm:space-x-3 cursor-pointer"
             >
               <div className="w-8 h-8 sm:w-10 sm:h-10">
-                <img src='hackSprint.webp' className="w-full h-full object-contain" alt="HackSprint Logo" />
+                <img src='/hackSprint.webp' className="w-full h-full object-contain" alt="HackSprint Logo" />
               </div>
               <span className="text-lg sm:text-xl lg:text-2xl font-bold text-white font-mono tracking-wide">
                 HackSprint
