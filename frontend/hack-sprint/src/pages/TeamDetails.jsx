@@ -149,7 +149,7 @@ const TeamDetails = () => {
           <div>
             <h3 className="text-white font-semibold">{member.name}</h3>
             <p className="text-xs text-gray-400">
-              {isLeaderCard ? 'Team Leader' : 'Member'} • Joined {formatDate(member.joinedAt)}
+              {isLeaderCard ? 'Team Leader' : 'Member'} 
             </p>
           </div>
         </div>
@@ -159,10 +159,10 @@ const TeamDetails = () => {
           <Mail className="w-4 h-4 text-green-400" />
           <span>{member.email}</span>
         </div>
-        <div className="flex items-center gap-2 text-gray-300">
+        {/* <div className="flex items-center gap-2 text-gray-300">
           <Shield className="w-4 h-4 text-green-400" />
           <span>{member.yearsOfExperience || 'N/A'} years experience</span>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ export const SidebarNav = ({ activeSection, onSectionChange }) => {
     { id: "submission-guide", label: "Submission", icon: NotebookPen },
     { id: "judging", label: "Judging", icon: Scale },
     { id: "results", label: "Results", icon: Award },
-    { id: "upvote", label: "Upvote", icon: ThumbsUp },
+    { id: "upvote", label: "Voting", icon: ThumbsUp },
     { id: "gallery", label: "Gallery", icon: Images },
     { id: "rules", label: "Rules", icon: FileText },
     { id: "faqs", label: "FAQs", icon: CircleHelp },

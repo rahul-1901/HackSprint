@@ -64,9 +64,9 @@ const Footer = () => {
     ];
 
     const footerLinks = [
-        { name: "Participation Policy", path: "/participation-policies" },
-        { name: "Organiser RuleBook", path: "/organizer-ruleBook" },
-        { name: "Terms & Conditions", path: "/terms-and-condition" },
+        // { name: "Participation Policy", path: "/participation-policies" },
+        // { name: "Organiser RuleBook", path: "/organizer-ruleBook" },
+        // { name: "Terms & Conditions", path: "/terms-and-condition" },
     ];
 
 
@@ -81,7 +81,7 @@ const Footer = () => {
         <footer className="relative bg-gray-900 text-gray-300 overflow-hidden">
             <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" />
             <div className="container mx-auto px-4 py-12 relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12 pb-12 border-b border-gray-800">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-6 pb-6">
                     <div className="lg:col-span-3">
                         <div className="flex items-center mb-4">
                             <img src={HackSprint} className='h-15 ml-[-3px] mr-2 cursor-pointer' />
@@ -184,7 +184,7 @@ const Footer = () => {
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-col md:flex-row justify-between items-center">
+                {/* <div className="ml-110 flex flex-col md:flex-row justify-between items-center">
                     <div className="mb-4 md:mb-0">
                         <p className="text-sm text-gray-500">
                             &copy; {new Date().getFullYear()} HackSprint. All rights reserved.
@@ -210,7 +210,7 @@ const Footer = () => {
                             Feedback
                         </a>
                     </div>
-                </div>
+                </div> */}
             </div>
         </footer>
     );

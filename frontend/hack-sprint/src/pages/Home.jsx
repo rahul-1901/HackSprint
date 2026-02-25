@@ -779,8 +779,9 @@ const Home = () => {
               From Hackathon to Unicorn
             </h2>
             <p className="text-gray-400 text-sm sm:text-base lg:text-lg max-w-4xl mx-auto leading-relaxed mt-4 sm:mt-6">
-              Discover how our community members transformed weekend projects into big ideas, landed
-              dream jobs at top tech firms, and revolutionized entire industries through innovation and determination.
+              {/* Discover how our community members transformed weekend projects into big ideas, landed
+              dream jobs at top tech firms, and revolutionized entire industries through innovation and determination. */}
+              Discover how real world projects are made and learn software developement with our growing community.
             </p>
           </div>
 
@@ -797,7 +798,7 @@ const Home = () => {
               {
                 name: "Mohit Gupta",
                 quote:
-                  "HackSprint gave me more than coding practice—it gave me confidence. Presenting to judges and collaborating under pressure was a whole new experience.",
+                  "HackSprint gave me more than coding practice, it gave me confidence. Presenting to judges and collaborating under pressure was a whole new experience.",
                 gradient: "from-gray-900/80 to-gray-800/80",
                 verified: true,
                 social: { linkedin: "#", github: "#" },
@@ -885,13 +886,13 @@ const Home = () => {
       </section>
 
       {/* Community & Collaboration Section */}
-      <section
+      {/* <section
         id="community"
         className="fade-section py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 relative bg-gray-900/30 backdrop-blur-sm"
       >
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
-            <div className="relative order-2 lg:order-1">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center"> */}
+            {/* <div className="relative order-2 lg:order-1">
               <div className="absolute inset-0 bg-gradient-to-br from-green-400/10 to-green-600/10 rounded-2xl blur-xl"></div>
               <div className="relative bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8 hover:border-green-400/30 transition-all duration-500">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
@@ -948,9 +949,9 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
-            <div className="order-1 lg:order-2">
+            {/* <div className="order-1 lg:order-2">
               <div className="flex items-center mb-4">
                 <div className="w-px h-6 sm:h-8 bg-green-400"></div>
                 <span className="text-green-400 text-xs sm:text-sm font-semibold tracking-wide uppercase mx-3 sm:mx-4">
@@ -963,9 +964,9 @@ const Home = () => {
               </h2>
               <p className="text-gray-400 text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 leading-relaxed">
                 Meet fellow learners, seniors, and alumni who’ve turned hackathon projects into real-world skills.
-              </p>
+              </p> */}
 
-              <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+              {/* <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
                 {[
                   {
                     icon: Users,
@@ -1010,9 +1011,9 @@ const Home = () => {
                     </div>
                   </div>
                 ))}
-              </div>
+              </div> */}
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              {/* <div className="flex flex-col sm:flex-row gap-4">
                 {/* <button
                   className="bg-green-400 hover:bg-green-500 text-gray-900 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 text-sm sm:text-base"
                   style={{ animation: "glow 2s ease-in-out infinite alternate" }}
@@ -1026,11 +1027,11 @@ const Home = () => {
                   <Calendar className="w-4 sm:w-5 h-4 sm:h-5" />
                   View Events
                 </button> */}
-              </div>
+              {/* </div>
             </div>
           </div>
         </div>
-      </section>
+      </section> */} 
 
       {/* Companies & Partners Section */}
       {/* <section className="fade-section py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 relative">
@@ -1081,7 +1082,7 @@ const Home = () => {
       </section> */}
 
       {/* Call to Action Section */}
-      <section className="fade-section py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 relative bg-gray-900/30 backdrop-blur-sm">
+      <section className="fade-section py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 relative bg-gray-900/30 backdrop-blur-sm -mt-40">
         <div className="max-w-full mx-auto text-center">
           <div className="relative bg-gray-900/70 backdrop-blur-sm py-16 sm:py-24 px-6 text-center">
             {/* <div className="absolute inset-0 bg-gradient-to-br from-green-400/10 to-green-600/10 blur-2xl"></div> */}

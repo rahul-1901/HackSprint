@@ -322,7 +322,6 @@ export const RegistrationForm = ({ onSubmit = () => { } }) => {
 
         <div className="text-center mb-8 border-b border-green-500/20 pb-6">
           <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Hackathon Registration</h1>
-          <p className="text-md text-gray-400 mt-2">Forge the Future: Ends on Sep 07, 2025</p>
         </div>
 
         <div className="flex justify-center gap-4 mb-8">
@@ -332,12 +331,12 @@ export const RegistrationForm = ({ onSubmit = () => { } }) => {
           >
             <User size={16} /> Individual
           </Button> */}
-          <Button
+          {/* <Button
             className={`px-6 py-2.5 font-bold rounded-lg transition-all cursor-pointer duration-300 flex items-center gap-2 ${formType === "team" ? "bg-green-500 text-gray-900 shadow-lg shadow-green-500/20" : "bg-transparent text-green-300 border border-green-500/50 hover:bg-green-500/10"}`}
             onClick={() => setFormType("team")}
           >
             <Users size={16} /> Team
-          </Button>
+          </Button> */}
         </div>
 
         {/* {formType === "individual" && (

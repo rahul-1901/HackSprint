@@ -112,6 +112,9 @@ const userSchema = new mongoose.Schema(
     submittedHackathons: [
       { type: mongoose.Schema.Types.ObjectId, ref: "hackathons" }
     ],
+    wishlist: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "hackathons" }
+    ],
     attemptedDevQuestions: [
       { type: mongoose.Schema.Types.ObjectId, ref: "dailyQuiz" }
     ],
@@ -168,6 +171,8 @@ userSchema.virtual("submissions", {
   localField: "_id",
   foreignField: "participant",
 });
+userSchema.set("toObject", { virtuals: true });
+userSchema.set("toJSON", { virtuals: true });
 const UserModel = mongoose.model("users", userSchema)
 
 export default UserModel

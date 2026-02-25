@@ -60,26 +60,37 @@ export const googleAuthLogin = async (req, res) => {
 }
 
 export const userData = async (req, res) => {
-    try {
-        const {email} = req
-        const userData = await UserModel.findOne({
-            email
-        })
+  try {
+    const { email } = req;
 
-        if(!userData) {
-            return res.status(504).json({
-                message: "User not in db...."
-            })
+    const userData = await UserModel.findOne({ email })
+      .populate({
+        path: "submissions",
+        populate: {
+          path: "hackathon",
+          model: "hackathons"
         }
+      })
+      .populate("submittedHackathons")  // ✅ ADD THIS
+      .populate("registeredHackathons") // (optional but recommended)
+      .populate("leaderOfHackathons");  // (optional)
 
-        return res.status(200).json({
-            userData,
-            success: true
-        })
-    } catch (error) {
-        return res.status(500).json({
-            message: "Error...",
-            success: false
-        })
+    if (!userData) {
+      return res.status(404).json({
+        message: "User not in db....",
+        success: false
+      });
     }
-}
+
+    return res.status(200).json({
+      userData,
+      success: true
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error...",
+      success: false
+    });
+  }
+};
