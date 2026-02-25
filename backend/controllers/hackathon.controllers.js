@@ -17,6 +17,8 @@ export const getActiveHackathons = async (req, res) => {
       startDate: { $lte: now },
       submissionEndDate: { $gte: now },
     }).sort({ endDate: 1 }); // Sort by ending soonest
+
+    res.status(200).json({ allHackathons });
   } catch (error) {
     res.status(500).json({ message: "Error fetching active hackathons", error: error.message });
   }
