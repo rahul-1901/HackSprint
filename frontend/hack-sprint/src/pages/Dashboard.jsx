@@ -1,12 +1,36 @@
 import React, { useEffect, useState } from "react";
-import { getDashboard, addEducation, editEducation, deleteEducation, deleteConnectedApp, addConnectedApp, editConnectedApp, addLanguages, deleteLanguages, addSkills, deleteSkills } from "../backendApis/api";
+import {
+  getDashboard,
+  addEducation,
+  editEducation,
+  deleteEducation,
+  deleteConnectedApp,
+  addConnectedApp,
+  editConnectedApp,
+  addLanguages,
+  deleteLanguages,
+  addSkills,
+  deleteSkills,
+} from "../backendApis/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Eye, CheckCircle, MessageSquare, Star, Coins, User, Heart, ExternalLink, FileText, Video, RefreshCw } from "lucide-react";
+import {
+  Eye,
+  CheckCircle,
+  MessageSquare,
+  Star,
+  Coins,
+  User,
+  Heart,
+  ExternalLink,
+  FileText,
+  Video,
+  RefreshCw,
+} from "lucide-react";
 import { School, Clock, Laptop, MapPin, Edit } from "lucide-react";
 import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
-import axios from 'axios'
+import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import SubmissionForms from "../hackathon/DashboardSubmission";
 
@@ -31,7 +55,14 @@ export const UserDashboard = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("");
   const [isAddingLanguage, setIsAddingLanguage] = useState(false);
   const availableLanguages = [
-    "C++", "C", "Java", "Python", "JavaScript", "TypeScript", "Go", "Rust"
+    "C++",
+    "C",
+    "Java",
+    "Python",
+    "JavaScript",
+    "TypeScript",
+    "Go",
+    "Rust",
   ];
   const [selectedSkill, setSelectedSkill] = useState("");
   const [isAddingSkill, setIsAddingSkill] = useState(false);
@@ -43,7 +74,7 @@ export const UserDashboard = () => {
     "Machine Learning",
     "DSA",
     "Cybersecurity",
-    "Operating Systems"
+    "Operating Systems",
   ];
   const [hackathon, setHackathon] = useState([]);
   const [submission, setSubmission] = useState([]);
@@ -51,7 +82,6 @@ export const UserDashboard = () => {
   const [selectedHackathonId, setSelectedHackathonId] = useState(null);
   const [likedHackathons, setLikedHackathons] = useState([]);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
-
 
   const navigate = useNavigate();
 
@@ -64,7 +94,6 @@ export const UserDashboard = () => {
     setSelectedHackathonId(null);
     setIsSubmissionOpen(false);
   };
-
 
   // Daily Coin + Streak System
   useEffect(() => {
@@ -105,7 +134,7 @@ export const UserDashboard = () => {
     try {
       const res = await getDashboard();
       setData(res.data.userData);
-      setUserId(res.data.userData._id)
+      setUserId(res.data.userData._id);
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     } finally {
@@ -121,9 +150,12 @@ export const UserDashboard = () => {
     if (!tempAppName || !tempAppUrl) return;
 
     try {
-
       if (editAppsIndex === "new") {
-        await addConnectedApp({ userId, appName: tempAppName, appURL: tempAppUrl });
+        await addConnectedApp({
+          userId,
+          appName: tempAppName,
+          appURL: tempAppUrl,
+        });
       } else {
         const appId = data.connectedApps[editAppsIndex]._id;
         await editConnectedApp({
@@ -150,7 +182,6 @@ export const UserDashboard = () => {
       }));
       await deleteConnectedApp({ userId, appId });
       // console.log("Deleted")
-
     } catch (err) {
       console.error("Error deleting app:", err);
       await fetchData();
@@ -210,7 +241,6 @@ export const UserDashboard = () => {
 
     // Avoid duplicates
     if (data.languages.some((lang) => lang.name === selectedLanguage)) {
-
       return;
     }
 
@@ -301,15 +331,17 @@ export const UserDashboard = () => {
       try {
         const results = await Promise.all(
           data?.submittedHackathons.map(async (id) => {
-            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/submit/getSubmissionById/${id}`);
+            const res = await axios.get(
+              `${
+                import.meta.env.VITE_API_BASE_URL
+              }/api/submit/getSubmissionById/${id}`
+            );
             return res.data;
           })
         );
         // console.log(results)
         setSubmission(results);
-      } catch (err) {
-        
-      }
+      } catch (err) {}
     };
 
     if (data?.submittedHackathons.length > 0) {
@@ -336,10 +368,10 @@ export const UserDashboard = () => {
           },
         }
       );
-      
+
       // console.log("Wishlist API response:", res.data);
       // console.log("Number of liked hackathons:", res.data.likedHackathons?.length);
-      
+
       if (res.data.success) {
         // console.log("Setting liked hackathons:", res.data.likedHackathons);
         setLikedHackathons(res.data.likedHackathons);
@@ -365,8 +397,7 @@ export const UserDashboard = () => {
     }
   }, [data]);
 
-  useEffect(() => {
-  }, [data]);
+  useEffect(() => {}, [data]);
 
   // useEffect(() => {
   //   const fetchHackathons = async () => {
@@ -396,34 +427,45 @@ export const UserDashboard = () => {
         const decode = jwtDecode(token); //jwt-decode basically decode entire jwtToken and give details of user what we provided, in jsonObject
         const currentTime = Math.floor(Date.now() / 1000);
 
-        if (decode.exp < currentTime) //expTime =  issuedAT + what we provided to jwt in backend, it is in seconds by default, even though we have provided in hour in backend 
-        {
+        if (decode.exp < currentTime) {
+          //expTime =  issuedAT + what we provided to jwt in backend, it is in seconds by default, even though we have provided in hour in backend
           localStorage.removeItem("token");
           localStorage.removeItem("email");
-          toast.success("Logout successfull...", { autoClose: 800, style: { backgroundColor: "#f3f4f6", color: "#000000" } })
+          toast.success("Logout successfull...", {
+            autoClose: 800,
+            style: { backgroundColor: "#f3f4f6", color: "#000000" },
+          });
           setTimeout(() => {
-            navigate('/account/login');
+            navigate("/account/login");
             window.location.reload();
-          }, 2000)
-
+          }, 2000);
         }
       }
     } catch (error) {
       console.error("Error");
     }
-  }
-
+  };
 
   useEffect(() => {
-    fetchData()
-  }, [tempAppName, tempAppUrl, editAppsIndex, editEducationIndex, educationForm, selectedLanguage, isAddingLanguage, selectedSkill, isAddingSkill])
+    fetchData();
+  }, [
+    tempAppName,
+    tempAppUrl,
+    editAppsIndex,
+    editEducationIndex,
+    educationForm,
+    selectedLanguage,
+    isAddingLanguage,
+    selectedSkill,
+    isAddingSkill,
+  ]);
 
   useEffect(() => {
     jwtExpire();
 
     const interval = setInterval(jwtExpire, 60 * 1000);
     return () => clearInterval(interval);
-  }, [])
+  }, []);
 
   if (loading) {
     return (
@@ -445,7 +487,6 @@ export const UserDashboard = () => {
 
   return (
     <div className="relative min-h-screen bg-gray-900 text-white overflow-hidden">
-
       <div className="relative z-10 max-w-7xl mx-auto p-6 flex flex-col md:flex-row gap-6">
         {/* LEFT COLUMN */}
         <div className="w-full md:w-1/4 space-y-6">
@@ -462,7 +503,9 @@ export const UserDashboard = () => {
               />
             </div>
 
-            <h2 className="mt-4 text-xl font-bold">{data.name || "Unnamed User"}</h2>
+            <h2 className="mt-4 text-xl font-bold">
+              {data.name || "Unnamed User"}
+            </h2>
             {/* <p className="text-sm text-gray-400">{data.roll_no || "N/A"}</p> */}
             {/* <p className="text-sm text-green-400 mt-1">
               Rank: #{data.rank || "N/A"}
@@ -474,7 +517,6 @@ export const UserDashboard = () => {
             >
               Logout
             </button>
-
           </div>
 
           {/* Coins + Streak */}
@@ -482,12 +524,16 @@ export const UserDashboard = () => {
             <div className="flex items-center gap-2 text-yellow-400 font-bold">
               <Coins /> <span>{coins} Coins</span>
             </div>
-            <p className="text-sm text-gray-400 mt-1">🔥 Streak: {streak} days</p>
+            <p className="text-sm text-gray-400 mt-1">
+              🔥 Streak: {streak} days
+            </p>
           </div>
 
           {/* Community Stats */}
           <div className="bg-white/5 border border-green-500/20 rounded-xl p-4 space-y-3">
-            <h3 className="text-lg font-semibold text-green-400">Community Stats</h3>
+            <h3 className="text-lg font-semibold text-green-400">
+              Community Stats
+            </h3>
             <div className="flex items-center gap-3">
               <Eye size={16} className="text-green-400" />
               <span>Views: {data.stats?.views || 0}</span>
@@ -650,10 +696,11 @@ export const UserDashboard = () => {
 
         {/* RIGHT COLUMN */}
         <div className="flex-1 space-y-6">
-
           {/* Education */}
           <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
-            <h3 className="text-lg font-semibold text-green-400 mb-4">Education</h3>
+            <h3 className="text-lg font-semibold text-green-400 mb-4">
+              Education
+            </h3>
 
             {editEducationIndex === undefined ? (
               <div>
@@ -666,11 +713,13 @@ export const UserDashboard = () => {
                       >
                         <div className="flex justify-between items-center mb-2">
                           <h4 className="text-xl font-bold text-white flex items-center gap-2">
-                            <School size={20} className="text-green-400" /> {edu.institute || "N/A"}
+                            <School size={20} className="text-green-400" />{" "}
+                            {edu.institute || "N/A"}
                           </h4>
                           {edu.passOutYear && (
                             <span className="text-sm text-gray-300 flex items-center gap-1">
-                              <Clock size={14} className="text-green-400" /> {edu.passOutYear}
+                              <Clock size={14} className="text-green-400" />{" "}
+                              {edu.passOutYear}
                             </span>
                           )}
                         </div>
@@ -678,17 +727,20 @@ export const UserDashboard = () => {
                         <div className="space-y-1 pl-1">
                           {edu.department && (
                             <p className="text-sm text-gray-300 flex items-center gap-2">
-                              <Laptop size={16} className="text-green-400" /> {edu.department}
+                              <Laptop size={16} className="text-green-400" />{" "}
+                              {edu.department}
                             </p>
                           )}
                           {edu.grade && (
                             <p className="text-sm text-yellow-400 flex items-center gap-2">
-                              <Star size={14} className="text-green-500" /> CGPA: {edu.grade}
+                              <Star size={14} className="text-green-500" />{" "}
+                              CGPA: {edu.grade}
                             </p>
                           )}
                           {edu.location && (
                             <p className="text-sm text-gray-400 flex items-center gap-2">
-                              <MapPin size={14} className="text-green-400" /> {edu.location}
+                              <MapPin size={14} className="text-green-400" />{" "}
+                              {edu.location}
                             </p>
                           )}
                         </div>
@@ -715,7 +767,6 @@ export const UserDashboard = () => {
                       </div>
                     ))}
                   </div>
-
                 ) : (
                   <p className="text-gray-400">No education data available.</p>
                 )}
@@ -741,28 +792,48 @@ export const UserDashboard = () => {
                   type="text"
                   placeholder="Institute"
                   value={educationForm.institute}
-                  onChange={(e) => setEducationForm({ ...educationForm, institute: e.target.value })}
+                  onChange={(e) =>
+                    setEducationForm({
+                      ...educationForm,
+                      institute: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
                 />
                 <input
                   type="text"
                   placeholder="Department"
                   value={educationForm.department}
-                  onChange={(e) => setEducationForm({ ...educationForm, department: e.target.value })}
+                  onChange={(e) =>
+                    setEducationForm({
+                      ...educationForm,
+                      department: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
                 />
                 <input
                   type="text"
                   placeholder="Expected Year (e.g., 2024–2028)"
                   value={educationForm.passOutYear}
-                  onChange={(e) => setEducationForm({ ...educationForm, passOutYear: e.target.value })}
+                  onChange={(e) =>
+                    setEducationForm({
+                      ...educationForm,
+                      passOutYear: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
                 />
                 <input
                   type="text"
                   placeholder="Location"
                   value={educationForm.location}
-                  onChange={(e) => setEducationForm({ ...educationForm, location: e.target.value })}
+                  onChange={(e) =>
+                    setEducationForm({
+                      ...educationForm,
+                      location: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-green-500/30 text-white"
                 />
 
@@ -784,20 +855,24 @@ export const UserDashboard = () => {
             )}
           </div>
 
-
           <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
-            <h3 className="text-lg font-semibold text-green-400 mb-3">Connected Apps</h3>
+            <h3 className="text-lg font-semibold text-green-400 mb-3">
+              Connected Apps
+            </h3>
 
             {editAppsIndex === undefined ? (
               <div>
-                {Array.isArray(data.connectedApps) && data.connectedApps.length > 0 ? (
+                {Array.isArray(data.connectedApps) &&
+                data.connectedApps.length > 0 ? (
                   <div className="space-y-3">
                     {data.connectedApps.map((app, idx) => (
                       <div
                         key={app._id}
                         className="flex justify-between items-center p-3 bg-gray-800/40 border border-green-500/20 rounded-lg"
                       >
-                        <span className="text-gray-200 font-medium">{app.appName}</span>
+                        <span className="text-gray-200 font-medium">
+                          {app.appName}
+                        </span>
                         <div className="flex gap-2">
                           <a
                             href={app.appURL}
@@ -981,13 +1056,17 @@ export const UserDashboard = () => {
                 className="flex items-center gap-2 px-3 py-1.5 bg-green-500/20 border border-green-500/40 rounded-lg text-green-400 hover:bg-green-500/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Refresh wishlist"
               >
-                <RefreshCw className={`w-4 h-4 ${loadingWishlist ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-4 h-4 ${loadingWishlist ? "animate-spin" : ""}`}
+                />
                 <span className="text-sm">Refresh</span>
               </button>
             </div>
             <div className="space-y-4 mt-2">
               {loadingWishlist ? (
-                <p className="text-gray-400 text-sm">Loading liked hackathons...</p>
+                <p className="text-gray-400 text-sm">
+                  Loading liked hackathons...
+                </p>
               ) : likedHackathons.length > 0 ? (
                 likedHackathons.map((hackathon) => {
                   const startDate = hackathon.startDate
@@ -1028,18 +1107,24 @@ export const UserDashboard = () => {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 mb-2">
-                          <span>{startDate} - {endDate}</span>
+                          <span>
+                            {startDate} - {endDate}
+                          </span>
                           {hackathon.prizeMoney && (
                             <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400">
                               ${hackathon.prizeMoney}
                             </span>
                           )}
                           {hackathon.difficulty && (
-                            <span className={`px-2 py-1 rounded-full ${
-                              hackathon.difficulty === 'Easy' ? 'bg-blue-500/20 text-blue-400' :
-                              hackathon.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                              'bg-green-500/20 text-green-400'
-                            }`}>
+                            <span
+                              className={`px-2 py-1 rounded-full ${
+                                hackathon.difficulty === "Easy"
+                                  ? "bg-blue-500/20 text-blue-400"
+                                  : hackathon.difficulty === "Medium"
+                                  ? "bg-yellow-500/20 text-yellow-400"
+                                  : "bg-green-500/20 text-green-400"
+                              }`}
+                            >
                               {hackathon.difficulty}
                             </span>
                           )}
@@ -1050,7 +1135,8 @@ export const UserDashboard = () => {
                 })
               ) : (
                 <p className="text-gray-500 text-sm">
-                  No favourite hackathons yet. Click the heart icon on any hackathon page to add it to your favourites!
+                  No favourite hackathons yet. Click the heart icon on any
+                  hackathon page to add it to your favourites!
                 </p>
               )}
             </div>
@@ -1061,8 +1147,14 @@ export const UserDashboard = () => {
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
               <div className="bg-white text-black p-6 rounded-2xl shadow-lg text-center w-80">
                 <h2 className="text-xl font-bold mb-2">🎉 Daily Reward!</h2>
-                <p className="mb-2">You earned <span className="text-yellow-600 font-bold">+10 coins</span> today.</p>
-                <p className="text-sm text-gray-600 mb-4">🔥 Current Streak: {streak} days</p>
+                <p className="mb-2">
+                  You earned{" "}
+                  <span className="text-yellow-600 font-bold">+10 coins</span>{" "}
+                  today.
+                </p>
+                <p className="text-sm text-gray-600 mb-4">
+                  🔥 Current Streak: {streak} days
+                </p>
                 <button
                   onClick={() => setShowReward(false)}
                   className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
@@ -1084,6 +1176,6 @@ export const UserDashboard = () => {
       </div>
     </div>
   );
-}
+};
 
 export default UserDashboard;
