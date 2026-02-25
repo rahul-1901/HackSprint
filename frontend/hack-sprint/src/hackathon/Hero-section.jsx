@@ -197,7 +197,7 @@ export const HeroSection = ({
     </div>
   );
 
-  const PrizeStatCard = ({ prize1, prize2, prize3, icon: Icon }) => (
+ const PrizeStatCard = ({ prize1, prize2, prize3, icon: Icon }) => (
     <div className="bg-gray-900/70 backdrop-blur-sm border border-green-500/20 rounded-xl p-4 hover:border-green-400/30 transition-all">
       <div className="flex items-center gap-4 mb-3">
         <div className="w-10 h-10 bg-green-400/10 rounded-lg flex items-center justify-center border border-green-500/20">
@@ -205,10 +205,11 @@ export const HeroSection = ({
         </div>
         <h3 className="text-xl font-bold text-white">Prize Pool</h3>
       </div>
+
       <div className="flex flex-col sm:flex-row sm:justify-start sm:gap-6 text-sm text-gray-400">
-        <span>1st: ₹{prize1.toLocaleString("en-IN")}</span>
-        <span>2nd: ₹{prize2.toLocaleString("en-IN")}</span>
-        <span>3rd: ₹{prize3.toLocaleString("en-IN")}</span>
+        {prize1 > 0 && <span>1st: ₹{prize1.toLocaleString("en-IN")}</span>}
+        {prize2 > 0 && <span>2nd: ₹{prize2.toLocaleString("en-IN")}</span>}
+        {prize3 > 0 && <span>3rd: ₹{prize3.toLocaleString("en-IN")}</span>}
       </div>
     </div>
   );
