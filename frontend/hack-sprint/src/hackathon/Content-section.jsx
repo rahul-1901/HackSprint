@@ -2,7 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
-import { Clock, Code, Users, ChevronDown, ChevronUp } from "lucide-react";
+import { Clock, Code, Users, ChevronDown, ChevronUp, Trophy } from "lucide-react";
 import ChatInterface from "../components/Chat/ChatInterface";
 import Upvote from "./Upvote";
 import Gallery from "./Gallery";
@@ -213,49 +213,104 @@ export const ContentSection = ({ activeSection, hackathon }) => {
       case "refMaterial":
         return <SimpleContentSectionRef title="Reference Material" content={hackathon.refMaterial} />;
 
+      // case "faqs":
+      //   const rawFaqs = hackathon.FAQs || [];
+      //   const faqs = [];
+      //   for (let i = 0; i < rawFaqs.length; i += 2) {
+      //     if (rawFaqs[i + 1]) {
+      //       faqs.push({
+      //         question: rawFaqs[i],
+      //         answer: rawFaqs[i + 1]
+      //       });
+      //     }
+      //   }
+      //   return (
+      //     <div>
+      //       <SectionHeader>Frequently Asked Questions</SectionHeader>
+      //       <div className="space-y-4">
+      //         {faqs.length > 0 ? (
+      //           faqs.map((faq, idx) => {
+      //             const isExpanded = expandedFAQ === idx;
+      //             return (
+      //               <div key={idx} className="border border-green-500/20 rounded-lg bg-gray-900/70 overflow-hidden transition-all duration-300">
+      //                 <button
+      //                   onClick={() => toggleFAQ(idx)}
+      //                   className="w-full p-5 text-left flex items-center justify-between group hover:bg-green-500/5 cursor-pointer"
+      //                 >
+      //                   <p className="font-semibold text-lg text-white pr-4">{faq.question}</p>
+      //                   <div className="text-green-400 flex-shrink-0 transition-transform duration-300">
+      //                     {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+      //                   </div>
+      //                 </button>
+      //                 {isExpanded && (
+      //                   <div className="px-5 pb-5 border-t border-green-500/20 animate-fade-in">
+      //                     <p className="text-gray-300 leading-relaxed pt-4 prose max-w-none">{faq.answer}</p>
+      //                   </div>
+      //                 )}
+      //               </div>
+      //             );
+      //           })
+      //         ) : (
+      //           <SectionCard><p className="text-gray-400">No FAQs provided for this event.</p></SectionCard>
+      //         )}
+      //       </div>
+      //     </div>
+      //   );
+
       case "faqs":
-        const rawFaqs = hackathon.FAQs || [];
-        const faqs = [];
-        for (let i = 0; i < rawFaqs.length; i += 2) {
-          if (rawFaqs[i + 1]) {
-            faqs.push({
-              question: rawFaqs[i],
-              answer: rawFaqs[i + 1]
-            });
-          }
-        }
-        return (
-          <div>
-            <SectionHeader>Frequently Asked Questions</SectionHeader>
-            <div className="space-y-4">
-              {faqs.length > 0 ? (
-                faqs.map((faq, idx) => {
-                  const isExpanded = expandedFAQ === idx;
-                  return (
-                    <div key={idx} className="border border-green-500/20 rounded-lg bg-gray-900/70 overflow-hidden transition-all duration-300">
-                      <button
-                        onClick={() => toggleFAQ(idx)}
-                        className="w-full p-5 text-left flex items-center justify-between group hover:bg-green-500/5 cursor-pointer"
-                      >
-                        <p className="font-semibold text-lg text-white pr-4">{faq.question}</p>
-                        <div className="text-green-400 flex-shrink-0 transition-transform duration-300">
-                          {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                        </div>
-                      </button>
-                      {isExpanded && (
-                        <div className="px-5 pb-5 border-t border-green-500/20 animate-fade-in">
-                          <p className="text-gray-300 leading-relaxed pt-4 prose max-w-none">{faq.answer}</p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
-              ) : (
-                <SectionCard><p className="text-gray-400">No FAQs provided for this event.</p></SectionCard>
-              )}
-            </div>
-          </div>
-        );
+  const faqs = hackathon.FAQs || [];
+
+  return (
+    <div>
+      <SectionHeader>Frequently Asked Questions</SectionHeader>
+
+      <div className="space-y-4">
+        {faqs.length > 0 ? (
+          faqs.map((faq, idx) => {
+            const isExpanded = expandedFAQ === idx;
+
+            return (
+              <div
+                key={idx}
+                className="border border-green-500/20 rounded-lg bg-gray-900/70 overflow-hidden transition-all duration-300"
+              >
+                <button
+                  onClick={() => toggleFAQ(idx)}
+                  className="w-full p-5 text-left flex items-center justify-between group hover:bg-green-500/5 cursor-pointer"
+                >
+                  <p className="font-semibold text-lg text-white pr-4">
+                    {faq.question}
+                  </p>
+
+                  <div className="text-green-400 flex-shrink-0 transition-transform duration-300">
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5" />
+                    )}
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="px-5 pb-5 border-t border-green-500/20 animate-fade-in">
+                    <p className="text-gray-300 leading-relaxed pt-4">
+                      {faq.answer}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <SectionCard>
+            <p className="text-gray-400">
+              No FAQs provided for this event.
+            </p>
+          </SectionCard>
+        )}
+      </div>
+    </div>
+  );
 
       case "discussion":
         return (

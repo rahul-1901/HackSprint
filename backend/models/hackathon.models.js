@@ -75,9 +75,12 @@ const hackathonSchema = new mongoose.Schema({
     themes: {
         type: [String]
     },
-    FAQs: {
-        type: [String]
-    },
+    FAQs: [
+        {
+          question: { type: String },
+          answer: { type: String },
+        }
+      ],
     teams: {
         type: [
             { type: mongoose.Schema.Types.ObjectId, ref: "teams" },

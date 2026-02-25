@@ -86,7 +86,12 @@ const pendingHackathonSchema = new mongoose.Schema({
   numParticipants: { type: Number, default: 0 },
   overview: { type: String },
   themes: { type: [String] },
-  FAQs: { type: [String] },
+  FAQs: [
+    {
+      question: { type: String },
+      answer: { type: String },
+    }
+  ],
   teams: [{ type: mongoose.Schema.Types.ObjectId, ref: "teams" }],
   aboutUs: { type: String },
   projectSubmission: { type: [String] },

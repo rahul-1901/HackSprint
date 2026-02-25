@@ -19,7 +19,9 @@ const Gallery = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${hackathonId}/gallery`
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/hackathons/${hackathonId}/gallery`
       );
 
       if (response.data.success) {
@@ -42,9 +44,7 @@ const Gallery = () => {
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) =>
-      prev === 0 ? totalSlides - 1 : prev - 1
-    );
+    setCurrentIndex((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
   };
 
   const openLightbox = (index) => {
@@ -61,9 +61,7 @@ const Gallery = () => {
   };
 
   const prevLightboxImage = () => {
-    setLightboxIndex((prev) =>
-      prev === 0 ? images.length - 1 : prev - 1
-    );
+    setLightboxIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
   // Keyboard navigation for lightbox
@@ -107,11 +105,10 @@ const Gallery = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Event Gallery
-        </h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Event Gallery</h2>
         <p className="text-gray-400">
-          {images.length} {images.length === 1 ? "photo" : "photos"} from the hackathon
+          {images.length} {images.length === 1 ? "photo" : "photos"} from the
+          hackathon
         </p>
       </div>
 
@@ -125,7 +122,7 @@ const Gallery = () => {
             return (
               <div
                 key={actualIndex}
-                className="relative group cursor-pointer overflow-hidden rounded-lg aspect-video bg-gray-800"
+                className="relative group overflow-hidden rounded-lg aspect-video bg-gray-800"
                 onClick={() => openLightbox(actualIndex)}
               >
                 <img
@@ -135,11 +132,11 @@ const Gallery = () => {
                 />
 
                 {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
+                {/* <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <ImageIcon className="w-8 h-8 text-white" />
                   </div>
-                </div>
+                </div> */}
               </div>
             );
           })}
@@ -186,72 +183,70 @@ const Gallery = () => {
       )}
 
       {/* Lightbox */}
-      {showLightbox && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
-          {/* Close */}
-          <button
-            onClick={closeLightbox}
-            className="absolute top-4 right-4 text-white hover:text-green-400 p-2 rounded-full hover:bg-white/10 transition-all z-50"
-            aria-label="Close lightbox"
+      {/* {showLightbox && (
+        <div
+          className="fixed inset-0 z-999999999 bg-black/95 flex flex-col items-center justify-center"
+          onClick={closeLightbox}
+        >
+          <div
+            className="relative w-full max-w-6xl flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="w-8 h-8" />
-          </button>
+            <div className="absolute top-4 left-0 right-0 flex justify-between items-center px-6 z-[10000]">
+              <div className="text-white text-sm">
+                {lightboxIndex + 1} / {images.length}
+              </div>
 
-          {/* Counter */}
-          <div className="absolute top-4 left-4 text-white text-lg font-medium z-50">
-            {lightboxIndex + 1} / {images.length}
-          </div>
+              <button
+                onClick={closeLightbox}
+                className="text-white hover:text-green-400 p-2 rounded-full hover:bg-white/10 transition-all"
+              >
+                <X className="w-7 h-7" />
+              </button>
+            </div>
 
-          {/* Arrows */}
-          <button
-            onClick={prevLightboxImage}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full transition-all z-50"
-            aria-label="Previous image"
-          >
-            <ChevronLeft className="w-8 h-8" />
-          </button>
+            <div className="w-full flex items-center justify-center h-[70vh] mt-10">
+              <img
+                src={images[lightboxIndex]}
+                alt={`Image ${lightboxIndex + 1}`}
+                className="max-h-full max-w-full object-contain rounded-lg"
+              />
+            </div>
 
-          <button
-            onClick={nextLightboxImage}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full transition-all z-50"
-            aria-label="Next image"
-          >
-            <ChevronRight className="w-8 h-8" />
-          </button>
+            <button
+              onClick={prevLightboxImage}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full z-[10000]"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
 
-          {/* Main Image */}
-          <div className="max-w-7xl max-h-[90vh] mx-auto px-16">
-            <img
-              src={images[lightboxIndex]}
-              alt={`Image ${lightboxIndex + 1}`}
-              className="max-w-full max-h-[90vh] object-contain rounded-lg"
-            />
-          </div>
+            <button
+              onClick={nextLightboxImage}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full z-[10000]"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
 
-          {/* Thumbnails */}
-          <div className="absolute bottom-0 left-0 right-0 bg-black/80 p-4 overflow-x-auto">
-            <div className="flex gap-2 justify-center">
-              {images.map((image, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setLightboxIndex(idx)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                    idx === lightboxIndex
-                      ? "border-green-400 opacity-100"
-                      : "border-transparent opacity-50 hover:opacity-75"
-                  }`}
-                >
-                  <img
-                    src={image}
-                    alt={`Thumbnail ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
+            <div className="w-full mt-6 px-4 overflow-x-auto">
+              <div className="flex gap-3 justify-center">
+                {images.map((image, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setLightboxIndex(idx)}
+                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                      idx === lightboxIndex
+                        ? "border-green-400 scale-105"
+                        : "border-transparent opacity-50 hover:opacity-80"
+                    }`}
+                  >
+                    <img src={image} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

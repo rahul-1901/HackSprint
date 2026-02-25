@@ -5,12 +5,13 @@ import { UploadCloud, ArrowLeft, Plus, X, Images, ImagePlus, Trash2 } from 'luci
 import { getAdminDetails, createHackathon } from '../backendApis/api';
 import axios from 'axios';
 
+/* ================= BACKGROUND ================= */
 const GridBackground = () => (
   <div className="absolute inset-0 h-full w-full bg-gray-900 bg-grid-white/[0.05] -z-20" />
 );
 
-// ─── Reusable Image Upload Drop Zone ─────────────────────────────────────────
-const ImageDropZone = ({ preview, onFileSelect, onClear, label = "Upload Image", accept = "image/*", className = "" }) => {
+/* ================= IMAGE DROP ZONE ================= */
+const ImageDropZone = ({ preview, onFileSelect, onClear, label = "Upload Image", accept = "image/*" }) => {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = React.useRef(null);
 
@@ -22,7 +23,7 @@ const ImageDropZone = ({ preview, onFileSelect, onClear, label = "Upload Image",
   };
 
   return (
-    <div className={className}>
+    <div>
       {!preview ? (
         <div
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -69,7 +70,7 @@ const ImageDropZone = ({ preview, onFileSelect, onClear, label = "Upload Image",
   );
 };
 
-// ─── Gallery Upload Section ───────────────────────────────────────────────────
+/* ================= GALLERY UPLOAD ================= */
 const GalleryUpload = ({ items, onAdd, onRemove }) => {
   const inputRef = React.useRef(null);
   const MAX = 10;
@@ -106,7 +107,6 @@ const GalleryUpload = ({ items, onAdd, onRemove }) => {
         </span>
       </div>
 
-      {/* Drop zone (shows when below max) */}
       {items.length < MAX && (
         <div
           onClick={() => inputRef.current?.click()}
@@ -120,7 +120,6 @@ const GalleryUpload = ({ items, onAdd, onRemove }) => {
         </div>
       )}
 
-      {/* Preview grid */}
       {items.length > 0 && (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
           {items.map((item, i) => (
@@ -144,6 +143,7 @@ const GalleryUpload = ({ items, onAdd, onRemove }) => {
   );
 };
 
+/* ================= DYNAMIC LIST INPUT ================= */
 const DynamicListInput = ({ label, placeholder, values, onUpdate }) => {
   const [currentValue, setCurrentValue] = useState('');
 
@@ -184,6 +184,7 @@ const DynamicListInput = ({ label, placeholder, values, onUpdate }) => {
   );
 };
 
+/* ================= DYNAMIC FAQ INPUT ================= */
 const DynamicFaqInput = ({ values, onUpdate }) => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
@@ -213,9 +214,25 @@ const DynamicFaqInput = ({ values, onUpdate }) => {
         ))}
       </div>
       <div className="space-y-2 border-t border-gray-700 pt-3">
-        <input type="text" placeholder="Question" value={question} onChange={(e) => setQuestion(e.target.value)} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50" />
-        <textarea placeholder="Answer" value={answer} onChange={(e) => setAnswer(e.target.value)} rows="2" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 resize-none" />
-        <button type="button" onClick={handleAdd} className="w-full cursor-pointer bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2">
+        <input
+          type="text"
+          placeholder="Question"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50"
+        />
+        <textarea
+          placeholder="Answer"
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+          rows="2"
+          className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 resize-none"
+        />
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="w-full cursor-pointer bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2"
+        >
           <Plus size={16} /> Add FAQ
         </button>
       </div>
@@ -223,28 +240,42 @@ const DynamicFaqInput = ({ values, onUpdate }) => {
   );
 };
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+/* ================= MAIN PAGE ================= */
 const CreateHackathonPage = () => {
   const navigate = useNavigate();
-  const [adminData, setAdminData] = useState(null);
-  const [formData, setFormData] = useState({
-    title: '', subTitle: '', description: '', overview: '', startDate: '', endDate: '',
-    submissionStartDate: '', submissionEndDate: '',
-    prizeMoney1: '', prizeMoney2: '', prizeMoney3: '',
-    difficulty: 'Beginner',
-    techStackUsed: [], category: [], themes: [], refMaterial: '', aboutUs: '',
-    problems: [], TandCforHackathon: [], evaluationCriteria: [], projectSubmission: [],
-    FAQs: []
-  });
 
-  // Single source of truth: banner image
+  const [adminData, setAdminData] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [bannerFile, setBannerFile] = useState(null);
   const [bannerPreview, setBannerPreview] = useState('');
 
-  // Single source of truth: gallery — array of { file, url }
   const [galleryItems, setGalleryItems] = useState([]);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    subTitle: '',
+    description: '',
+    overview: '',
+    startDate: '',
+    endDate: '',
+    submissionStartDate: '',
+    submissionEndDate: '',
+    prizeMoney1: '',
+    prizeMoney2: '',
+    prizeMoney3: '',
+    difficulty: 'Beginner',
+    techStackUsed: [],
+    category: [],
+    themes: [],
+    problems: [],
+    TandCforHackathon: [],
+    evaluationCriteria: [],
+    projectSubmission: [],
+    FAQs: [],
+    refMaterial: '',
+    aboutUs: '',
+  });
 
   // Cleanup object URLs on unmount
   useEffect(() => {
@@ -254,22 +285,23 @@ const CreateHackathonPage = () => {
     };
   }, []);
 
+  // Fetch admin
   useEffect(() => {
-    const fetchAdminData = async () => {
+    const fetchAdmin = async () => {
       try {
-        const response = await getAdminDetails();
-        setAdminData(response.data.admin);
+        const res = await getAdminDetails();
+        setAdminData(res.data.admin);
       } catch {
         toast.error("You must be logged in to create a hackathon.");
         navigate('/adminlogin');
       }
     };
-    fetchAdminData();
+    fetchAdmin();
   }, [navigate]);
 
+  /* ── Handlers ── */
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleBannerSelect = (file) => {
@@ -298,6 +330,7 @@ const CreateHackathonPage = () => {
     });
   };
 
+  /* ── Gallery upload (after hackathon created) ── */
   const uploadGalleryImages = async (hackathonId) => {
     if (galleryItems.length === 0) return;
     try {
@@ -311,8 +344,8 @@ const CreateHackathonPage = () => {
           {
             headers: {
               'Content-Type': 'multipart/form-data',
-              Authorization: `Bearer ${localStorage.getItem('adminToken')}`
-            }
+              Authorization: `Bearer ${localStorage.getItem('adminToken')}`,
+            },
           }
         );
       }
@@ -321,36 +354,60 @@ const CreateHackathonPage = () => {
     }
   };
 
+  /* ── Submit ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!adminData) { toast.error("Admin details not found."); return; }
+
     setIsSubmitting(true);
 
-    const submissionData = new FormData();
-
-    const simpleFields = [
-      'title', 'subTitle', 'description', 'overview', 'startDate', 'endDate',
-      'submissionStartDate', 'submissionEndDate',
-      'prizeMoney1', 'prizeMoney2', 'prizeMoney3',
-      'difficulty', 'refMaterial', 'aboutUs'
-    ];
-    simpleFields.forEach((field) => { if (formData[field]) submissionData.append(field, formData[field]); });
-
-    const arrayFields = ['techStackUsed', 'category', 'themes', 'problems', 'TandCforHackathon', 'evaluationCriteria', 'projectSubmission'];
-    arrayFields.forEach((field) => submissionData.append(field, JSON.stringify(formData[field])));
-
-    submissionData.append('FAQs', JSON.stringify(formData.FAQs.map((f) => `${f.question}|${f.answer}`)));
-    submissionData.append('adminId', adminData.id);
-    if (bannerFile) submissionData.append('image', bannerFile);
-
     try {
-      const response = await createHackathon(submissionData);
+      const fd = new FormData();
+
+      // Simple string/number fields
+      const simpleFields = [
+        'title', 'subTitle', 'description', 'overview',
+        'startDate', 'endDate', 'submissionStartDate', 'submissionEndDate',
+        'prizeMoney1', 'prizeMoney2', 'prizeMoney3',
+        'difficulty', 'refMaterial', 'aboutUs',
+      ];
+      simpleFields.forEach((field) => {
+        if (formData[field] !== '' && formData[field] !== undefined) {
+          fd.append(field, formData[field]);
+        }
+      });
+
+      // Array fields — JSON stringified
+      const arrayFields = [
+        'techStackUsed', 'category', 'themes', 'problems',
+        'TandCforHackathon', 'evaluationCriteria', 'projectSubmission',
+      ];
+      arrayFields.forEach((field) => {
+        fd.append(field, JSON.stringify(formData[field] || []));
+      });
+
+      // FAQs — keep as objects (correct format)
+      fd.append('FAQs', JSON.stringify(formData.FAQs || []));
+
+      // Admin ID
+      fd.append('adminId', adminData.id);
+
+      // Banner image
+      if (bannerFile) fd.append('image', bannerFile);
+
+      const res = await createHackathon(fd);
+
       toast.success("Hackathon submitted for approval!");
-      if (galleryItems.length > 0 && response.data?.hackathon?._id) {
-        await uploadGalleryImages(response.data.hackathon._id);
+
+      // Upload gallery images if any
+      if (galleryItems.length > 0 && res.data?.hackathon?._id) {
+        await uploadGalleryImages(res.data.hackathon._id);
       }
-    } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to create hackathon.");
+
+      navigate('/admin');
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.error || "Failed to create hackathon.");
     } finally {
       setIsSubmitting(false);
     }
@@ -358,9 +415,11 @@ const CreateHackathonPage = () => {
 
   const inputClass = "w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 transition-colors";
 
+  /* ── Render ── */
   return (
     <div className="relative min-h-screen bg-gray-900 text-white">
       <GridBackground />
+
       <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
         <header className="my-12">
           <Link to="/admin" className="flex items-center gap-2 text-green-400 hover:text-green-300 mb-6 group">
@@ -372,7 +431,8 @@ const CreateHackathonPage = () => {
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Basic Information */}
+
+          {/* ── Basic Information ── */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Basic Information</h2>
             <div className="space-y-4">
@@ -403,7 +463,7 @@ const CreateHackathonPage = () => {
             </div>
           </div>
 
-          {/* Event Details */}
+          {/* ── Event Details ── */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Event Details</h2>
             <div className="space-y-6">
@@ -418,7 +478,10 @@ const CreateHackathonPage = () => {
               <div>
                 <label htmlFor="difficulty" className="block text-sm font-medium text-gray-300 mb-1">Difficulty</label>
                 <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleChange} className={inputClass}>
-                  <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Expert</option>
+                  <option>Beginner</option>
+                  <option>Intermediate</option>
+                  <option>Advanced</option>
+                  <option>Expert</option>
                 </select>
               </div>
               <DynamicListInput label="Tech Stack" placeholder="e.g., React" values={formData.techStackUsed} onUpdate={(v) => setFormData((p) => ({ ...p, techStackUsed: v }))} />
@@ -427,7 +490,7 @@ const CreateHackathonPage = () => {
             </div>
           </div>
 
-          {/* Rules */}
+          {/* ── Rules & Other Details ── */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Rules & Other Details</h2>
             <div className="space-y-6">
@@ -438,17 +501,20 @@ const CreateHackathonPage = () => {
             </div>
           </div>
 
-          {/* Additional Content */}
+          {/* ── Additional Content ── */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Additional Content</h2>
             <div className="space-y-6">
               <input type="text" name="refMaterial" placeholder="Reference Material URL" value={formData.refMaterial} onChange={handleChange} className={inputClass} />
               <textarea name="aboutUs" placeholder="About the Organizer" value={formData.aboutUs} onChange={handleChange} rows="4" className={inputClass + " resize-none"} />
-              <DynamicFaqInput values={formData.FAQs} onUpdate={(v) => setFormData((p) => ({ ...p, FAQs: v }))} />
+              <DynamicFaqInput
+                values={formData.FAQs}
+                onUpdate={(v) => setFormData((p) => ({ ...p, FAQs: v }))}
+              />
             </div>
           </div>
 
-          {/* Timeline */}
+          {/* ── Timeline ── */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Timeline</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -466,8 +532,13 @@ const CreateHackathonPage = () => {
             </div>
           </div>
 
+          {/* ── Submit ── */}
           <div className="flex justify-end pt-4">
-            <button type="submit" disabled={isSubmitting} className="bg-green-600 cursor-pointer hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg transition-colors flex items-center gap-2">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-green-600 cursor-pointer hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg transition-colors flex items-center gap-2"
+            >
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -476,6 +547,7 @@ const CreateHackathonPage = () => {
               ) : 'Submit for Approval'}
             </button>
           </div>
+
         </form>
       </div>
     </div>

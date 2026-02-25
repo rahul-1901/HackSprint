@@ -88,23 +88,30 @@ export const HeroSection = ({
       try {
         const res = await getDashboard();
         const fetchedUserData = res.data.userData;
-        // console.log(fetchedUserData)
+        console.log(fetchedUserData)
         setUserData(fetchedUserData);
         setIsVerified(fetchedUserData?.isVerified || false);
 
         const registered = Array.isArray(fetchedUserData.registeredHackathons)
           ? fetchedUserData.registeredHackathons.some(
-            (id) => String(id) === String(hackathonId)
+            (obj) => String(obj?._id) === String(hackathonId)
           )
           : false;
         setRegistrationInfo(registered);
 
         const leader = fetchedUserData.leaderOfHackathons?.some(
-          (id) => String(id) === String(hackathonId)
+          (obj) => String(obj?._id) === String(hackathonId)
         );
-        setIsLeader(leader || false);
-        setLeaderButton(leader || false);
-
+        if(leader) {
+          setIsLeader(true);
+          setLeaderButton(true);
+        } else {
+          setIsLeader(false);
+          setLeaderButton(false);
+        }
+        console.log("Leader Status:", isLeader);
+        console.log("Leader Button:", leaderButton);
+        console.log("Registration Info:", registrationInfo);
         // ✅ Always send teamId here
         if (fetchedUserData?.team) {
           await fetchTeamData(fetchedUserData.team, fetchedUserData._id);
@@ -125,7 +132,8 @@ export const HeroSection = ({
 
     fetchTeamData();
     fetchUserData();
-  }, [hackathonId]);
+    renderActionButton()
+  }, [hackathonId, isLeader, registrationInfo]);
 
   // useEffect(() => {
   //   console.log("Team Data Updated:", teamData?.code);

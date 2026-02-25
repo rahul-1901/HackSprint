@@ -116,7 +116,7 @@ export const createPendingHackathon = async (req, res) => {
         const key = `hackathons/images/${timestamp}-${randomString}-${req.file.originalname}`;
 
         const putObjectCommand = new PutObjectCommand({
-          Bucket: process.env.AWS_BUCKET_NAME,
+          Bucket: process.env.AWS_S3_BUCKET_NAME,
           Key: key,
           Body: fileContent,
           ContentType: req.file.mimetype,
@@ -124,7 +124,7 @@ export const createPendingHackathon = async (req, res) => {
 
         await s3Client.send(putObjectCommand);
 
-        imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${
+        imageUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${
           process.env.AWS_REGION || "ap-southeast-2"
         }.amazonaws.com/${key}`;
 
@@ -181,6 +181,7 @@ export const createPendingHackathon = async (req, res) => {
       "TandCforHackathon",
       "evaluationCriteria",
       "FAQs",
+      "projectSubmission", // ✅ ADD THIS
       "gallery",
       "approvals",
       "rejectedBy",

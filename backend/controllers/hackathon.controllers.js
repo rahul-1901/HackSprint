@@ -31,7 +31,7 @@ const uploadFileToS3 = async (file, s3KeyPrefix) => {
   const key = `${s3KeyPrefix}/${timestamp}-${randomString}-${file.originalname}`;
 
   const putObjectCommand = new PutObjectCommand({
-    Bucket: process.env.AWS_BUCKET_NAME,
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
     Key: key,
     Body: fs.readFileSync(file.path),
     ContentType: file.mimetype,
@@ -42,7 +42,7 @@ const uploadFileToS3 = async (file, s3KeyPrefix) => {
   // Clean up temp file
   if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
 
-  const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+  const url = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
   return { key, url };
 };
 
@@ -256,7 +256,7 @@ export const deleteGalleryImage = async (req, res) => {
       const s3Key = urlParts.pathname.substring(1); // Remove leading slash
       
       await s3Client.send(new DeleteObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME,
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
         Key: s3Key,
       }));
     } catch (s3Error) {
