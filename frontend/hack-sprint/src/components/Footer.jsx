@@ -90,7 +90,7 @@ const Footer = () => {
                             </h2>
                         </div>
                         <p className="text-gray-400 mb-6 text-sm">
-                            From dev quests to hackathons—build skills that get noticed in placements and internships.
+                            From dev quests to hackathons build skills that get noticed in placements and internships.
                         </p>
                         <div className="space-y-2">
                             <div className="flex items-start">

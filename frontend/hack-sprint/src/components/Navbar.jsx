@@ -153,7 +153,7 @@ const Navbar = () => {
               {/* Icon Group: Architecture & GitHub */}
               <div className="flex items-center space-x-2 ml-4 mr-2 border-l border-green-900/50 pl-4">
                 <button 
-                  onClick={() => window.open('https://github.com', '_blank')}
+                  onClick={() => window.open('https://github.com/devlup-labs/HackSprint', '_blank')}
                   title="GitHub"
                   className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-green-400 hover:drop-shadow-[0_0_8px_rgba(74,222,128,0.8)] transition-all duration-300 cursor-pointer"
                 >
@@ -161,7 +161,7 @@ const Navbar = () => {
                 </button>
                 
                 <button 
-                  onClick={() => handleNavigate('/architecture')}
+                  onClick={() => window.open('https://miro.com/app/board/uXjVGHQV81E=/?share_link_id=472464826506', '_blank')}
                   title="Architecture"
                   className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-green-400 hover:drop-shadow-[0_0_8px_rgba(74,222,128,0.8)] transition-all duration-300 cursor-pointer"
                 >
