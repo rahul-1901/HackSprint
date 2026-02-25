@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { getDashboard } from '../backendApis/api';
-import { Menu, X, User, Trophy, Terminal, LogOut, Coins, LogIn, Crown } from 'lucide-react'
+import { 
+  Menu, X, User, Trophy, Terminal, LogOut, 
+  Coins, LogIn, Crown, Github, GitBranch 
+} from 'lucide-react'
 
 const Navbar = () => {
   const navigate = useNavigate()
@@ -75,12 +78,12 @@ const Navbar = () => {
       yesterday.setDate(yesterday.getDate() - 1);
 
       if (lastVisit === yesterday.toDateString()) {
-        newStreak = storedStreak + 1; // continued streak
+        newStreak = storedStreak + 1;
       } else {
-        newStreak = 1; // reset streak
+        newStreak = 1;
       }
 
-      rewardEarned = 10 + Math.floor(newStreak / 5) * 5; // 10 coins + bonus every 5 days
+      rewardEarned = 10 + Math.floor(newStreak / 5) * 5;
       newCoins += rewardEarned;
 
       localStorage.setItem("coins", newCoins.toString());
@@ -147,11 +150,30 @@ const Navbar = () => {
                 )
               })}
 
+              {/* Icon Group: Architecture & GitHub */}
+              <div className="flex items-center space-x-2 ml-4 mr-2 border-l border-green-900/50 pl-4">
+                <button 
+                  onClick={() => window.open('https://github.com', '_blank')}
+                  title="GitHub"
+                  className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-green-400 hover:drop-shadow-[0_0_8px_rgba(74,222,128,0.8)] transition-all duration-300 cursor-pointer"
+                >
+                  <Github size={20} />
+                </button>
+                
+                <button 
+                  onClick={() => handleNavigate('/architecture')}
+                  title="Architecture"
+                  className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-green-400 hover:drop-shadow-[0_0_8px_rgba(74,222,128,0.8)] transition-all duration-300 cursor-pointer"
+                >
+                  <GitBranch size={20} />
+                </button>
+              </div>
+
               {/* Profile Dropdown */}
-              <div className="relative ml-4" ref={profileMenuRef}>
+              <div className="relative" ref={profileMenuRef}>
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg cursor-pointer"
+                  className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center hover:scale-110 hover:shadow-[0_0_15px_rgba(74,222,128,0.4)] transition-all shadow-lg cursor-pointer"
                 >
                   <User size={16} className="text-white" />
                 </button>
@@ -160,7 +182,6 @@ const Navbar = () => {
                   <div className="absolute right-0 mt-2 w-64 bg-gray-900 border border-green-500/20 rounded-xl shadow-xl overflow-hidden">
                     {isLoggedIn ? (
                       <>
-                        {/* User Info */}
                         <div className="flex items-center p-4 border-b border-green-500/20 bg-gray-800">
                           <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
                             {userInfo?.name ? userInfo.name[0].toUpperCase() : "U"}
@@ -171,7 +192,6 @@ const Navbar = () => {
                           </div>
                         </div>
 
-                        {/* Quick Actions */}
                         <div className="grid grid-cols-2 gap-3 p-4">
                           <button
                             onClick={() => handleNavigate('/dashboard')}
@@ -181,14 +201,12 @@ const Navbar = () => {
                             <span className="text-xs">Profile</span>
                           </button>
 
-                          {/* Coins Display (non-clickable) */}
                           <div className="flex flex-col items-center p-3 bg-gray-800 rounded-lg text-gray-200 select-none">
                             <Coins size={20} className="mb-1 text-yellow-400" />
                             <span className="text-xs">{coins || 0} Coins</span>
                           </div>
                         </div>
 
-                        {/* Logout */}
                         <div className="flex flex-col p-2 border-t border-green-500/20">
                           <button
                             onClick={handleLogout}
@@ -229,7 +247,6 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden bg-gray-900/95 backdrop-blur-md border-t border-green-500/20">
             <div className="container mx-auto px-3 sm:px-4 py-4">
-              {/* Navigation Items */}
               <div className="space-y-2 mb-6">
                 {navItems.map((item) => {
                   const Icon = item.icon
@@ -246,10 +263,8 @@ const Navbar = () => {
                 })}
               </div>
 
-              {/* User Section */}
               {isLoggedIn ? (
                 <div className="border-t border-green-500/20 pt-4">
-                  {/* User Info */}
                   <div className="flex items-center p-4 bg-gray-800 rounded-lg mb-4">
                     <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
                       {userInfo?.name ? userInfo.name[0].toUpperCase() : "U"}
@@ -264,7 +279,6 @@ const Navbar = () => {
                     </div>
                   </div>
 
-                  {/* Mobile Actions */}
                   <div className="space-y-2">
                     <button
                       onClick={() => handleNavigate('/dashboard')}

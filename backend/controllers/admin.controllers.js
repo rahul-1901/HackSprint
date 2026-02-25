@@ -106,9 +106,10 @@ export const getalladmin = async (req, res) => {
 export const createPendingHackathon = async (req, res) => {
   try {
     let imageUrl = "";
+
+    // ================= IMAGE UPLOAD (UNCHANGED LOGIC) =================
     if (req.file) {
       try {
-        // ✅ AWS S3 Upload
         const fileContent = fs.readFileSync(req.file.path);
         const timestamp = Date.now();
         const randomString = Math.random().toString(36).substring(2, 9);
@@ -122,9 +123,11 @@ export const createPendingHackathon = async (req, res) => {
         });
 
         await s3Client.send(putObjectCommand);
-        imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION || "ap-southeast-2"}.amazonaws.com/${key}`;
 
-        // Clean up uploaded file
+        imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${
+          process.env.AWS_REGION || "ap-southeast-2"
+        }.amazonaws.com/${key}`;
+
         fs.unlinkSync(req.file.path);
       } catch (error) {
         console.error("Error uploading to AWS S3:", error);
@@ -132,32 +135,81 @@ export const createPendingHackathon = async (req, res) => {
       }
     }
 
-    const data = req.body;
+    // ================= DATA PROCESSING =================
+    const data = { ...req.body };
 
-    // ----- START of NECESSARY CHANGE -----
-    // This safely parses the fields that were sent as JSON strings from the frontend
-    const arrayFields = ['techStackUsed', 'category', 'themes', 'problems', 'TandCforHackathon', 'evaluationCriteria', 'FAQs'];
-    arrayFields.forEach(field => {
-      if (data[field] && typeof data[field] === 'string') {
-        data[field] = JSON.parse(data[field]);
+    // 🔥 UNIVERSAL SAFE JSON PARSER (Fix for empty arrays/objects issue)
+    Object.keys(data).forEach((key) => {
+      if (typeof data[key] === "string") {
+        const value = data[key].trim();
+
+        // Try parsing only if looks like JSON
+        if (
+          (value.startsWith("{") && value.endsWith("}")) ||
+          (value.startsWith("[") && value.endsWith("]"))
+        ) {
+          try {
+            data[key] = JSON.parse(value);
+          } catch (err) {
+            console.warn(`Failed to parse JSON field: ${key}`);
+          }
+        }
       }
     });
-    // ----- END of NECESSARY CHANGE -----
 
-    data.createdBy = req.body.adminId;
+    // ================= REQUIRED FIELDS =================
+    if (!data.adminId) {
+      return res.status(400).json({
+        success: false,
+        message: "Admin ID is required",
+      });
+    }
+
+    data.createdBy = data.adminId;
     delete data.adminId;
-    data.image = imageUrl || "";
 
+    if (imageUrl) {
+      data.image = imageUrl;
+    }
+
+    // Ensure default arrays exist if not provided
+    const defaultArrayFields = [
+      "techStackUsed",
+      "category",
+      "themes",
+      "problems",
+      "TandCforHackathon",
+      "evaluationCriteria",
+      "FAQs",
+      "gallery",
+      "approvals",
+      "rejectedBy",
+    ];
+
+    defaultArrayFields.forEach((field) => {
+      if (!Array.isArray(data[field])) {
+        data[field] = [];
+      }
+    });
+
+    // Ensure object defaults
+    if (!data.allowedFileTypes || typeof data.allowedFileTypes !== "object") {
+      data.allowedFileTypes = {};
+    }
+
+    // ================= SAVE TO DB =================
     const pendingHackathon = new PendingHackathon(data);
     await pendingHackathon.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Hackathon created and waiting for approval",
       pendingHackathon,
     });
   } catch (err) {
-    res.status(400).json({
+    console.error("Create Pending Hackathon Error:", err);
+    return res.status(400).json({
+      success: false,
       error: err.message,
     });
   }

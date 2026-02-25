@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { UploadCloud, ArrowLeft, Plus, X, Images } from 'lucide-react';
+import { UploadCloud, ArrowLeft, Plus, X, Images, ImagePlus, Trash2 } from 'lucide-react';
 import { getAdminDetails, createHackathon } from '../backendApis/api';
 import axios from 'axios';
 
@@ -9,18 +9,149 @@ const GridBackground = () => (
   <div className="absolute inset-0 h-full w-full bg-gray-900 bg-grid-white/[0.05] -z-20" />
 );
 
+// ─── Reusable Image Upload Drop Zone ─────────────────────────────────────────
+const ImageDropZone = ({ preview, onFileSelect, onClear, label = "Upload Image", accept = "image/*", className = "" }) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = React.useRef(null);
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) onFileSelect(file);
+  };
+
+  return (
+    <div className={className}>
+      {!preview ? (
+        <div
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+          onClick={() => inputRef.current?.click()}
+          className={`relative flex flex-col items-center justify-center gap-3 w-full h-40 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
+            isDragging
+              ? 'border-green-400 bg-green-400/10'
+              : 'border-gray-600 bg-gray-800/40 hover:border-gray-500 hover:bg-gray-800/60'
+          }`}
+        >
+          <UploadCloud className={`w-8 h-8 transition-colors ${isDragging ? 'text-green-400' : 'text-gray-500'}`} />
+          <div className="text-center">
+            <p className="text-sm font-medium text-gray-300">{label}</p>
+            <p className="text-xs text-gray-500 mt-1">Drag & drop or click to browse</p>
+            <p className="text-xs text-gray-600 mt-0.5">JPEG, PNG, WEBP · Max 5MB</p>
+          </div>
+          <input ref={inputRef} type="file" className="sr-only" accept={accept} onChange={(e) => e.target.files[0] && onFileSelect(e.target.files[0])} />
+        </div>
+      ) : (
+        <div className="relative group w-full h-40 rounded-xl overflow-hidden border border-gray-700">
+          <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs rounded-lg transition-all"
+            >
+              <ImagePlus className="w-3.5 h-3.5" /> Replace
+            </button>
+            <button
+              type="button"
+              onClick={onClear}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 text-xs rounded-lg transition-all"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Remove
+            </button>
+          </div>
+          <input ref={inputRef} type="file" className="sr-only" accept={accept} onChange={(e) => e.target.files[0] && onFileSelect(e.target.files[0])} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Gallery Upload Section ───────────────────────────────────────────────────
+const GalleryUpload = ({ items, onAdd, onRemove }) => {
+  const inputRef = React.useRef(null);
+  const MAX = 10;
+
+  const handleFiles = (files) => {
+    const remaining = MAX - items.length;
+    if (remaining <= 0) { toast.error('Maximum 10 gallery images allowed.'); return; }
+
+    const toAdd = [];
+    Array.from(files).slice(0, remaining).forEach((file) => {
+      if (file.size > 5 * 1024 * 1024) { toast.error(`${file.name} exceeds 5MB limit.`); return; }
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) { toast.error(`${file.name} is not a valid image.`); return; }
+      toAdd.push({ file, url: URL.createObjectURL(file) });
+    });
+
+    if (toAdd.length) onAdd(toAdd);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Images className="w-4 h-4 text-purple-400" />
+          <label className="text-sm font-medium text-gray-300">Gallery Images</label>
+          <span className="text-xs text-gray-500">(optional · max {MAX})</span>
+        </div>
+        <span className={`text-xs font-mono px-2 py-0.5 rounded-full border ${
+          items.length >= MAX
+            ? 'bg-red-500/10 text-red-400 border-red-500/20'
+            : 'bg-gray-700/50 text-gray-400 border-gray-600/30'
+        }`}>
+          {items.length}/{MAX}
+        </span>
+      </div>
+
+      {/* Drop zone (shows when below max) */}
+      {items.length < MAX && (
+        <div
+          onClick={() => inputRef.current?.click()}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
+          className="flex flex-col items-center justify-center gap-2 h-24 rounded-xl border-2 border-dashed border-gray-600 bg-gray-800/40 hover:border-purple-500/50 hover:bg-purple-500/5 cursor-pointer transition-all duration-200 mb-3"
+        >
+          <Images className="w-5 h-5 text-gray-500" />
+          <p className="text-xs text-gray-400">Click or drag images here · {MAX - items.length} remaining</p>
+          <input ref={inputRef} type="file" className="sr-only" accept="image/jpeg,image/png,image/gif,image/webp" multiple onChange={(e) => handleFiles(e.target.files)} />
+        </div>
+      )}
+
+      {/* Preview grid */}
+      {items.length > 0 && (
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+          {items.map((item, i) => (
+            <div key={i} className="relative group aspect-square">
+              <img src={item.url} alt={`Gallery ${i + 1}`} className="w-full h-full object-cover rounded-lg border border-gray-700" />
+              <button
+                type="button"
+                onClick={() => onRemove(i)}
+                className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X size={10} />
+              </button>
+              <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] text-center py-0.5 rounded-b-lg">
+                #{i + 1}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const DynamicListInput = ({ label, placeholder, values, onUpdate }) => {
   const [currentValue, setCurrentValue] = useState('');
 
   const handleAdd = () => {
-    if (currentValue && !values.includes(currentValue)) {
-      onUpdate([...values, currentValue]);
+    if (currentValue.trim() && !values.includes(currentValue.trim())) {
+      onUpdate([...values, currentValue.trim()]);
       setCurrentValue('');
     }
-  };
-
-  const handleRemove = (itemToRemove) => {
-    onUpdate(values.filter(item => item !== itemToRemove));
   };
 
   return (
@@ -30,7 +161,7 @@ const DynamicListInput = ({ label, placeholder, values, onUpdate }) => {
         {values.map((item, index) => (
           <div key={index} className="flex items-center gap-2 bg-green-900/50 text-green-300 text-sm px-3 py-1 rounded-full">
             <span>{item}</span>
-            <button type="button" onClick={() => handleRemove(item)} className="text-green-400 hover:text-white">
+            <button type="button" onClick={() => onUpdate(values.filter((_, i) => i !== index))} className="text-green-400 hover:text-white">
               <X size={14} />
             </button>
           </div>
@@ -43,7 +174,7 @@ const DynamicListInput = ({ label, placeholder, values, onUpdate }) => {
           value={currentValue}
           onChange={(e) => setCurrentValue(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAdd(); } }}
-          className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"
+          className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50"
         />
         <button type="button" onClick={handleAdd} className="bg-gray-700 hover:bg-gray-600 text-white font-bold p-2 rounded-lg flex-shrink-0">
           <Plus size={20} />
@@ -58,15 +189,11 @@ const DynamicFaqInput = ({ values, onUpdate }) => {
   const [answer, setAnswer] = useState('');
 
   const handleAdd = () => {
-    if (question && answer) {
-      onUpdate([...values, { question, answer }]);
+    if (question.trim() && answer.trim()) {
+      onUpdate([...values, { question: question.trim(), answer: answer.trim() }]);
       setQuestion('');
       setAnswer('');
     }
-  };
-
-  const handleRemove = (indexToRemove) => {
-    onUpdate(values.filter((_, index) => index !== indexToRemove));
   };
 
   return (
@@ -76,18 +203,18 @@ const DynamicFaqInput = ({ values, onUpdate }) => {
         {values.map((faq, index) => (
           <div key={index} className="bg-gray-800/50 p-3 rounded-lg flex justify-between items-start gap-4">
             <div className="flex-1">
-              <p className="font-semibold text-white">{faq.question}</p>
+              <p className="font-semibold text-white text-sm">{faq.question}</p>
               <p className="text-gray-400 text-sm mt-1">{faq.answer}</p>
             </div>
-            <button type="button" onClick={() => handleRemove(index)} className="text-red-400 hover:text-red-300 flex-shrink-0">
+            <button type="button" onClick={() => onUpdate(values.filter((_, i) => i !== index))} className="text-red-400 hover:text-red-300 flex-shrink-0">
               <X size={16} />
             </button>
           </div>
         ))}
       </div>
       <div className="space-y-2 border-t border-gray-700 pt-3">
-        <input type="text" placeholder="Question" value={question} onChange={(e) => setQuestion(e.target.value)} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-        <textarea placeholder="Answer" value={answer} onChange={(e) => setAnswer(e.target.value)} rows="2" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
+        <input type="text" placeholder="Question" value={question} onChange={(e) => setQuestion(e.target.value)} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50" />
+        <textarea placeholder="Answer" value={answer} onChange={(e) => setAnswer(e.target.value)} rows="2" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 resize-none" />
         <button type="button" onClick={handleAdd} className="w-full cursor-pointer bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2">
           <Plus size={16} /> Add FAQ
         </button>
@@ -96,7 +223,7 @@ const DynamicFaqInput = ({ values, onUpdate }) => {
   );
 };
 
-
+// ─── Main Page ────────────────────────────────────────────────────────────────
 const CreateHackathonPage = () => {
   const navigate = useNavigate();
   const [adminData, setAdminData] = useState(null);
@@ -109,18 +236,30 @@ const CreateHackathonPage = () => {
     problems: [], TandCforHackathon: [], evaluationCriteria: [], projectSubmission: [],
     FAQs: []
   });
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState('');
-  const [galleryFiles, setGalleryFiles] = useState([]);
-  const [galleryPreviews, setGalleryPreviews] = useState([]);
+
+  // Single source of truth: banner image
+  const [bannerFile, setBannerFile] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState('');
+
+  // Single source of truth: gallery — array of { file, url }
+  const [galleryItems, setGalleryItems] = useState([]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (bannerPreview) URL.revokeObjectURL(bannerPreview);
+      galleryItems.forEach((item) => URL.revokeObjectURL(item.url));
+    };
+  }, []);
 
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
         const response = await getAdminDetails();
         setAdminData(response.data.admin);
-      } catch (error) {
+      } catch {
         toast.error("You must be logged in to create a hackathon.");
         navigate('/adminlogin');
       }
@@ -130,78 +269,45 @@ const CreateHackathonPage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
+  const handleBannerSelect = (file) => {
+    if (file.size > 5 * 1024 * 1024) { toast.error('Image must be under 5MB.'); return; }
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) { toast.error('Invalid image format.'); return; }
+    if (bannerPreview) URL.revokeObjectURL(bannerPreview);
+    setBannerFile(file);
+    setBannerPreview(URL.createObjectURL(file));
   };
 
-  const handleGalleryUpload = (e) => {
-    const files = Array.from(e.target.files);
-    
-    // Validate total number of images (max 10)
-    if (files.length + galleryFiles.length > 10) {
-      toast.error('You can upload a maximum of 10 gallery images.');
-      return;
-    }
+  const handleBannerClear = () => {
+    if (bannerPreview) URL.revokeObjectURL(bannerPreview);
+    setBannerFile(null);
+    setBannerPreview('');
+  };
 
-    const validFiles = [];
-    const validPreviews = [];
+  const handleGalleryAdd = (newItems) => {
+    setGalleryItems((prev) => [...prev, ...newItems]);
+  };
 
-    files.forEach(file => {
-      // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`Image ${file.name} is too large. Maximum size is 5MB.`);
-        return;
-      }
-
-      // Validate file type
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validImageTypes.includes(file.type)) {
-        toast.error(`${file.name} is not a valid image file.`);
-        return;
-      }
-
-      validFiles.push(file);
-      validPreviews.push(URL.createObjectURL(file));
+  const handleGalleryRemove = (index) => {
+    setGalleryItems((prev) => {
+      URL.revokeObjectURL(prev[index].url);
+      return prev.filter((_, i) => i !== index);
     });
-
-    // Update state
-    setGalleryFiles([...galleryFiles, ...validFiles]);
-    setGalleryPreviews([...galleryPreviews, ...validPreviews]);
-  };
-
-  const removeGalleryImage = (index) => {
-    // Cleanup preview URL
-    if (galleryPreviews[index]) {
-      URL.revokeObjectURL(galleryPreviews[index]);
-    }
-
-    // Remove from both arrays
-    const newFiles = galleryFiles.filter((_, i) => i !== index);
-    const newPreviews = galleryPreviews.filter((_, i) => i !== index);
-
-    setGalleryFiles(newFiles);
-    setGalleryPreviews(newPreviews);
   };
 
   const uploadGalleryImages = async (hackathonId) => {
-    if (galleryFiles.length === 0) return;
-    
+    if (galleryItems.length === 0) return;
     try {
-      for (let i = 0; i < galleryFiles.length; i++) {
-        const formData = new FormData();
-        formData.append('image', galleryFiles[i]);
-        formData.append('caption', '');
-
+      for (const item of galleryItems) {
+        const fd = new FormData();
+        fd.append('image', item.file);
+        fd.append('caption', '');
         await axios.post(
           `${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${hackathonId}/gallery`,
-          formData,
+          fd,
           {
             headers: {
               'Content-Type': 'multipart/form-data',
@@ -210,9 +316,7 @@ const CreateHackathonPage = () => {
           }
         );
       }
-      console.log('Gallery images uploaded successfully');
-    } catch (error) {
-      console.error('Error uploading gallery images:', error);
+    } catch {
       toast.warning('Hackathon created but some gallery images failed to upload.');
     }
   };
@@ -230,42 +334,29 @@ const CreateHackathonPage = () => {
       'prizeMoney1', 'prizeMoney2', 'prizeMoney3',
       'difficulty', 'refMaterial', 'aboutUs'
     ];
-
-    simpleFields.forEach(field => {
-      if (formData[field]) submissionData.append(field, formData[field]);
-    });
+    simpleFields.forEach((field) => { if (formData[field]) submissionData.append(field, formData[field]); });
 
     const arrayFields = ['techStackUsed', 'category', 'themes', 'problems', 'TandCforHackathon', 'evaluationCriteria', 'projectSubmission'];
-    arrayFields.forEach(field => {
-      submissionData.append(field, JSON.stringify(formData[field]));
-    });
+    arrayFields.forEach((field) => submissionData.append(field, JSON.stringify(formData[field])));
 
-    const faqsStringArray = formData.FAQs.map(faq => `${faq.question}|${faq.answer}`);
-    submissionData.append('FAQs', JSON.stringify(faqsStringArray));
-
+    submissionData.append('FAQs', JSON.stringify(formData.FAQs.map((f) => `${f.question}|${f.answer}`)));
     submissionData.append('adminId', adminData.id);
-    if (imageFile) {
-      submissionData.append('image', imageFile);
-    }
+    if (bannerFile) submissionData.append('image', bannerFile);
 
     try {
       const response = await createHackathon(submissionData);
       toast.success("Hackathon submitted for approval!");
-      
-      // If there are gallery images and we got a hackathon ID back, upload them
-      if (galleryFiles.length > 0 && response.data?.hackathon?._id) {
+      if (galleryItems.length > 0 && response.data?.hackathon?._id) {
         await uploadGalleryImages(response.data.hackathon._id);
       }
-
-      console.log('Hackathon created successfully:', response.data);
-      
-      // navigate('/admin');
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to create hackathon.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const inputClass = "w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 transition-colors";
 
   return (
     <div className="relative min-h-screen bg-gray-900 text-white">
@@ -281,153 +372,108 @@ const CreateHackathonPage = () => {
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Basic Information */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Basic Information</h2>
             <div className="space-y-4">
-              <input type="text" name="title" placeholder="Hackathon Title *" value={formData.title} onChange={handleChange} required className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-              <input type="text" name="subTitle" placeholder="Subtitle / Tagline" value={formData.subTitle} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-              <textarea name="description" placeholder="Short Description (for cards) *" value={formData.description} onChange={handleChange} rows="3" required className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
-              <textarea name="overview" placeholder="Detailed Overview" value={formData.overview} onChange={handleChange} rows="5" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
-              <div className="mt-2 flex items-center gap-4">
-                <span className="h-24 w-40 rounded-lg overflow-hidden bg-gray-800/60 flex items-center justify-center">
-                  {imagePreview ? <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" /> : <UploadCloud className="h-8 w-8 text-gray-500" />}
-                </span>
-                <label htmlFor="image-upload" className="cursor-pointer bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Upload Image</label>
-                <input id="image-upload" name="image" type="file" className="sr-only" accept="image/*" onChange={handleImageChange} />
+              <input type="text" name="title" placeholder="Hackathon Title *" value={formData.title} onChange={handleChange} required className={inputClass} />
+              <input type="text" name="subTitle" placeholder="Subtitle / Tagline" value={formData.subTitle} onChange={handleChange} className={inputClass} />
+              <textarea name="description" placeholder="Short Description (for cards) *" value={formData.description} onChange={handleChange} rows="3" required className={inputClass + " resize-none"} />
+              <textarea name="overview" placeholder="Detailed Overview" value={formData.overview} onChange={handleChange} rows="5" className={inputClass + " resize-none"} />
+
+              {/* Banner Image */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Banner Image</label>
+                <ImageDropZone
+                  preview={bannerPreview}
+                  onFileSelect={handleBannerSelect}
+                  onClear={handleBannerClear}
+                  label="Upload Banner Image"
+                />
               </div>
 
-              {/* Gallery Images Upload */}
-              <div className="mt-6 pt-6 border-t border-gray-700">
-                <div className="flex items-center gap-2 mb-3">
-                  <Images className="h-5 w-5 text-purple-400" />
-                  <label className="text-sm font-medium text-gray-300">
-                    Gallery Images (Optional - Max 10)
-                  </label>
-                </div>
-                <p className="text-sm text-gray-400 mb-3">
-                  Upload images to showcase in the hackathon gallery.
-                </p>
-                <div className="flex items-center gap-4 mb-4">
-                  <label htmlFor="gallery-upload" className={`cursor-pointer bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors ${galleryFiles.length >= 10 ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                    <span className="flex items-center gap-2">
-                      <Images size={16} />
-                      Select Images
-                    </span>
-                  </label>
-                  <input 
-                    id="gallery-upload" 
-                    type="file" 
-                    className="sr-only" 
-                    accept="image/jpeg,image/png,image/gif,image/webp" 
-                    multiple
-                    onChange={handleGalleryUpload}
-                    disabled={galleryFiles.length >= 10}
-                  />
-                  {galleryFiles.length > 0 && (
-                    <span className="text-sm text-gray-400">
-                      {galleryFiles.length}/10 images selected
-                    </span>
-                  )}
-                </div>
-
-                {/* Gallery Previews */}
-                {galleryPreviews.length > 0 && (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {galleryPreviews.map((preview, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={preview}
-                          alt={`Gallery ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-lg border border-gray-700"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeGalleryImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Remove image"
-                        >
-                          <X size={14} />
-                        </button>
-                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 text-center rounded-b-lg">
-                          #{index + 1}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              {/* Gallery Images */}
+              <div className="pt-2 border-t border-gray-700/50">
+                <GalleryUpload
+                  items={galleryItems}
+                  onAdd={handleGalleryAdd}
+                  onRemove={handleGalleryRemove}
+                />
               </div>
             </div>
           </div>
 
+          {/* Event Details */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Event Details</h2>
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Prize Money ($)</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Prize Money (₹)</label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <input type="number" name="prizeMoney1" placeholder="1st Prize *" value={formData.prizeMoney1} onChange={handleChange} required className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-                  <input type="number" name="prizeMoney2" placeholder="2nd Prize" value={formData.prizeMoney2} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-                  <input type="number" name="prizeMoney3" placeholder="3rd Prize" value={formData.prizeMoney3} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
+                  <input type="number" name="prizeMoney1" placeholder="1st Prize *" value={formData.prizeMoney1} onChange={handleChange} required className={inputClass} />
+                  <input type="number" name="prizeMoney2" placeholder="2nd Prize" value={formData.prizeMoney2} onChange={handleChange} className={inputClass} />
+                  <input type="number" name="prizeMoney3" placeholder="3rd Prize" value={formData.prizeMoney3} onChange={handleChange} className={inputClass} />
                 </div>
               </div>
-
               <div>
                 <label htmlFor="difficulty" className="block text-sm font-medium text-gray-300 mb-1">Difficulty</label>
-                <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white">
+                <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleChange} className={inputClass}>
                   <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Expert</option>
                 </select>
               </div>
-
-              <DynamicListInput label="Tech Stack" placeholder="e.g., React" values={formData.techStackUsed} onUpdate={(newVal) => setFormData(p => ({ ...p, techStackUsed: newVal }))} />
-              <DynamicListInput label="Categories" placeholder="e.g., AI" values={formData.category} onUpdate={(newVal) => setFormData(p => ({ ...p, category: newVal }))} />
-              <DynamicListInput label="Themes" placeholder="e.g., Sustainability" values={formData.themes} onUpdate={(newVal) => setFormData(p => ({ ...p, themes: newVal }))} />
+              <DynamicListInput label="Tech Stack" placeholder="e.g., React" values={formData.techStackUsed} onUpdate={(v) => setFormData((p) => ({ ...p, techStackUsed: v }))} />
+              <DynamicListInput label="Categories" placeholder="e.g., AI" values={formData.category} onUpdate={(v) => setFormData((p) => ({ ...p, category: v }))} />
+              <DynamicListInput label="Themes" placeholder="e.g., Sustainability" values={formData.themes} onUpdate={(v) => setFormData((p) => ({ ...p, themes: v }))} />
             </div>
           </div>
 
+          {/* Rules */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Rules & Other Details</h2>
             <div className="space-y-6">
-              <DynamicListInput label="Problem Statements" placeholder="Add a problem statement" values={formData.problems} onUpdate={(newVal) => setFormData(p => ({ ...p, problems: newVal }))} />
-              <DynamicListInput label="Terms & Conditions" placeholder="Add a term/condition" values={formData.TandCforHackathon} onUpdate={(newVal) => setFormData(p => ({ ...p, TandCforHackathon: newVal }))} />
-              <DynamicListInput label="Evaluation Criteria" placeholder="Add a criterion" values={formData.evaluationCriteria} onUpdate={(newVal) => setFormData(p => ({ ...p, evaluationCriteria: newVal }))} />
-              <DynamicListInput label="Project Submission Guidelines" placeholder="Add a guideline" values={formData.projectSubmission} onUpdate={(newVal) => setFormData(p => ({ ...p, projectSubmission: newVal }))} />
+              <DynamicListInput label="Problem Statements" placeholder="Add a problem statement" values={formData.problems} onUpdate={(v) => setFormData((p) => ({ ...p, problems: v }))} />
+              <DynamicListInput label="Terms & Conditions" placeholder="Add a term/condition" values={formData.TandCforHackathon} onUpdate={(v) => setFormData((p) => ({ ...p, TandCforHackathon: v }))} />
+              <DynamicListInput label="Evaluation Criteria" placeholder="Add a criterion" values={formData.evaluationCriteria} onUpdate={(v) => setFormData((p) => ({ ...p, evaluationCriteria: v }))} />
+              <DynamicListInput label="Project Submission Guidelines" placeholder="Add a guideline" values={formData.projectSubmission} onUpdate={(v) => setFormData((p) => ({ ...p, projectSubmission: v }))} />
             </div>
           </div>
 
+          {/* Additional Content */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Additional Content</h2>
             <div className="space-y-6">
-              <input type="text" name="refMaterial" placeholder="Reference Material URL" value={formData.refMaterial} onChange={handleChange} className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-              <textarea name="aboutUs" placeholder="About the Organizer" value={formData.aboutUs} onChange={handleChange} rows="4" className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white"></textarea>
-              <DynamicFaqInput values={formData.FAQs} onUpdate={(newVal) => setFormData(p => ({ ...p, FAQs: newVal }))} />
+              <input type="text" name="refMaterial" placeholder="Reference Material URL" value={formData.refMaterial} onChange={handleChange} className={inputClass} />
+              <textarea name="aboutUs" placeholder="About the Organizer" value={formData.aboutUs} onChange={handleChange} rows="4" className={inputClass + " resize-none"} />
+              <DynamicFaqInput values={formData.FAQs} onUpdate={(v) => setFormData((p) => ({ ...p, FAQs: v }))} />
             </div>
           </div>
 
+          {/* Timeline */}
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Timeline</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Registration Start Date *</label>
-                <input type="datetime-local" name="startDate" value={formData.startDate} onChange={handleChange} required className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Registration End Date *</label>
-                <input type="datetime-local" name="endDate" value={formData.endDate} onChange={handleChange} required className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Submission Start Date *</label>
-                <input type="datetime-local" name="submissionStartDate" value={formData.submissionStartDate} onChange={handleChange} required className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Submission End Date *</label>
-                <input type="datetime-local" name="submissionEndDate" value={formData.submissionEndDate} onChange={handleChange} required className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white" />
-              </div>
+              {[
+                { label: 'Registration Start Date *', name: 'startDate', required: true },
+                { label: 'Registration End Date *', name: 'endDate', required: true },
+                { label: 'Submission Start Date *', name: 'submissionStartDate', required: true },
+                { label: 'Submission End Date *', name: 'submissionEndDate', required: true },
+              ].map(({ label, name, required }) => (
+                <div key={name}>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">{label}</label>
+                  <input type="datetime-local" name={name} value={formData[name]} onChange={handleChange} required={required} className={inputClass} />
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="flex justify-end pt-4">
-            <button type="submit" disabled={isSubmitting} className="bg-green-600 cursor-pointer hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed">
-              {isSubmitting ? 'Submitting...' : 'Submit for Approval'}
+            <button type="submit" disabled={isSubmitting} className="bg-green-600 cursor-pointer hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg transition-colors flex items-center gap-2">
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Submitting...
+                </>
+              ) : 'Submit for Approval'}
             </button>
           </div>
         </form>

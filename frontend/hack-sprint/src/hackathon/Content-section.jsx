@@ -268,7 +268,6 @@ export const ContentSection = ({ activeSection, hackathon }) => {
       case "upvote":
         return (
           <div>
-            <SectionHeader>Upvote Submissions</SectionHeader>
             <Upvote />
           </div>
         );
@@ -294,63 +293,234 @@ export const ContentSection = ({ activeSection, hackathon }) => {
   };
 
   const ResultsSection = ({ hackathonId }) => {
-    const [results, setResults] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    useEffect(() => {
-      const fetchResults = async () => {
-        try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${hackathonId}/results`);
-          if (!response.ok) throw new Error("Failed to fetch results");
-          const data = await response.json();
-          setResults(data);
-        } catch (err) {
-          setError("Results not announced yet or failed to load.");
-        } finally {
-          setLoading(false);
+  useEffect(() => {
+    const fetchResults = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${hackathonId}/results`
+        );
+        if (!response.ok) throw new Error("Failed to fetch results");
+        const data = await response.json();
+        setResults(data);
+      } catch (err) {
+        setError("Results not announced yet or failed to load.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchResults();
+  }, [hackathonId]);
+
+  // ── Loading ────────────────────────────────────────────────────────────────
+  if (loading) return (
+    <div className="space-y-3">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="h-20 rounded-xl bg-gray-800/50 border border-gray-700/40 overflow-hidden relative">
+          <div className="absolute inset-0 skeleton-shimmer" />
+        </div>
+      ))}
+    </div>
+  );
+
+  // ── Error / Empty ──────────────────────────────────────────────────────────
+  if (error || results.length === 0) return (
+    <SectionCard>
+      <div className="flex flex-col items-center justify-center py-10 gap-3">
+        <div className="w-14 h-14 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center">
+          <Trophy className="w-6 h-6 text-gray-600" />
+        </div>
+        <p className="text-gray-400 font-medium">
+          {error || "No results announced yet."}
+        </p>
+        <p className="text-gray-600 text-sm">Check back once judging is complete.</p>
+      </div>
+    </SectionCard>
+  );
+
+  // Podium config
+  const podium = [
+    {
+      rank: 1,
+      label: "1st Place",
+      emoji: "🥇",
+      ring: "ring-amber-400/40",
+      bg: "from-amber-500/10 to-amber-600/5",
+      border: "border-amber-500/30",
+      pointColor: "text-amber-400",
+      badgeBg: "bg-amber-400/15 text-amber-300 border-amber-400/30",
+      barColor: "bg-amber-400",
+      glow: "shadow-amber-500/10",
+    },
+    {
+      rank: 2,
+      label: "2nd Place",
+      emoji: "🥈",
+      ring: "ring-slate-400/30",
+      bg: "from-slate-500/8 to-slate-600/4",
+      border: "border-slate-500/25",
+      pointColor: "text-slate-300",
+      badgeBg: "bg-slate-400/15 text-slate-300 border-slate-400/30",
+      barColor: "bg-slate-400",
+      glow: "shadow-slate-500/10",
+    },
+    {
+      rank: 3,
+      label: "3rd Place",
+      emoji: "🥉",
+      ring: "ring-orange-700/30",
+      bg: "from-orange-700/8 to-orange-800/4",
+      border: "border-orange-700/25",
+      pointColor: "text-orange-400",
+      badgeBg: "bg-orange-700/15 text-orange-300 border-orange-700/30",
+      barColor: "bg-orange-600",
+      glow: "shadow-orange-700/10",
+    },
+  ];
+
+  const maxPoints = Math.max(...results.map((r) => r.hackathonPoints || 0), 1);
+
+  return (
+    <div>
+      {/* Shimmer keyframe (injected once) */}
+      <style>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
         }
-      };
-      fetchResults();
-    }, [hackathonId]);
+        .skeleton-shimmer::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+          animation: shimmer 1.6s infinite;
+        }
+        @keyframes countUp {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .result-row { animation: countUp 0.4s ease both; }
+      `}</style>
 
-    if (loading) return <div className="text-center text-white">Loading results...</div>;
-    if (error) return <SectionCard><p className="text-gray-400">{error}</p></SectionCard>;
-    if (results.length === 0) return <SectionCard><p className="text-gray-400">No results announced yet.</p></SectionCard>;
+      <SectionHeader>Hackathon Results</SectionHeader>
 
-    return (
-      <div>
-        <SectionHeader>Hackathon Results</SectionHeader>
-        <div className="space-y-4">
-          {results.map((submission, index) => (
-            <SectionCard key={submission._id} className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl ${index === 0 ? "bg-yellow-500/20 text-yellow-500" :
-                  index === 1 ? "bg-gray-400/20 text-gray-400" :
-                    index === 2 ? "bg-orange-500/20 text-orange-500" :
-                      "bg-green-500/10 text-green-400"
-                  }`}>
-                  #{index + 1}
+      {/* ── Top 3 podium cards (only if ≥1 result) ─────────────────────── */}
+      {results.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          {results.slice(0, 3).map((submission, index) => {
+            const p = podium[index];
+            const name = submission.team
+              ? submission.team.name
+              : submission.participant?.name || "Unknown";
+            const isTeam = !!submission.team;
+
+            return (
+              <div
+                key={submission._id}
+                className={`relative group rounded-2xl border bg-gradient-to-br ${p.bg} ${p.border} p-5 flex flex-col gap-3 hover:shadow-xl ${p.glow} transition-all duration-300 hover:-translate-y-0.5`}
+                style={{ animationDelay: `${index * 80}ms` }}
+              >
+                {/* Rank badge */}
+                <div className="flex items-center justify-between">
+                  <span className={`text-[11px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full border ${p.badgeBg}`}>
+                    {p.label}
+                  </span>
+                  <span className="text-2xl">{p.emoji}</span>
                 </div>
+
+                {/* Name */}
                 <div>
-                  <h4 className="text-lg font-bold text-white">
-                    {submission.team ? submission.team.name : submission.participant?.name || "Unknown"}
-                  </h4>
-                  <p className="text-sm text-gray-400">
-                    {submission.team ? "Team Submission" : "Individual Submission"}
+                  <h4 className="font-bold text-white text-base leading-tight">{name}</h4>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {isTeam ? "Team" : "Individual"}
                   </p>
                 </div>
+
+                {/* Points + bar */}
+                <div>
+                  <div className="flex items-end justify-between mb-1.5">
+                    <span className={`text-2xl font-black tabular-nums ${p.pointColor}`}>
+                      {submission.hackathonPoints}
+                    </span>
+                    <span className="text-[10px] text-gray-600 uppercase tracking-wider">pts</span>
+                  </div>
+                  <div className="h-1 w-full rounded-full bg-gray-700/60 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${p.barColor} transition-all duration-700`}
+                      style={{ width: `${(submission.hackathonPoints / maxPoints) * 100}%` }}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-green-400">{submission.hackathonPoints}</div>
-                <div className="text-xs text-gray-500 uppercase">Points</div>
-              </div>
-            </SectionCard>
-          ))}
+            );
+          })}
         </div>
-      </div>
-    );
-  };
+      )}
+
+      {/* ── Remaining results as a ranked list ─────────────────────────── */}
+      {results.length > 3 && (
+        <div className="bg-gray-800/30 border border-gray-700/40 rounded-2xl overflow-hidden divide-y divide-gray-700/30">
+          {/* Table header */}
+          <div className="grid grid-cols-[2rem_1fr_auto] gap-4 px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-600">
+            <span>#</span>
+            <span>Participant</span>
+            <span>Score</span>
+          </div>
+
+          {results.slice(3).map((submission, i) => {
+            const rank = i + 4;
+            const name = submission.team
+              ? submission.team.name
+              : submission.participant?.name || "Unknown";
+            const isTeam = !!submission.team;
+
+            return (
+              <div
+                key={submission._id}
+                className="result-row grid grid-cols-[2rem_1fr_auto] gap-4 items-center px-5 py-4 hover:bg-gray-700/20 transition-colors duration-150"
+                style={{ animationDelay: `${(i + 3) * 60}ms` }}
+              >
+                {/* Rank */}
+                <span className="text-sm font-mono text-gray-500 tabular-nums">
+                  {String(rank).padStart(2, "0")}
+                </span>
+
+                {/* Identity */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-gray-700/60 border border-gray-600/40 flex items-center justify-center shrink-0 text-xs font-bold text-gray-400">
+                    {name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-200 truncate">{name}</p>
+                    <p className="text-[11px] text-gray-600">
+                      {isTeam ? "Team" : "Individual"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Score */}
+                <div className="text-right">
+                  <span className="text-sm font-bold text-green-400 tabular-nums">
+                    {submission.hackathonPoints}
+                  </span>
+                  <span className="text-[10px] text-gray-600 ml-1">pts</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Footer note */}
+      <p className="text-center text-[11px] text-gray-600 mt-4 tracking-wide">
+        Final standings · Ranked by judge score
+      </p>
+    </div>
+  );
+};
 
   return (
     <main className="flex-1 p-6 md:p-8">

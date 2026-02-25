@@ -4,11 +4,10 @@ import React,{ useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Loader from "../components/Loader"
 import { Users, Calendar, Timer, Code, Trophy, Zap, Search, Filter, X } from "lucide-react"
-// KEY CHANGE: Import the functions from your api.js file
 import { useHackathons } from "../hooks/useHackathons"
 
 const GridBackground = () => (
-  <div className="absolute inset-0 opacity-10  pointer-events-none">
+  <div className="absolute inset-0 opacity-10 pointer-events-none">
     <div
       className="absolute inset-0"
       style={{
@@ -19,6 +18,94 @@ const GridBackground = () => (
         backgroundSize: "50px 50px",
       }}
     />
+  </div>
+)
+
+// ─── Skeleton shimmer styles injected once ────────────────────────────────────
+const SkeletonStyles = () => (
+  <style>{`
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .skeleton-shimmer::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255,255,255,0.06) 40%,
+        rgba(255,255,255,0.12) 50%,
+        rgba(255,255,255,0.06) 60%,
+        transparent 100%
+      );
+      animation: shimmer 1.6s infinite;
+    }
+  `}</style>
+)
+
+// ─── YouTube-style Card Skeleton ──────────────────────────────────────────────
+const HackathonCardSkeleton = () => (
+  <div className="border border-gray-700/40 bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden">
+    <div className="flex flex-col lg:flex-row">
+      {/* Thumbnail */}
+      <div className="lg:w-80 lg:h-60 h-48 w-full relative overflow-hidden bg-gray-800 rounded-t-xl lg:rounded-l-xl lg:rounded-tr-none shrink-0">
+        <div className="absolute inset-0 overflow-hidden skeleton-shimmer" />
+        {/* Status badge */}
+        <div className="absolute top-3 left-3 w-20 h-6 rounded-full bg-gray-700/80 relative overflow-hidden">
+          <div className="skeleton-shimmer absolute inset-0" />
+        </div>
+        {/* Tech tags */}
+        <div className="absolute bottom-3 left-3 flex gap-1.5">
+          {[44, 56, 38].map((w, i) => (
+            <div key={i} className="h-6 rounded bg-gray-700/80 relative overflow-hidden" style={{ width: w }}>
+              <div className="skeleton-shimmer absolute inset-0" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 px-5 py-5 relative">
+       
+
+        <div className="pr-28 space-y-3 mb-4">
+          {/* Title */}
+          <div className="h-6 rounded bg-gray-700/60 w-3/4 relative overflow-hidden">
+            <div className="skeleton-shimmer absolute inset-0" />
+          </div>
+          {/* Category pills */}
+          <div className="flex gap-2">
+            <div className="h-5 w-16 rounded-full bg-gray-700/50 relative overflow-hidden">
+              <div className="skeleton-shimmer absolute inset-0" />
+            </div>
+            <div className="h-5 w-20 rounded-full bg-gray-700/50 relative overflow-hidden">
+              <div className="skeleton-shimmer absolute inset-0" />
+            </div>
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="space-y-2 mb-5">
+          <div className="h-4 rounded bg-gray-700/40 w-full relative overflow-hidden">
+            <div className="skeleton-shimmer absolute inset-0" />
+          </div>
+          <div className="h-4 rounded bg-gray-700/40 w-5/6 relative overflow-hidden">
+            <div className="skeleton-shimmer absolute inset-0" />
+          </div>
+        </div>
+
+        {/* Meta row */}
+        <div className="flex flex-wrap gap-5">
+          {[64, 80, 88].map((w, i) => (
+            <div key={i} className="h-4 rounded bg-gray-700/40 relative overflow-hidden" style={{ width: w }}>
+              <div className="skeleton-shimmer absolute inset-0" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   </div>
 )
 
@@ -70,9 +157,7 @@ const HackathonCard = ({ hackathon }) => {
     const target = new Date(targetDate).getTime()
     const diff = target - now
 
-    if (diff <= 0) {
-      return "0d 0h 0m"
-    }
+    if (diff <= 0) return "0d 0h 0m"
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24))
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
@@ -86,7 +171,6 @@ const HackathonCard = ({ hackathon }) => {
     const interval = setInterval(() => {
       setCountdown(getCountdown(hackathon.status === "upcoming" ? hackathon.startDate : hackathon.submissionEndDate))
     }, 1000)
-
     return () => clearInterval(interval)
   }, [hackathon.endDate, hackathon.submissionEndDate, hackathon.startDate, hackathon.status])
 
@@ -103,15 +187,12 @@ const HackathonCard = ({ hackathon }) => {
 
   return (
     <div
-      className={`border border-green-500/20 bg-white/5 backdrop-blur-sm hover:border-green-400 hover:scale-[1.02] transition-all duration-300 rounded-xl cursor-pointer relative group overflow-hidden ${isHovered ? "shadow-2xl shadow-green-500/20" : ""
-        }`}
+      className={`border border-green-500/20 bg-white/5 backdrop-blur-sm hover:border-green-400 hover:scale-[1.02] transition-all duration-300 rounded-xl cursor-pointer relative group overflow-hidden ${isHovered ? "shadow-2xl shadow-green-500/20" : ""}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => {
         if (hackathon.status !== "upcoming") {
           navigate(`/hackathon/${hackathon._id}`)
-        } else {
-
         }
       }}
     >
@@ -169,11 +250,7 @@ const HackathonCard = ({ hackathon }) => {
               <div className="flex items-center text-xs sm:text-sm">
                 <Trophy size={14} className="text-gray-500" />
                 <span className="ml-1 text-gray-400">
-                  ₹{(
-                    (hackathon.prizeMoney1 || 0) +
-                    (hackathon.prizeMoney2 || 0) +
-                    (hackathon.prizeMoney3 || 0)
-                  ).toLocaleString("en-IN")}
+                  ₹{((hackathon.prizeMoney1 || 0) + (hackathon.prizeMoney2 || 0) + (hackathon.prizeMoney3 || 0)).toLocaleString("en-IN")}
                 </span>
               </div>
               <div className="flex items-center text-xs sm:text-sm"><Calendar size={14} className="text-gray-500" /><span className="ml-1 text-gray-400">{hackathon.dates}</span></div>
@@ -275,8 +352,12 @@ const Hackathons = () => {
     }
   };
 
+  // Number of skeleton cards to show while loading
+  const SKELETON_COUNT = 2;
+
   return (
     <div className="bg-gray-900 relative overflow-hidden min-h-screen -mt-16">
+      <SkeletonStyles />
       <Loader />
       <GridBackground />
       <div className="flex items-center justify-center px-4 sm:px-6 lg:px-8 mt-24 sm:mt-32 lg:mt-40">
@@ -293,7 +374,7 @@ const Hackathons = () => {
               {searchTerm && (<button onClick={() => setSearchTerm("")} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white"><X className="h-5 w-5" /></button>)}
             </div>
             <div className="flex flex-wrap gap-3 items-center">
-              <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${showFilters || hasActiveFilters ? "bg-green-500/20 text-green-300 border border-green-500/30" : "bg-white/5 text-gray-400 border border-gray-700/50 hover:bg-white/10 hover:text-green-400"}`} >
+              <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${showFilters || hasActiveFilters ? "bg-green-500/20 text-green-300 border border-green-500/30" : "bg-white/5 text-gray-400 border border-gray-700/50 hover:bg-white/10 hover:text-green-400"}`}>
                 <Filter size={16} /> Filters
                 {hasActiveFilters && (<span className="bg-green-500/30 text-green-300 px-2 py-0.5 rounded-full text-xs">{[searchTerm, selectedCategory, selectedDifficulty].filter(Boolean).length}</span>)}
               </button>
@@ -320,10 +401,27 @@ const Hackathons = () => {
           </div>
           <div className="flex items-center justify-between mb-8">
             <h2 className={`text-2xl sm:text-3xl lg:text-5xl ZaptronFont text-transparent bg-clip-text bg-gradient-to-b ${getTabGradient()} flex items-center gap-3`}>{getTabIcon()}{getTabTitle()}</h2>
-            <div className="flex items-center gap-4"><div className="text-sm text-gray-400"><span className="text-green-400 font-mono">{getCurrentHackathons().length}</span> {activeTab}{hasActiveFilters && <span className="text-yellow-400 ml-2">(filtered)</span>}</div></div>
+            <div className="flex items-center gap-4"><div className="text-sm text-gray-400"><span className="text-green-400 font-mono">{loading ? "..." : getCurrentHackathons().length}</span> {activeTab}{hasActiveFilters && <span className="text-yellow-400 ml-2">(filtered)</span>}</div></div>
           </div>
+
+          {/* Cards or Skeletons */}
           <div className="space-y-4 sm:space-y-6 mb-20 sm:mb-32 lg:mb-40">
-            {getCurrentHackathons().length > 0 ? (getCurrentHackathons().map((hackathon, index) => (<HackathonCard key={`${activeTab}-${index}`} hackathon={hackathon} />))) : (<div className="text-center py-12 sm:py-16"><div className="text-6xl sm:text-8xl mb-4 opacity-20">{hasActiveFilters ? "🔍" : "🏆"}</div><h3 className="text-xl sm:text-2xl text-gray-400 mb-2">{hasActiveFilters ? "No hackathons match your filters" : `No ${activeTab} hackathons`}</h3><p className="text-gray-500">{hasActiveFilters ? "Try adjusting your search or filters" : "Check back later for updates!"}</p></div>)}
+            {loading ? (
+              // YouTube-style skeletons
+              Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+                <HackathonCardSkeleton key={i} />
+              ))
+            ) : getCurrentHackathons().length > 0 ? (
+              getCurrentHackathons().map((hackathon, index) => (
+                <HackathonCard key={`${activeTab}-${index}`} hackathon={hackathon} />
+              ))
+            ) : (
+              <div className="text-center py-12 sm:py-16">
+                <div className="text-6xl sm:text-8xl mb-4 opacity-20">{hasActiveFilters ? "🔍" : "🏆"}</div>
+                <h3 className="text-xl sm:text-2xl text-gray-400 mb-2">{hasActiveFilters ? "No hackathons match your filters" : `No ${activeTab} hackathons`}</h3>
+                <p className="text-gray-500">{hasActiveFilters ? "Try adjusting your search or filters" : "Check back later for updates!"}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

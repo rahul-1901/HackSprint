@@ -95,7 +95,7 @@ export default function HackathonDetails() {
                     prizeMoney1={hackathon.prizeMoney1}
                     prizeMoney2={hackathon.prizeMoney2}
                     prizeMoney3={hackathon.prizeMoney3}
-                    imageUrl="/assets/hackathon-banner.png"
+                    imageUrl={hackathon.image || "/assets/hackathon-banner.png"}
                     hackathonId={hackathon._id}
                     submissionStartDate={hackathon?.submissionStartDate}
                     submissionEndDate={hackathon?.submissionEndDate}

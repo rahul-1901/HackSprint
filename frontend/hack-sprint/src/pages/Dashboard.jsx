@@ -49,14 +49,9 @@ export const UserDashboard = () => {
   const [submission, setSubmission] = useState([]);
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [selectedHackathonId, setSelectedHackathonId] = useState(null);
-  const [likedSubmissions, setLikedSubmissions] = useState([]);
+  const [likedHackathons, setLikedHackathons] = useState([]);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
 
-  // Debug: Log whenever likedSubmissions changes
-  useEffect(() => {
-    console.log("👉 likedSubmissions state updated:", likedSubmissions);
-    console.log("👉 Number of items:", likedSubmissions.length);
-  }, [likedSubmissions]);
 
   const navigate = useNavigate();
 
@@ -117,7 +112,7 @@ export const UserDashboard = () => {
       setLoading(false);
     }
   };
-
+  console.log("UserData", data)
   useEffect(() => {
     fetchData();
   }, []);
@@ -330,11 +325,11 @@ export const UserDashboard = () => {
       return;
     }
 
-    console.log("=== FETCHING WISHLIST ===");
+    console.log("=== FETCHING HACKATHON WISHLIST ===");
     setLoadingWishlist(true);
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/api/votes/wishlist`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/hackathons/wishlist`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -343,11 +338,11 @@ export const UserDashboard = () => {
       );
       
       console.log("Wishlist API response:", res.data);
-      console.log("Number of liked submissions:", res.data.likedSubmissions?.length);
+      console.log("Number of liked hackathons:", res.data.likedHackathons?.length);
       
       if (res.data.success) {
-        console.log("Setting liked submissions:", res.data.likedSubmissions);
-        setLikedSubmissions(res.data.likedSubmissions);
+        console.log("Setting liked hackathons:", res.data.likedHackathons);
+        setLikedHackathons(res.data.likedHackathons);
       } else {
         console.log("API call succeeded but success flag is false");
       }
@@ -359,7 +354,7 @@ export const UserDashboard = () => {
       }
     } finally {
       setLoadingWishlist(false);
-      console.log("=== END FETCHING WISHLIST ===");
+      console.log("=== END FETCHING HACKATHON WISHLIST ===");
     }
   };
 
@@ -373,26 +368,26 @@ export const UserDashboard = () => {
   useEffect(() => {
   }, [data]);
 
-  useEffect(() => {
-    const fetchHackathons = async () => {
-      try {
-        const results = await Promise.all(
-          submission?.map(async (sub) => {
-            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${sub.hackathon}`);
-            return res.data;
-          })
-        );
-        // console.log(submission)
-        setHackathon(results);
-      } catch (err) {
-        console.error("Error fetching hackathon:", err);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchHackathons = async () => {
+  //     try {
+  //       const results = await Promise.all(
+  //         submission?.map(async (sub) => {
+  //           const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${sub.hackathon}`);
+  //           return res.data;
+  //         })
+  //       );
+  //       // console.log(submission)
+  //       setHackathon(results);
+  //     } catch (err) {
+  //       console.error("Error fetching hackathon:", err);
+  //     }
+  //   };
 
-    if (submission?.length > 0) {
-      fetchHackathons();
-    }
-  }, [data]);
+  //   if (submission?.length > 0) {
+  //     fetchHackathons();
+  //   }
+  // }, [data]);
 
   const jwtExpire = () => {
     try {
@@ -446,6 +441,8 @@ export const UserDashboard = () => {
     );
   }
 
+  // console.log("Hackathon", hackathon)
+
   return (
     <div className="relative min-h-screen bg-gray-900 text-white overflow-hidden">
 
@@ -467,9 +464,9 @@ export const UserDashboard = () => {
 
             <h2 className="mt-4 text-xl font-bold">{data.name || "Unnamed User"}</h2>
             {/* <p className="text-sm text-gray-400">{data.roll_no || "N/A"}</p> */}
-            <p className="text-sm text-green-400 mt-1">
+            {/* <p className="text-sm text-green-400 mt-1">
               Rank: #{data.rank || "N/A"}
-            </p>
+            </p> */}
 
             <button
               onClick={handleLogout}
@@ -881,7 +878,7 @@ export const UserDashboard = () => {
           </div>
 
           {/* Participated in Hackathons */}
-          <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
+          {/* <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
             <h3 className="text-lg font-semibold text-green-400">
               Participated in Hackathons
             </h3>
@@ -905,7 +902,6 @@ export const UserDashboard = () => {
                       key={hack._id}
                       className="flex flex-col md:flex-row items-center bg-white/5 border border-green-500/20 rounded-xl p-4 hover:border-green-400 transition-all"
                     >
-                      {/* Hackathon Image */}
                       <div className="w-full md:w-48 h-32 md:h-24 flex-shrink-0 rounded-lg overflow-hidden mr-4 mb-4 md:mb-0">
                         {hack.image ? (
                           <img
@@ -920,7 +916,6 @@ export const UserDashboard = () => {
                         )}
                       </div>
 
-                      {/* Hackathon Details */}
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
                           <h3 className="text-lg font-semibold text-green-400">{hack.title}</h3>
@@ -948,20 +943,20 @@ export const UserDashboard = () => {
                         </div>
 
                         <div className="mt-2">
-                          {/* <a
+                           <a
                             href={hackSubmission.repoUrl || "#"}
                             target="_blank"
                             rel="noreferrer"
                             className="text-green-400 underline hover:text-green-300 text-sm"
                           >
                             View Submission
-                          </a> */}
-                          {/* <button
+                          </a> 
+                         <button
                             onClick={() => openSubmissionModal(hack._id)}
                             className="mt-2 text-green-400 cursor-pointer"
                           >
                             View Submission
-                          </button> */}
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -971,14 +966,14 @@ export const UserDashboard = () => {
                 <p className="text-gray-500">No hackathons submitted yet.</p>
               )}
             </div>
-          </div>
+          </div> */}
 
           {/* Liked Submissions (Wishlist) */}
           <div className="bg-white/5 border border-green-500/20 rounded-xl p-6 hover:border-green-400 transition-all">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-green-400 flex items-center gap-2">
                 <Heart className="w-5 h-5" />
-                Liked Submissions
+                Favourites
               </h3>
               <button
                 onClick={() => fetchWishlist()}
@@ -992,89 +987,61 @@ export const UserDashboard = () => {
             </div>
             <div className="space-y-4 mt-2">
               {loadingWishlist ? (
-                <p className="text-gray-400 text-sm">Loading liked submissions...</p>
-              ) : likedSubmissions.length > 0 ? (
-                likedSubmissions.map((submission) => {
-                  const likedDate = submission.likedAt
-                    ? new Date(submission.likedAt).toLocaleDateString()
+                <p className="text-gray-400 text-sm">Loading liked hackathons...</p>
+              ) : likedHackathons.length > 0 ? (
+                likedHackathons.map((hackathon) => {
+                  const startDate = hackathon.startDate
+                    ? new Date(hackathon.startDate).toLocaleDateString()
                     : "-";
-                  const submittedDate = submission.submittedAt
-                    ? new Date(submission.submittedAt).toLocaleDateString()
+                  const endDate = hackathon.endDate
+                    ? new Date(hackathon.endDate).toLocaleDateString()
                     : "-";
 
                   return (
                     <div
-                      key={submission._id}
-                      className="flex flex-col md:flex-row items-start bg-white/5 border border-green-500/20 rounded-xl p-4 hover:border-green-400 transition-all"
+                      key={hackathon._id}
+                      className="flex flex-col md:flex-row items-start bg-white/5 border border-green-500/20 rounded-xl p-4 hover:border-green-400 transition-all cursor-pointer"
+                      onClick={() => navigate(`/hackathon/${hackathon._id}`)}
                     >
                       {/* Hackathon Image */}
-                      {submission.hackathon?.image && (
+                      {hackathon.image && (
                         <div className="w-full md:w-32 h-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden mr-4 mb-3 md:mb-0">
                           <img
-                            src={submission.hackathon.image}
-                            alt={submission.hackathon.title}
+                            src={hackathon.image}
+                            alt={hackathon.title}
                             className="w-full h-full object-cover"
                           />
                         </div>
                       )}
 
-                      {/* Submission Details */}
+                      {/* Hackathon Details */}
                       <div className="flex-1">
                         <div className="mb-2">
                           <h4 className="text-base font-semibold text-white">
-                            {submission.teamName || submission.participantName || "Unknown"}
+                            {hackathon.title}
                           </h4>
-                          <p className="text-sm text-gray-400">
-                            {submission.hackathon?.title || "Unknown Hackathon"}
-                          </p>
+                          {hackathon.subTitle && (
+                            <p className="text-sm text-gray-400">
+                              {hackathon.subTitle}
+                            </p>
+                          )}
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 mb-2">
-                          <span className="flex items-center gap-1">
-                            <Heart className="w-3 h-3 text-pink-400 fill-pink-400" />
-                            Liked: {likedDate}
-                          </span>
-                          <span>Submitted: {submittedDate}</span>
-                          {submission.hackathonPoints > 0 && (
+                          <span>{startDate} - {endDate}</span>
+                          {hackathon.prizeMoney && (
                             <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400">
-                              {submission.hackathonPoints} pts
+                              ${hackathon.prizeMoney}
                             </span>
                           )}
-                        </div>
-
-                        {/* Links */}
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {submission.repoUrl && submission.repoUrl.length > 0 && (
-                            <a
-                              href={submission.repoUrl[0]}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="flex items-center gap-1 px-3 py-1 bg-blue-500/20 border border-blue-500/40 rounded-lg text-blue-400 hover:bg-blue-500/30 text-xs transition-all"
-                            >
-                              <ExternalLink className="w-3 h-3" />
-                              Repository
-                            </a>
-                          )}
-                          {submission.docs && submission.docs.length > 0 && (
-                            <span className="flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-lg text-green-400 text-xs">
-                              <FileText className="w-3 h-3" />
-                              {submission.docs.length} Doc{submission.docs.length > 1 ? "s" : ""}
+                          {hackathon.difficulty && (
+                            <span className={`px-2 py-1 rounded-full ${
+                              hackathon.difficulty === 'Easy' ? 'bg-blue-500/20 text-blue-400' :
+                              hackathon.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-green-500/20 text-green-400'
+                            }`}>
+                              {hackathon.difficulty}
                             </span>
-                          )}
-                          {submission.videos && submission.videos.length > 0 && (
-                            <span className="flex items-center gap-1 px-3 py-1 bg-purple-500/20 border border-purple-500/40 rounded-lg text-purple-400 text-xs">
-                              <Video className="w-3 h-3" />
-                              {submission.videos.length} Video{submission.videos.length > 1 ? "s" : ""}
-                            </span>
-                          )}
-                          {submission.hackathon?._id && (
-                            <button
-                              onClick={() => navigate(`/hackathon/${submission.hackathon._id}`)}
-                              className="flex items-center gap-1 px-3 py-1 bg-gray-500/20 border border-gray-500/40 rounded-lg text-gray-400 hover:bg-gray-500/30 text-xs transition-all cursor-pointer"
-                            >
-                              <ExternalLink className="w-3 h-3" />
-                              View Hackathon
-                            </button>
                           )}
                         </div>
                       </div>
@@ -1083,7 +1050,7 @@ export const UserDashboard = () => {
                 })
               ) : (
                 <p className="text-gray-500 text-sm">
-                  No liked submissions yet. Visit the Upvote section in hackathons to like submissions!
+                  No favourite hackathons yet. Click the heart icon on any hackathon page to add it to your favourites!
                 </p>
               )}
             </div>
