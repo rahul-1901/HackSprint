@@ -1,6 +1,15 @@
 {
-    "rewrites": [
-      { "source": "/(.*)", "destination": "/" }
-    ]
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "hack-sprint-iitj.vercel.app"
+        }
+      ],
+      "destination": "https://hacksprint.devluplabs.tech/$1",
+      "permanent": true
+    }
+  ]
 }
-  
