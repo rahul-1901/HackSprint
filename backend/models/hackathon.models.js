@@ -112,8 +112,9 @@ const hackathonSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Admin"
-    }
-})
+    },
+    
+},{timestamps : true})
 
 hackathonSchema.pre(/^find/, async function (next) {
 

@@ -3,13 +3,14 @@ import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import s3Client from "../config/aws.js";
 import SubmissionModel from "../models/submission.js";
 import fs from "fs";
+import { getNowUTC } from "../utils/dateUtils.js";
 // import cloudinary from "../config/cloudinary.js"; // COMMENTED OUT - REPLACED WITH AWS S3
 
 // --- GET ACTIVE HACKATHONS ---
-// Finds hackathons where the current date is between the start and end dates.
+// Finds hackathons where the current date (UTC) is between the start and end dates.
 export const getActiveHackathons = async (req, res) => {
   try {
-    const now = new Date();
+    const now = getNowUTC(); // ✅ Always use UTC
     const allHackathons = await hackathonModel.find({
       startDate: { $lte: now },
       submissionEndDate: { $gte: now },
@@ -22,10 +23,10 @@ export const getActiveHackathons = async (req, res) => {
 };
 
 // --- GET EXPIRED HACKATHONS ---
-// Finds hackathons where the end date is in the past.
+// Finds hackathons where the end date is in the past (UTC).
 export const getExpiredHackathons = async (req, res) => {
   try {
-    const now = new Date();
+    const now = getNowUTC(); // ✅ Always use UTC
     const expiredHackathons = await hackathonModel.find({
       status: false,
       submissionEndDate: { $lt: now },
@@ -39,10 +40,10 @@ export const getExpiredHackathons = async (req, res) => {
 };
 
 // --- GET UPCOMING HACKATHONS ---
-// Finds hackathons where the start date is in the future.
+// Finds hackathons where the start date is in the future (UTC).
 export const getUpcomingHackathons = async (req, res) => {
   try {
-    const now = new Date();
+    const now = getNowUTC(); // ✅ Always use UTC
     const upcomingHackathons = await hackathonModel.find({
       startDate: { $gt: now },
     }).sort({ startDate: 1 }); // Sort by starting soonest
