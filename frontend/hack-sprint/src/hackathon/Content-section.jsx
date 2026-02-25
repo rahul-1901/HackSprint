@@ -63,27 +63,67 @@ export const ContentSection = ({ activeSection, hackathon }) => {
   );
 
   // NEW: Component specifically for sections with array content to display as a list
+  // const ListContentSection = ({ title, content }) => {
+  //   const isContentAvailable = Array.isArray(content) && content.length > 0;
+  //   return (
+  //     <div>
+  //       <SectionHeader>{title}</SectionHeader>
+  //       <SectionCard>
+  //         {isContentAvailable ? (
+  //           <ul className="list-disc list-inside space-y-3 text-gray-300 prose max-w-none">
+  //             {content.map((item, index) => (
+  //               <li key={index}>{item}</li>
+  //             ))}
+  //           </ul>
+  //         ) : (
+  //           <p className="text-gray-400">
+  //             {`No ${title.toLowerCase()} information provided.`}
+  //           </p>
+  //         )}
+  //       </SectionCard>
+  //     </div>
+  //   );
+  // };
+
   const ListContentSection = ({ title, content }) => {
-    const isContentAvailable = Array.isArray(content) && content.length > 0;
-    return (
-      <div>
-        <SectionHeader>{title}</SectionHeader>
-        <SectionCard>
-          {isContentAvailable ? (
-            <ul className="list-disc list-inside space-y-3 text-gray-300 prose max-w-none">
-              {content.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-400">
-              {`No ${title.toLowerCase()} information provided.`}
-            </p>
-          )}
-        </SectionCard>
-      </div>
-    );
+  const isContentAvailable = Array.isArray(content) && content.length > 0;
+
+  const isLink = (text) => {
+    return typeof text === "string" && text.startsWith("http");
   };
+
+  return (
+    <div>
+      <SectionHeader>{title}</SectionHeader>
+      <SectionCard>
+        {isContentAvailable ? (
+          <ul className="list-disc list-inside space-y-3 text-gray-300 prose max-w-none">
+            {content.map((item, index) => (
+              <li key={index}>
+                {isLink(item) ? (
+                  <a
+                    href={item}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 underline hover:text-blue-300"
+                  >
+                    Rule Book
+                  </a>
+                ) : (
+                  item
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-400">
+            {`No ${title.toLowerCase()} information provided.`}
+          </p>
+        )}
+      </SectionCard>
+    </div>
+  );
+};
 
   const toggleFAQ = (index) => {
     setExpandedFAQ(expandedFAQ === index ? null : index);
