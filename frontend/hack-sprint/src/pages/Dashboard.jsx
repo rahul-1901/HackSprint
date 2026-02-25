@@ -112,7 +112,7 @@ export const UserDashboard = () => {
       setLoading(false);
     }
   };
-  console.log("UserData", data)
+  // console.log("UserData", data)
   useEffect(() => {
     fetchData();
   }, []);
@@ -149,7 +149,7 @@ export const UserDashboard = () => {
         connectedApps: prev.connectedApps.filter((_, i) => i !== idx),
       }));
       await deleteConnectedApp({ userId, appId });
-      console.log("Deleted")
+      // console.log("Deleted")
 
     } catch (err) {
       console.error("Error deleting app:", err);
@@ -321,11 +321,11 @@ export const UserDashboard = () => {
   const fetchWishlist = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      console.log("No token found, skipping wishlist fetch");
+      // console.log("No token found, skipping wishlist fetch");
       return;
     }
 
-    console.log("=== FETCHING HACKATHON WISHLIST ===");
+    // console.log("=== FETCHING HACKATHON WISHLIST ===");
     setLoadingWishlist(true);
     try {
       const res = await axios.get(
@@ -337,29 +337,29 @@ export const UserDashboard = () => {
         }
       );
       
-      console.log("Wishlist API response:", res.data);
-      console.log("Number of liked hackathons:", res.data.likedHackathons?.length);
+      // console.log("Wishlist API response:", res.data);
+      // console.log("Number of liked hackathons:", res.data.likedHackathons?.length);
       
       if (res.data.success) {
-        console.log("Setting liked hackathons:", res.data.likedHackathons);
+        // console.log("Setting liked hackathons:", res.data.likedHackathons);
         setLikedHackathons(res.data.likedHackathons);
       } else {
-        console.log("API call succeeded but success flag is false");
+        // console.log("API call succeeded but success flag is false");
       }
     } catch (err) {
-      console.error("Error fetching wishlist:", err);
+      // console.error("Error fetching wishlist:", err);
       if (err.response) {
-        console.error("Error response status:", err.response.status);
-        console.error("Error response data:", err.response.data);
+        // console.error("Error response status:", err.response.status);
+        // console.error("Error response data:", err.response.data);
       }
     } finally {
       setLoadingWishlist(false);
-      console.log("=== END FETCHING HACKATHON WISHLIST ===");
+      // console.log("=== END FETCHING HACKATHON WISHLIST ===");
     }
   };
 
   useEffect(() => {
-    console.log("Wishlist useEffect triggered, data:", !!data);
+    // console.log("Wishlist useEffect triggered, data:", !!data);
     if (data) {
       fetchWishlist();
     }

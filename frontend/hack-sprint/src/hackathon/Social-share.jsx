@@ -14,7 +14,7 @@ export const SocialShare = () => {
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareText = "Check out this amazing hackathon!";
 
-  console.log("Current ID:", id);
+  // console.log("Current ID:", id);
 
   // Check if user has liked this hackathon
   useEffect(() => {

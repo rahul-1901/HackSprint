@@ -27,7 +27,7 @@ const Navbar = () => {
           const res = await getDashboard();
           setUserInfo(res.data.userData);
         } catch (err) {
-          console.log("Error fetching dashboard data", err)
+          // console.log("Error fetching dashboard data", err)
         }
       };
       fetchData();

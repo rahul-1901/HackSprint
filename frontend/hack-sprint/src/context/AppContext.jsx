@@ -27,7 +27,7 @@ export const AppContextProvider = (props) => {
         : console.log("Error...", data.message)
     } catch (err) {
       setIsLoggedIn(false);
-      console.log("Error....", err.message)
+      // console.log("Error....", err.message)
     }
   };
 

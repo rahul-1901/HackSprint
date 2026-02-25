@@ -230,9 +230,9 @@ const AdminProfile = () => {
 
   const handleApprove = async (pendingId) => {
     try {
-      console.log("Approving hackathon:", pendingId, "Admin:", adminData.id);
+      // console.log("Approving hackathon:", pendingId, "Admin:", adminData.id);
       const response = await approveHackathon({ pendingHackathonId: pendingId, adminId: adminData.id });
-      console.log("Approval response:", response.data);
+      // console.log("Approval response:", response.data);
       toast.success(response.data.message || "Hackathon approved!");
       
       // Only remove if fully approved and moved to main collection

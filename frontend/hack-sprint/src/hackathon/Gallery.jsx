@@ -26,7 +26,7 @@ const Gallery = () => {
         setImages(response.data.gallery || []);
       }
 
-      console.log("Fetched gallery images:", response.data.gallery);
+      // console.log("Fetched gallery images:", response.data.gallery);
     } catch (error) {
       console.error("Error fetching gallery:", error);
     } finally {

@@ -18,17 +18,17 @@ const getDateSeparatorText = (date) => {
   const messageDateOnly = new Date(
     messageDate.getFullYear(),
     messageDate.getMonth(),
-    messageDate.getDate(),
+    messageDate.getDate()
   );
   const todayDateOnly = new Date(
     today.getFullYear(),
     today.getMonth(),
-    today.getDate(),
+    today.getDate()
   );
   const yesterdayDateOnly = new Date(
     yesterday.getFullYear(),
     yesterday.getMonth(),
-    yesterday.getDate(),
+    yesterday.getDate()
   );
 
   if (messageDateOnly.getTime() === todayDateOnly.getTime()) {
@@ -89,17 +89,17 @@ const ChatInterface = ({ hackathonId }) => {
       });
 
       socket.on("connect", () => {
-        console.log("Socket connected:", socket.id);
+        // console.log("Socket connected:", socket.id);
         setSocketConnected(true);
       });
 
       socket.on("disconnect", () => {
-        console.log("Socket disconnected");
+        // console.log("Socket disconnected");
         setSocketConnected(false);
       });
 
       socket.on("connect_error", (error) => {
-        console.error("Socket connection error:", error);
+        // console.error("Socket connection error:", error);
         setSocketConnected(false);
       });
     }
@@ -141,7 +141,7 @@ const ChatInterface = ({ hackathonId }) => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          },
+          }
         );
         if (res.ok) {
           const data = await res.json();
@@ -186,20 +186,51 @@ const ChatInterface = ({ hackathonId }) => {
     }
   };
 
+  // const sendMessage = async (e) => {
+  //   e.preventDefault();
+  //   if (!newMessage.trim() || !currentUser) return;
+
+  //   const messageData = {
+  //     chatId: currentChatId,
+  //     content: newMessage,
+  //     senderId: currentUser._id,
+  //     type: activeTab === "group" ? "group" : "direct",
+  //     participants: activeTab === "group" ? [] : [currentUser._id], // simplistic
+  //   };
+
+  //   try {
+  //     await socket.emit("send_message", messageData);
+  //     setNewMessage("");
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Failed to send message");
+  //   }
+  // };
+
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !currentUser) return;
+
+    // ❌ Not logged in
+    if (!currentUser) {
+      toast.error("Please login to join the discussion");
+      return;
+    }
+
+    // ❌ Empty message
+    if (!newMessage.trim()) {
+      return;
+    }
 
     const messageData = {
       chatId: currentChatId,
       content: newMessage,
       senderId: currentUser._id,
       type: activeTab === "group" ? "group" : "direct",
-      participants: activeTab === "group" ? [] : [currentUser._id], // simplistic
+      participants: activeTab === "group" ? [] : [currentUser._id],
     };
 
     try {
-      await socket.emit("send_message", messageData);
+      socket.emit("send_message", messageData);
       setNewMessage("");
     } catch (err) {
       console.error(err);
@@ -239,10 +270,16 @@ const ChatInterface = ({ hackathonId }) => {
                 {messages.length} message{messages.length !== 1 ? "s" : ""}
               </div>
               <div
-                className={`flex items-center gap-1.5 text-xs ${socketConnected ? "text-green-400" : "text-red-400"}`}
+                className={`flex items-center gap-1.5 text-xs ${
+                  socketConnected ? "text-green-400" : "text-red-400"
+                }`}
               >
                 <span
-                  className={`w-2 h-2 rounded-full ${socketConnected ? "bg-green-400 animate-pulse" : "bg-red-400"}`}
+                  className={`w-2 h-2 rounded-full ${
+                    socketConnected
+                      ? "bg-green-400 animate-pulse"
+                      : "bg-red-400"
+                  }`}
                 ></span>
                 {socketConnected ? "Connected" : "Disconnected"}
               </div>

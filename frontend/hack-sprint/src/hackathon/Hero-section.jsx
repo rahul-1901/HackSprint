@@ -66,7 +66,7 @@ export const HeroSection = ({
         const data = await res.json();
         const team = data.team;
 
-        console.log(team)
+        // console.log(team)
         setTeamData(team)
 
         if (team?.hackathon?._id && String(team.hackathon._id) === String(hackathonId)) {
