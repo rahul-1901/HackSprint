@@ -81,20 +81,13 @@ const ChatInterface = ({ hackathonId }) => {
   // Initialize socket connection
   useEffect(() => {
     if (!socket) {
-      // socket = io(SOCKET_URL, {
-      //   transports: ["websocket", "polling"],
-      //   reconnection: true,
-      //   reconnectionDelay: 1000,
-      //   reconnectionAttempts: 5,
-      // });
-
       socket = io(SOCKET_URL, {
-        transports: ["polling"],   // ✅ force fallback (like before)
-        upgrade: false,            // ✅ stop websocket attempts
+        transports: ["websocket", "polling"],
         reconnection: true,
-        reconnectionAttempts: 5,
         reconnectionDelay: 1000,
+        reconnectionAttempts: 5,
       });
+      
 
       socket.on("connect", () => {
         // console.log("Socket connected:", socket.id);
