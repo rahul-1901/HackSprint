@@ -104,9 +104,22 @@ export const joinTeam = async (req, res) => {
     const team = await TeamModel.findOne({ secretCode: code });
     if (!team) return res.status(404).json({ message: "Team not found" });
 
-    if (team.pendingMembers.includes(userId) || team.members.includes(userId)) {
+    // if (team.pendingMembers.includes(userId) || team.members.includes(userId)) {
+    //   return res.status(400).json({ message: "Already requested or member" });
+    // }
+
+    const isAlreadyMember = team.members.some(
+      id => id.toString() === userId.toString()
+    );
+
+    const isPending = team.pendingMembers.some(
+      id => id.toString() === userId.toString()
+    );
+
+    if (isAlreadyMember || isPending) {
       return res.status(400).json({ message: "Already requested or member" });
     }
+    
     team.pendingMembers.push(userId);
     await team.save();
 
