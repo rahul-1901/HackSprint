@@ -243,27 +243,53 @@ export const searchTeamByCode = async (req, res) => {
 };
 
 
+// export const getPendingRequests = async (req, res) => {
+//   try {
+//     const { leaderId } = req.body;
+
+//     const leaderRegistration = await RegisteredParticipantsModel.findOne({
+//       user: leaderId
+//     });
+
+//     if (!leaderRegistration || !leaderRegistration.team) {
+//       return res.status(404).json({ message: "Leader or team not found" });
+//     }
+
+//     const teamId = leaderRegistration.team;
+
+//     // 2. Find team by teamId
+//     const team = await TeamModel.findById(teamId).populate("pendingMembers");
+//     if (!team) return res.status(404).json({ message: "Team not found" });
+
+//     res.json(team.pendingMembers);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 export const getPendingRequests = async (req, res) => {
   try {
-    const { leaderId } = req.body;
+    const { teamCode } = req.body;
 
-    const leaderRegistration = await RegisteredParticipantsModel.findOne({
-      user: leaderId
-    });
-
-    if (!leaderRegistration || !leaderRegistration.team) {
-      return res.status(404).json({ message: "Leader or team not found" });
+    if (!teamCode) {
+      return res.status(400).json({ message: "Team code is required" });
     }
 
-    const teamId = leaderRegistration.team;
+    // Find team using secretCode
+    const team = await TeamModel.findOne({ secretCode: teamCode })
+      .populate("pendingMembers");
 
-    // 2. Find team by teamId
-    const team = await TeamModel.findById(teamId).populate("pendingMembers");
-    if (!team) return res.status(404).json({ message: "Team not found" });
+    if (!team) {
+      return res.status(404).json({ message: "Team not found" });
+    }
 
-    res.json(team.pendingMembers);
+    console.log("Pending members:", team.pendingMembers);
+
+    return res.json(team.pendingMembers);
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
