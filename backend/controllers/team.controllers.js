@@ -118,55 +118,151 @@ export const joinTeam = async (req, res) => {
 
 
 
+// export const handleRequests = async (req, res) => {
+//   try {
+//     const { leaderId, userId, action } = req.body; // action = "accept" | "reject"
+
+//     // 1. Find leader's registration to get teamId
+//     const leaderRegistration = await RegisteredParticipantsModel.findOne({
+//       user: leaderId,
+//     });
+
+//     if (!leaderRegistration || !leaderRegistration.team) {
+//       return res.status(404).json({ message: "Leader or team not found" });
+//     }
+
+//     const teamId = leaderRegistration.team;
+
+//     // 2. Find team by teamId
+//     const team = await TeamModel.findById(teamId);
+//     if (!team) return res.status(404).json({ message: "Team not found" });
+
+//     // 3. Remove user from pending
+//     team.pendingMembers = team.pendingMembers.filter(
+//       (id) => id.toString() !== userId.toString()
+//     );
+
+//     // 4. If accepted
+//     if (action === "accept") {
+//       team.members.push(userId);
+//       await UserModel.findByIdAndUpdate(userId, { team: team._id });
+
+//       const hackathonId = team.hackathon;
+
+//       const alreadyRegisteredMember = await RegisteredParticipantsModel.findOne({
+//         user: userId,
+//         hackathon: hackathonId,
+//       });
+
+//       if (alreadyRegisteredMember) {
+//         return res.status(400).json({
+//           success: false,
+//           message: "Member already registered for this hackathon",
+//         });
+//       }
+//       // create registered participant entry for accepted member
+//       const userDoc = await UserModel.findById(userId);
+//       if (!userDoc) {
+//         return res.status(404).json({ message: "User not found" });
+//       }
+
+//       // create registered participant entry for accepted member
+//       await RegisteredParticipantsModel.create({
+//         user: userId,
+//         hackathon: hackathonId,
+//         team: team._id,
+//         name: userDoc.name || "",
+//         contactNumber: userDoc.contactNumber || "",
+//         email: userDoc.email || "",
+//         college: userDoc.college || "",
+//         gender: userDoc.gender || "",
+//         currentYearOfStudy: userDoc.currentYearOfStudy || "",
+//         city: userDoc.city || "",
+//         state: userDoc.state || "",
+//         yearsOfExperience: userDoc.yearsOfExperience || "",
+//         workEmailAddress: userDoc.workEmailAddress || "",
+//       });
+
+//       await UserModel.findByIdAndUpdate(userId, {
+//         $addToSet: { registeredHackathons: hackathonId },
+//       });
+
+//       await hackathonModel.findByIdAndUpdate(hackathonId, {
+//         $addToSet: { registeredParticipants: userId },
+//         $inc: { numParticipants: 1 },
+//       });
+//     }
+
+//     // 5. Save updated team
+//     await team.save();
+
+//     res.json({ message: `User ${action}ed successfully` });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 export const handleRequests = async (req, res) => {
   try {
-    const { leaderId, userId, action } = req.body; // action = "accept" | "reject"
+    const { teamCode, userId, action } = req.body; // accept | reject
 
-    // 1. Find leader's registration to get teamId
-    const leaderRegistration = await RegisteredParticipantsModel.findOne({
-      user: leaderId,
-    });
-
-    if (!leaderRegistration || !leaderRegistration.team) {
-      return res.status(404).json({ message: "Leader or team not found" });
+    if (!teamCode || !userId || !action) {
+      return res.status(400).json({
+        message: "teamCode, userId and action are required",
+      });
     }
 
-    const teamId = leaderRegistration.team;
+    // 1. Find team using teamCode
+    const team = await TeamModel.findOne({ secretCode: teamCode });
 
-    // 2. Find team by teamId
-    const team = await TeamModel.findById(teamId);
-    if (!team) return res.status(404).json({ message: "Team not found" });
+    if (!team) {
+      return res.status(404).json({ message: "Team not found" });
+    }
 
-    // 3. Remove user from pending
+    // 2. Remove user from pending
     team.pendingMembers = team.pendingMembers.filter(
       (id) => id.toString() !== userId.toString()
     );
 
-    // 4. If accepted
+    // 3. If accepted
     if (action === "accept") {
+      // ❗ Prevent duplicate members
+      if (team.members.includes(userId)) {
+        return res.status(400).json({ message: "User already a member" });
+      }
+
+      // ❗ Prevent overflow
+      if (team.members.length + 1 >= team.maxTeamSize) {
+        return res.status(400).json({ message: "Team is full" });
+      }
+
       team.members.push(userId);
+
       await UserModel.findByIdAndUpdate(userId, { team: team._id });
 
       const hackathonId = team.hackathon;
 
-      const alreadyRegisteredMember = await RegisteredParticipantsModel.findOne({
-        user: userId,
-        hackathon: hackathonId,
-      });
+      // ❗ Check already registered
+      const alreadyRegisteredMember = await RegisteredParticipantsModel.findOne(
+        {
+          user: userId,
+          hackathon: hackathonId,
+        }
+      );
 
       if (alreadyRegisteredMember) {
         return res.status(400).json({
-          success: false,
           message: "Member already registered for this hackathon",
         });
       }
-      // create registered participant entry for accepted member
+
+      // Get user data
       const userDoc = await UserModel.findById(userId);
       if (!userDoc) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // create registered participant entry for accepted member
+      // Create registration
       await RegisteredParticipantsModel.create({
         user: userId,
         hackathon: hackathonId,
@@ -193,12 +289,13 @@ export const handleRequests = async (req, res) => {
       });
     }
 
-    // 5. Save updated team
+    // 4. Save team
     await team.save();
 
-    res.json({ message: `User ${action}ed successfully` });
+    return res.json({ message: `User ${action}ed successfully` });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
