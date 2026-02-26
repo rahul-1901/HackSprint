@@ -288,7 +288,7 @@ export const HeroSection = ({
           <img
             src={imageError ? fallbackImage : imageUrl}
             alt="Hackathon Banner"
-            className="w-full h-100 object-cover"
+            className="w-full h-[60vh]"
             onError={() => setImageError(true)}
           />
         </div>
