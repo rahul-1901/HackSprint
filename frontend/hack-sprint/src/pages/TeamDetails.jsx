@@ -55,8 +55,9 @@ const TeamDetails = () => {
         const basicTeamData = teamSearchResponse.data.team;
         // console.log(basicTeamData)
 
-        const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: basicTeamData.leader._id });
-        setTeamData({ ...basicTeamData, pendingMembers: pendingResponse.data });
+        // const pendingResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/pendingRequests`, { leaderId: basicTeamData.leader._id });
+        // setTeamData({ ...basicTeamData, pendingMembers: pendingResponse.data });
+        setTeamData({ ...basicTeamData, pendingMembers: basicTeamData.pendingMembers});
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error fetching team data.');
