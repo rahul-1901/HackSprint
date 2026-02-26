@@ -112,21 +112,49 @@ const TeamDetails = () => {
     });
   };
 
+  // const handleRequestAction = async (applicantUserId, action) => {
+  //   setActionLoading(true);
+  //   try {
+  //     const payload = {
+  //       leaderId: teamData.leader._id,
+  //       userId: applicantUserId,
+  //       action: action,
+  //     };
+
+  //     const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/handleRequest`, payload);
+  //     toast.success(response.data.message);
+
+  //     fetchTeamData(currentUser);
+  //   } catch (error) {
+  //     toast.error(error.response?.data?.message || `Error ${action}ing request.`);
+  //   } finally {
+  //     setActionLoading(false);
+  //   }
+  // };
+
   const handleRequestAction = async (applicantUserId, action) => {
     setActionLoading(true);
+
     try {
       const payload = {
-        leaderId: teamData.leader._id,
+        teamCode: teamData.secretCode, // ✅ FIXED KEY
         userId: applicantUserId,
-        action: action,
+        action,
       };
 
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/team/handleRequest`, payload);
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/team/handleRequest`,
+        payload
+      );
+
       toast.success(response.data.message);
 
+      // refresh data
       fetchTeamData(currentUser);
     } catch (error) {
-      toast.error(error.response?.data?.message || `Error ${action}ing request.`);
+      toast.error(
+        error.response?.data?.message || `Error ${action}ing request.`
+      );
     } finally {
       setActionLoading(false);
     }
