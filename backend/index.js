@@ -32,6 +32,7 @@ const io = new Server(server, {
       "http://localhost:3000",
       "http://127.0.0.1:5173",
       "https://hack-sprint-iitj.vercel.app",
+      "https://hacksprint.devluplabs.tech"
     ],
     methods: ["GET", "POST"],
     credentials: true,
@@ -94,6 +95,7 @@ const corsOptions = {
     "http://localhost:3000",
     "http://127.0.0.1:5173",
     "https://hack-sprint-iitj.vercel.app",
+    "https://hacksprint.devluplabs.tech"
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,

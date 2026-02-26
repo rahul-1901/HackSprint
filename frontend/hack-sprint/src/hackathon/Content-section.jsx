@@ -63,27 +63,67 @@ export const ContentSection = ({ activeSection, hackathon }) => {
   );
 
   // NEW: Component specifically for sections with array content to display as a list
+  // const ListContentSection = ({ title, content }) => {
+  //   const isContentAvailable = Array.isArray(content) && content.length > 0;
+  //   return (
+  //     <div>
+  //       <SectionHeader>{title}</SectionHeader>
+  //       <SectionCard>
+  //         {isContentAvailable ? (
+  //           <ul className="list-disc list-inside space-y-3 text-gray-300 prose max-w-none">
+  //             {content.map((item, index) => (
+  //               <li key={index}>{item}</li>
+  //             ))}
+  //           </ul>
+  //         ) : (
+  //           <p className="text-gray-400">
+  //             {`No ${title.toLowerCase()} information provided.`}
+  //           </p>
+  //         )}
+  //       </SectionCard>
+  //     </div>
+  //   );
+  // };
+
   const ListContentSection = ({ title, content }) => {
-    const isContentAvailable = Array.isArray(content) && content.length > 0;
-    return (
-      <div>
-        <SectionHeader>{title}</SectionHeader>
-        <SectionCard>
-          {isContentAvailable ? (
-            <ul className="list-disc list-inside space-y-3 text-gray-300 prose max-w-none">
-              {content.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-400">
-              {`No ${title.toLowerCase()} information provided.`}
-            </p>
-          )}
-        </SectionCard>
-      </div>
-    );
+  const isContentAvailable = Array.isArray(content) && content.length > 0;
+
+  const isLink = (text) => {
+    return typeof text === "string" && text.startsWith("http");
   };
+
+  return (
+    <div>
+      <SectionHeader>{title}</SectionHeader>
+      <SectionCard>
+        {isContentAvailable ? (
+          <ul className="list-disc list-inside space-y-3 text-gray-300 prose max-w-none">
+            {content.map((item, index) => (
+              <li key={index}>
+                {isLink(item) ? (
+                  <a
+                    href={item}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 underline hover:text-blue-300"
+                  >
+                    Rule Book
+                  </a>
+                ) : (
+                  item
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-400">
+            {`No ${title.toLowerCase()} information provided.`}
+          </p>
+        )}
+      </SectionCard>
+    </div>
+  );
+};
 
   const toggleFAQ = (index) => {
     setExpandedFAQ(expandedFAQ === index ? null : index);
@@ -177,41 +217,42 @@ export const ContentSection = ({ activeSection, hackathon }) => {
         return <ListContentSection title="Rules & Guidelines" content={hackathon.TandCforHackathon} />;
 
       // --- These sections still use SimpleContentSection for string data ---
-      case "prizes":
-        const totalPrize = (hackathon.prizeMoney1 || 0) +
-          (hackathon.prizeMoney2 || 0) +
-          (hackathon.prizeMoney3 || 0);
+     case "prizes":
+  const prizes = [
+    { label: "1st Prize", value: hackathon.prizeMoney1 || 0 },
+    { label: "2nd Prize", value: hackathon.prizeMoney2 || 0 },
+    { label: "3rd Prize", value: hackathon.prizeMoney3 || 0 },
+  ].filter(p => p.value > 0);
 
-        const prizeContent = totalPrize > 0 ? (
-          <div className="space-y-2 text-gray-300">
-            <p>
-              The total prize pool for this event is
-              <span className="ml-1 text-green-400 font-semibold">
-                ₹{totalPrize.toLocaleString("en-IN")}
-              </span>.
-            </p>
-            <ul className="list-disc pl-6 space-y-1">
-              <li>
-                <span className="font-medium text-white">1st Prize:</span>{" "}
-                ₹{(hackathon.prizeMoney1 || 0).toLocaleString("en-IN")}
-              </li>
-              <li>
-                <span className="font-medium text-white">2nd Prize:</span>{" "}
-                ₹{(hackathon.prizeMoney2 || 0).toLocaleString("en-IN")}
-              </li>
-              <li>
-                <span className="font-medium text-white">3rd Prize:</span>{" "}
-                ₹{(hackathon.prizeMoney3 || 0).toLocaleString("en-IN")}
-              </li>
-            </ul>
-          </div>
-        ) : null;
+  const totalPrize = prizes.reduce((sum, p) => sum + p.value, 0);
 
-        return <SimpleContentSection title="Prizes" content={prizeContent} />;
-      case "about":
+  const prizeContent = totalPrize > 0 ? (
+    <div className="space-y-2 text-gray-300">
+      <p>
+        The total prize pool for this event is
+        <span className="ml-1 text-green-400 font-semibold">
+          ₹{totalPrize.toLocaleString("en-IN")}
+        </span>.
+      </p>
+
+      <ul className="list-disc pl-6 space-y-1">
+        {prizes.map((p, i) => (
+          <li key={i}>
+            <span className="font-medium text-white">{p.label}:</span>{" "}
+            ₹{p.value.toLocaleString("en-IN")}
+          </li>
+        ))}
+      </ul>
+    </div>
+  ) : null;
+
+  return <SimpleContentSection title="Prizes" content={prizeContent} />;
+
+          case "about":
         return <SimpleContentSection title="About" content={hackathon.aboutUs} />;
       case "refMaterial":
         return <SimpleContentSectionRef title="Reference Material" content={hackathon.refMaterial} />;
+
 
       // case "faqs":
       //   const rawFaqs = hackathon.FAQs || [];

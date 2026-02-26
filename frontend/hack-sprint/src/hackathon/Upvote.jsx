@@ -395,7 +395,7 @@ const Upvote = () => {
             : sub
         )
       );
-      data.voted ? toast.success("Liked!") : toast.info("Like removed");
+      // data.voted ? toast.success("Liked!") : toast.info("Like removed");
     } catch (error) {
       console.error("Error toggling vote:", error);
       toast.error("Failed to update vote. Please try again.");

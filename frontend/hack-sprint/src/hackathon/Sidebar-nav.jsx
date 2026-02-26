@@ -6,7 +6,7 @@ import {
 export const SidebarNav = ({ activeSection, onSectionChange }) => {
   const sections = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "themes", label: "Themes", icon: ThemeIcon },
+   
     { id: "prizes", label: "Prizes", icon: Award },
     { id: "submission-guide", label: "Submission", icon: NotebookPen },
     { id: "judging", label: "Judging", icon: Scale },
