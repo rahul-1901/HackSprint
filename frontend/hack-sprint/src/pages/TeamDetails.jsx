@@ -137,7 +137,7 @@ const TeamDetails = () => {
 
     try {
       const payload = {
-        teamCode: teamData.secretCode, // ✅ FIXED KEY
+        teamCode: teamData.code, // ✅ FIXED KEY
         userId: applicantUserId,
         action,
       };
