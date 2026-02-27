@@ -1008,10 +1008,9 @@ export const UserDashboard = () => {
                           <span>Start: {startDate}</span>
                           <span>End: {endDate}</span>
                           <span className="ml-1 text-gray-400">
-                            ₹{(
-                              (hack.prizeMoney1 || 0) +
-                              (hack.prizeMoney2 || 0) +
-                              (hack.prizeMoney3 || 0)
+                            ₹{(hack.rewards && hack.rewards.length > 0
+                              ? hack.rewards.reduce((sum, r) => sum + (r.amount || 0), 0)
+                              : (hack.prizeMoney1 || 0) + (hack.prizeMoney2 || 0) + (hack.prizeMoney3 || 0)
                             ).toLocaleString("en-IN")}
                           </span>
 

@@ -15,6 +15,7 @@ export const HeroSection = ({
   startDate,
   endDate,
   participantCount = 0,
+  rewards = [],
   prizeMoney1 = 0,
   prizeMoney2 = 0,
   prizeMoney3 = 0,
@@ -193,22 +194,47 @@ export const HeroSection = ({
     </div>
   );
 
-  const PrizeStatCard = ({ prize1, prize2, prize3, icon: Icon }) => (
-    <div className="bg-gray-900/70 backdrop-blur-sm border border-green-500/20 rounded-xl p-4 hover:border-green-400/30 transition-all">
-      <div className="flex items-center gap-4 mb-3">
-        <div className="w-10 h-10 bg-green-400/10 rounded-lg flex items-center justify-center border border-green-500/20">
-          <Icon className="w-5 h-5 text-green-400" />
-        </div>
-        <h3 className="text-xl font-bold text-white">Prize Pool</h3>
-      </div>
+  const PrizeStatCard = ({ prize1, prize2, prize3, rewards, icon: Icon }) => {
+    // Use new rewards format if available, fallback to old prize fields
+    const displayRewards = rewards && rewards.length > 0 
+      ? rewards 
+      : [
+          prize1 > 0 ? { description: '1st', amount: prize1 } : null,
+          prize2 > 0 ? { description: '2nd', amount: prize2 } : null,
+          prize3 > 0 ? { description: '3rd', amount: prize3 } : null,
+        ].filter(Boolean);
 
-      <div className="flex flex-col sm:flex-row sm:justify-start sm:gap-6 text-sm text-gray-400">
-        {prize1 > 0 && <span>1st: ₹{prize1.toLocaleString("en-IN")}</span>}
-        {prize2 > 0 && <span>2nd: ₹{prize2.toLocaleString("en-IN")}</span>}
-        {prize3 > 0 && <span>3rd: ₹{prize3.toLocaleString("en-IN")}</span>}
+    const totalPrize = displayRewards.reduce((sum, r) => sum + r.amount, 0);
+
+    return (
+      <div className="bg-gray-900/70 backdrop-blur-sm border border-green-500/20 rounded-xl p-4 hover:border-green-400/30 transition-all">
+        <div className="flex items-center gap-4 mb-3">
+          <div className="w-10 h-10 bg-green-400/10 rounded-lg flex items-center justify-center border border-green-500/20">
+            <Icon className="w-5 h-5 text-green-400" />
+          </div>
+          <h3 className="text-xl font-bold text-white">Prize Pool</h3>
+        </div>
+
+        <div className="space-y-1.5">
+          {displayRewards.slice(0, 4).map((reward, idx) => (
+            <div key={idx} className="flex justify-between items-center text-sm">
+              <span className="text-gray-400">{reward.description}:</span>
+              <span className="text-green-400 font-semibold">₹{reward.amount.toLocaleString("en-IN")}</span>
+            </div>
+          ))}
+          {displayRewards.length > 4 && (
+            <div className="text-xs text-gray-500 mt-1">+{displayRewards.length - 4} more reward{displayRewards.length > 5 ? 's' : ''}</div>
+          )}
+          {totalPrize > 0 && displayRewards.length > 1 && (
+            <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-700/50 mt-2">
+              <span className="text-gray-300 font-semibold">Total:</span>
+              <span className="text-green-400 font-bold">₹{totalPrize.toLocaleString("en-IN")}</span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderActionButton = () => {
     const baseClasses =
@@ -370,6 +396,7 @@ export const HeroSection = ({
               icon={Users}
             />
             <PrizeStatCard
+              rewards={rewards}
               prize1={prizeMoney1}
               prize2={prizeMoney2}
               prize3={prizeMoney3}

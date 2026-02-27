@@ -50,6 +50,14 @@ const hackathonSchema = new mongoose.Schema({
         //     values : ["Web Dev" , "AI/ML" , "Blockchain" , "IoT"]
         // }
     },
+    // New flexible rewards system
+    rewards: [
+        {
+            description: { type: String, required: true },
+            amount: { type: Number, required: true }
+        }
+    ],
+    // Keep old prize fields for backward compatibility (optional)
     prizeMoney1: {
         type: Number
     },

@@ -79,6 +79,14 @@ const pendingHackathonSchema = new mongoose.Schema({
     enum: ["Advanced", "Expert", "Intermediate", "Beginner"],
   },
   category: { type: [String] },
+  // New flexible rewards system
+  rewards: [
+    {
+      description: { type: String, required: true },
+      amount: { type: Number, required: true }
+    }
+  ],
+  // Keep old prize fields for backward compatibility (optional)
   prizeMoney1: { type: Number, default: 0 },
   prizeMoney2: { type: Number, default: 0 },
   prizeMoney3: { type: Number, default: 0 },

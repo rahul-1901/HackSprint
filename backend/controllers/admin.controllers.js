@@ -185,6 +185,7 @@ export const createPendingHackathon = async (req, res) => {
       "gallery",
       "approvals",
       "rejectedBy",
+      "rewards", // ✅ ADD THIS for new rewards system
     ];
 
     defaultArrayFields.forEach((field) => {

@@ -367,10 +367,9 @@ const SubmissionForm = ({ isOpen, onClose }) => {
           <StatCard
             icon={Code}
             label="Prize Pool"
-            value={`₹${(
-              (hackathon.prizeMoney1 || 0) +
-              (hackathon.prizeMoney2 || 0) +
-              (hackathon.prizeMoney3 || 0)
+            value={`₹${(hackathon.rewards && hackathon.rewards.length > 0
+              ? hackathon.rewards.reduce((sum, r) => sum + (r.amount || 0), 0)
+              : (hackathon.prizeMoney1 || 0) + (hackathon.prizeMoney2 || 0) + (hackathon.prizeMoney3 || 0)
             ).toLocaleString("en-IN")}`}
           />
           <StatCard

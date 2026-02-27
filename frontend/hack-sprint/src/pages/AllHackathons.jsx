@@ -250,7 +250,10 @@ const HackathonCard = ({ hackathon }) => {
               <div className="flex items-center text-xs sm:text-sm">
                 <Trophy size={14} className="text-gray-500" />
                 <span className="ml-1 text-gray-400">
-                  ₹{((hackathon.prizeMoney1 || 0) + (hackathon.prizeMoney2 || 0) + (hackathon.prizeMoney3 || 0)).toLocaleString("en-IN")}
+                  ₹{(hackathon.rewards && hackathon.rewards.length > 0 
+                    ? hackathon.rewards.reduce((sum, r) => sum + (r.amount || 0), 0)
+                    : (hackathon.prizeMoney1 || 0) + (hackathon.prizeMoney2 || 0) + (hackathon.prizeMoney3 || 0)
+                  ).toLocaleString("en-IN")}
                 </span>
               </div>
               <div className="flex items-center text-xs sm:text-sm"><Calendar size={14} className="text-gray-500" /><span className="ml-1 text-gray-400">{hackathon.dates}</span></div>

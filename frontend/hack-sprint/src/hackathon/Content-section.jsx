@@ -218,13 +218,16 @@ export const ContentSection = ({ activeSection, hackathon }) => {
 
       // --- These sections still use SimpleContentSection for string data ---
      case "prizes":
-  const prizes = [
-    { label: "1st Prize", value: hackathon.prizeMoney1 || 0 },
-    { label: "2nd Prize", value: hackathon.prizeMoney2 || 0 },
-    { label: "3rd Prize", value: hackathon.prizeMoney3 || 0 },
-  ].filter(p => p.value > 0);
+  // Use new rewards format if available, fallback to old prize fields
+  const rewards = hackathon.rewards && hackathon.rewards.length > 0
+    ? hackathon.rewards
+    : [
+        hackathon.prizeMoney1 > 0 ? { description: "1st Prize", amount: hackathon.prizeMoney1 } : null,
+        hackathon.prizeMoney2 > 0 ? { description: "2nd Prize", amount: hackathon.prizeMoney2 } : null,
+        hackathon.prizeMoney3 > 0 ? { description: "3rd Prize", amount: hackathon.prizeMoney3 } : null,
+      ].filter(Boolean);
 
-  const totalPrize = prizes.reduce((sum, p) => sum + p.value, 0);
+  const totalPrize = rewards.reduce((sum, r) => sum + (r.amount || 0), 0);
 
   const prizeContent = totalPrize > 0 ? (
     <div className="space-y-2 text-gray-300">
@@ -236,10 +239,10 @@ export const ContentSection = ({ activeSection, hackathon }) => {
       </p>
 
       <ul className="list-disc pl-6 space-y-1">
-        {prizes.map((p, i) => (
+        {rewards.map((reward, i) => (
           <li key={i}>
-            <span className="font-medium text-white">{p.label}:</span>{" "}
-            ₹{p.value.toLocaleString("en-IN")}
+            <span className="font-medium text-white">{reward.description}:</span>{" "}
+            ₹{reward.amount.toLocaleString("en-IN")}
           </li>
         ))}
       </ul>

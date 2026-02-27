@@ -92,6 +92,7 @@ export default function HackathonDetails() {
                     startDate={hackathon.startDate}
                     endDate={hackathon.endDate}
                     participantCount={hackathon.numParticipants || 0}
+                    rewards={hackathon.rewards}
                     prizeMoney1={hackathon.prizeMoney1}
                     prizeMoney2={hackathon.prizeMoney2}
                     prizeMoney3={hackathon.prizeMoney3}

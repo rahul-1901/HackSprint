@@ -51,7 +51,7 @@ const parseArrayFields = (body) => {
   const arrayFields = [
     "category", "techStackUsed", "themes", "FAQs",
     "problems", "TandCforHackathon", "evaluationCriteria",
-    "projectSubmission", "teams", "registeredParticipants",
+    "projectSubmission", "teams", "registeredParticipants", "rewards",
   ];
 
   const parsed = { ...body };

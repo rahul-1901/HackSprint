@@ -240,6 +240,69 @@ const DynamicFaqInput = ({ values, onUpdate }) => {
   );
 };
 
+/* ================= DYNAMIC REWARD INPUT ================= */
+const DynamicRewardInput = ({ values, onUpdate }) => {
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+
+  const handleAdd = () => {
+    if (description.trim() && amount && Number(amount) > 0) {
+      onUpdate([...values, { description: description.trim(), amount: Number(amount) }]);
+      setDescription('');
+      setAmount('');
+    }
+  };
+
+  const totalPrize = values.reduce((sum, reward) => sum + reward.amount, 0);
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-300 mb-2">Rewards</label>
+      <div className="space-y-2 mb-3">
+        {values.map((reward, index) => (
+          <div key={index} className="bg-gray-800/50 p-3 rounded-lg flex justify-between items-center gap-4">
+            <div className="flex-1">
+              <p className="font-semibold text-white text-sm">{reward.description}</p>
+              <p className="text-green-400 text-sm mt-1">₹{reward.amount.toLocaleString('en-IN')}</p>
+            </div>
+            <button type="button" onClick={() => onUpdate(values.filter((_, i) => i !== index))} className="text-red-400 hover:text-red-300 flex-shrink-0">
+              <X size={16} />
+            </button>
+          </div>
+        ))}
+      </div>
+      {values.length > 0 && (
+        <div className="bg-green-900/20 border border-green-500/30 p-2 rounded-lg mb-3">
+          <p className="text-green-400 text-sm font-semibold">Total Prize Pool: ₹{totalPrize.toLocaleString('en-IN')}</p>
+        </div>
+      )}
+      <div className="space-y-2 border-t border-gray-700 pt-3">
+        <input
+          type="text"
+          placeholder="Reward Description (e.g., 1st Place, Best Innovation)"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50"
+        />
+        <input
+          type="number"
+          placeholder="Amount (₹)"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className="w-full bg-gray-800/60 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50"
+        />
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="w-full cursor-pointer bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2"
+        >
+          <Plus size={16} /> Add Reward
+        </button>
+      </div>
+    </div>
+  );
+};
+
 /* ================= MAIN PAGE ================= */
 const CreateHackathonPage = () => {
   const navigate = useNavigate();
@@ -261,6 +324,7 @@ const CreateHackathonPage = () => {
     endDate: '',
     submissionStartDate: '',
     submissionEndDate: '',
+    rewards: [],
     prizeMoney1: '',
     prizeMoney2: '',
     prizeMoney3: '',
@@ -389,6 +453,9 @@ const CreateHackathonPage = () => {
       // FAQs — keep as objects (correct format)
       fd.append('FAQs', JSON.stringify(formData.FAQs || []));
 
+      // Rewards — new flexible system
+      fd.append('rewards', JSON.stringify(formData.rewards || []));
+
       // Admin ID
       fd.append('adminId', adminData.id);
 
@@ -467,14 +534,10 @@ const CreateHackathonPage = () => {
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Event Details</h2>
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Prize Money (₹)</label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <input type="number" name="prizeMoney1" placeholder="1st Prize *" value={formData.prizeMoney1} onChange={handleChange} required className={inputClass} />
-                  <input type="number" name="prizeMoney2" placeholder="2nd Prize" value={formData.prizeMoney2} onChange={handleChange} className={inputClass} />
-                  <input type="number" name="prizeMoney3" placeholder="3rd Prize" value={formData.prizeMoney3} onChange={handleChange} className={inputClass} />
-                </div>
-              </div>
+              <DynamicRewardInput 
+                values={formData.rewards} 
+                onUpdate={(v) => setFormData((p) => ({ ...p, rewards: v }))} 
+              />
               <div>
                 <label htmlFor="difficulty" className="block text-sm font-medium text-gray-300 mb-1">Difficulty</label>
                 <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleChange} className={inputClass}>
