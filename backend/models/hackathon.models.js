@@ -41,7 +41,7 @@ const hackathonSchema = new mongoose.Schema({
     difficulty: {
         type: String,
         enum: {
-            values: ["Advanced", "Expert", "Intermediate", "Beginner"]
+            values: ["Advanced", "Expert", "Intermediate", "Beginner", "Tough"]
         }
     },
     category: {

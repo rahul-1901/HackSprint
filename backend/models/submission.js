@@ -1,12 +1,16 @@
 import mongoose from "mongoose";
 
 const mediaSchema = new mongoose.Schema({
-  public_id: { type: String, required: true },       // from Cloudinary
-  url: { type: String, required: true },             // secure_url
-  resource_type: { type: String, enum: ["image", "video", "raw"], required: true },
-  format: { type: String },                          // jpg, mp4, pdf, etc.
+  public_id: { type: String, required: true }, // from Cloudinary
+  url: { type: String, required: true }, // secure_url
+  resource_type: {
+    type: String,
+    enum: ["image", "video", "raw"],
+    required: true,
+  },
+  format: { type: String }, // jpg, mp4, pdf, etc.
   original_filename: { type: String },
-  size: { type: Number },                            // bytes
+  size: { type: Number }, // bytes
   uploadedAt: { type: Date, default: Date.now },
 });
 
@@ -30,9 +34,9 @@ const submissionSchema = new mongoose.Schema({
     type: [String],
     required: true,
   },
-  hackathonPoints : {
-    type : Number,
-    default : 0
+  hackathonPoints: {
+    type: Number,
+    default: 0,
   },
   githubMetadata: {
     stars: { type: Number, default: 0 },
@@ -45,7 +49,7 @@ const submissionSchema = new mongoose.Schema({
   },
 
   // 🔹 New fields for docs, images, videos
-  docs: [mediaSchema],   // array of PDFs or other docs
+  docs: [mediaSchema], // array of PDFs or other docs
   images: [mediaSchema], // array of screenshots/images
   videos: [mediaSchema], // array of demo videos
 

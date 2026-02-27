@@ -1,8 +1,17 @@
-import React,{ useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
-import { X, Clock, Calendar, Users, Code, FileVideo, FileText, Plus } from "lucide-react";
+import {
+  X,
+  Clock,
+  Calendar,
+  Users,
+  Code,
+  FileVideo,
+  FileText,
+  Plus,
+} from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import { getDashboard } from "../backendApis/api";
 import "./Hackathon.css";
@@ -19,10 +28,13 @@ function Input({ className = "", ...props }) {
 
 // Button component
 function Button({ children, variant = "default", className = "", ...props }) {
-  const base = "px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none";
+  const base =
+    "px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none";
   const variants = {
-    default: "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg",
-    outline: "border border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white",
+    default:
+      "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg",
+    outline:
+      "border border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white",
     ghost: "text-gray-400 hover:bg-gray-800 hover:text-white",
   };
   return (
@@ -42,22 +54,39 @@ const StatCard = ({ icon: Icon, label, value }) => (
 );
 
 // FileUpload component
-function FileUpload({ label, icon: Icon, accept, file, onFileChange, onRemove, preview }) {
+function FileUpload({
+  label,
+  icon: Icon,
+  accept,
+  file,
+  onFileChange,
+  onRemove,
+  preview,
+}) {
   return (
     <div className="space-y-1">
       <label className="block text-gray-300">{label}</label>
       <div className="relative">
         <label className="flex items-center justify-center w-full h-32 p-4 border-2 border-dashed border-gray-600 rounded-xl cursor-pointer hover:border-blue-500 transition-colors">
-          <input type="file" accept={accept} onChange={onFileChange} className="hidden" />
+          <input
+            type="file"
+            accept={accept}
+            onChange={onFileChange}
+            className="hidden"
+          />
           {file ? (
             <div className="flex flex-col items-center space-y-2">
               {preview}
-              <span className="text-gray-300 truncate w-40 text-center">{file.name}</span>
+              <span className="text-gray-300 truncate w-40 text-center">
+                {file.name}
+              </span>
             </div>
           ) : (
             <div className="flex flex-col items-center text-gray-400">
               <Icon className="w-8 h-8 mb-2" />
-              <span className="text-sm text-center">Click to upload or drag and drop</span>
+              <span className="text-sm text-center">
+                Click to upload or drag and drop
+              </span>
             </div>
           )}
         </label>
@@ -119,13 +148,20 @@ const SubmissionForm = ({ isOpen, onClose }) => {
         if (fetchedUserData.team) {
           setTeamId(fetchedUserData.team);
           const teamRes = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/api/team/${fetchedUserData.team}`
+            `${import.meta.env.VITE_API_BASE_URL}/api/team/${
+              fetchedUserData.team
+            }`
           );
           const teamData = await teamRes.json();
           const team = teamData.team;
 
-          if (team?.hackathon?._id && String(team.hackathon._id) === String(hackathonId)) {
-            const member = team.members?.some((m) => String(m._id) === String(fetchedUserData._id));
+          if (
+            team?.hackathon?._id &&
+            String(team.hackathon._id) === String(hackathonId)
+          ) {
+            const member = team.members?.some(
+              (m) => String(m._id) === String(fetchedUserData._id)
+            );
             setIsTeamMember(member || false);
           } else {
             setIsTeamMember(false);
@@ -157,7 +193,9 @@ const SubmissionForm = ({ isOpen, onClose }) => {
         });
 
         const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/submit/status?${params.toString()}`
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/submit/status?${params.toString()}`
         );
         const data = await res.json();
         // console.log(data)
@@ -222,13 +260,19 @@ const SubmissionForm = ({ isOpen, onClose }) => {
 
     const canSubmit = isLeader || !isTeamMember;
     if (!canSubmit) {
-      toast.error("Only team leaders can submit!", { position: "top-right", theme: "dark" });
+      toast.error("Only team leaders can submit!", {
+        position: "top-right",
+        theme: "dark",
+      });
       return;
     }
 
     const validUrls = repoUrls.filter((url) => url.trim() !== "");
     if (validUrls.length === 0) {
-      toast.error("Please provide at least one valid URL.", { position: "top-right", theme: "dark" });
+      toast.error("Please provide at least one valid URL.", {
+        position: "top-right",
+        theme: "dark",
+      });
       return;
     }
 
@@ -236,30 +280,49 @@ const SubmissionForm = ({ isOpen, onClose }) => {
     try {
       const formData = new FormData();
       // Append all valid URLs to the form data
-      validUrls.forEach((url) => {
-        formData.append("repoUrl", url);
-      });
+      // validUrls.forEach((url) => {
+      //   formData.append("repoUrl", url);
+      // });
+      formData.append("repoUrl", JSON.stringify(validUrls));
       formData.append("hackathonId", hackathonId);
       formData.append("userId", userData._id);
       if (teamId) formData.append("teamId", teamId);
       if (videoFile) formData.append("videos", videoFile);
       if (pdfFile) formData.append("docs", pdfFile);
 
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/submit`, {
-        method: "POST",
-        body: formData,
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/submit`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.status === 429) {
+        throw new Error("Too many requests. Please try again later.");
+      }
+
+      if (!res.ok) throw new Error(data.message || "Submission failed");
+
+      toast.success(data.message || "Submission successful!", {
+        position: "top-right",
+        autoClose: 1000,
       });
 
-      if (!res.ok) throw new Error("Submission failed");
-
-      toast.success("Submission successful!", { position: "top-right" });
-      setRepoUrls([""]); // Reset URL fields
-      setVideoFile(null);
-      setPdfFile(null);
-      onClose();
+      setTimeout(() => {
+        setRepoUrls([""]);
+        setVideoFile(null);
+        setPdfFile(null);
+        onClose();
+      }, 1200);
     } catch (err) {
       console.error(err);
-      toast.error("Submission failed. Try again.", { position: "top-right" });
+      toast.error(err.message || "Submission failed.", {
+        position: "top-right",
+        autoClose: 1300,
+      });
     } finally {
       setLoading(false);
     }
@@ -291,7 +354,10 @@ const SubmissionForm = ({ isOpen, onClose }) => {
             <h2 className="text-2xl font-bold">{hackathon.title}</h2>
             <p className="text-gray-400">{hackathon.subTitle}</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white cursor-pointer">
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white cursor-pointer"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -307,9 +373,21 @@ const SubmissionForm = ({ isOpen, onClose }) => {
               (hackathon.prizeMoney3 || 0)
             ).toLocaleString("en-IN")}`}
           />
-          <StatCard icon={Clock} label="Duration" value={`${durationDays} Days`} />
-          <StatCard icon={Users} label="Participants" value={hackathon.numParticipants || 0} />
-          <StatCard icon={Calendar} label="Difficulty" value={hackathon.difficulty} />
+          <StatCard
+            icon={Clock}
+            label="Duration"
+            value={`${durationDays} Days`}
+          />
+          <StatCard
+            icon={Users}
+            label="Participants"
+            value={hackathon.numParticipants || 0}
+          />
+          <StatCard
+            icon={Calendar}
+            label="Difficulty"
+            value={hackathon.difficulty}
+          />
         </div>
 
         <p className="text-gray-300 mb-6">{hackathon.description}</p>
@@ -362,7 +440,6 @@ const SubmissionForm = ({ isOpen, onClose }) => {
                 </ul>
               </div>
             )} */}
-
 
             {/* {submissionStatus.submission.videos?.length > 0 && (
               <div>

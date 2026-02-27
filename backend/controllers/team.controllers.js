@@ -5,7 +5,6 @@ import RegisteredParticipantsModel from "../models/registeredParticipants.js"
 import hackathonModel from "../models/hackathon.models.js"
 
 
-
 const generateCode = (length = 8) => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let code = "";
@@ -393,7 +392,7 @@ export const getPendingRequests = async (req, res) => {
       return res.status(404).json({ message: "Team not found" });
     }
 
-    console.log("Pending members:", team.pendingMembers);
+    // console.log("Pending members:", team.pendingMembers);
 
     return res.json(team.pendingMembers);
 

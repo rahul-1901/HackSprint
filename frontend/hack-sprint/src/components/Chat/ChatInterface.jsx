@@ -87,7 +87,6 @@ const ChatInterface = ({ hackathonId }) => {
         reconnectionDelay: 1000,
         reconnectionAttempts: 5,
       });
-      
 
       socket.on("connect", () => {
         // console.log("Socket connected:", socket.id);
@@ -149,7 +148,7 @@ const ChatInterface = ({ hackathonId }) => {
           setMessages(data);
         }
       } catch (err) {
-        console.error("Failed to fetch messages", err);
+        console.error("Failed to fetch messages");
       } finally {
         setIsLoading(false);
       }
@@ -259,7 +258,7 @@ const ChatInterface = ({ hackathonId }) => {
     <>
       <style>{customScrollbarStyles}</style>
       <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="h-[600px] bg-gray-900/50 rounded-xl border border-green-500/20 overflow-hidden backdrop-blur-sm flex flex-col">
+        <div className="h-[70vh] sm:h-[600px] bg-gray-900/50 rounded-xl border border-green-500/20 overflow-hidden backdrop-blur-sm flex flex-col">
           {/* Header */}
           <div className="p-4 border-b border-green-500/20 flex justify-between items-center bg-gray-900/40">
             <div className="flex items-center gap-2">
@@ -267,9 +266,9 @@ const ChatInterface = ({ hackathonId }) => {
               <h3 className="font-bold text-white">Discussions</h3>
             </div>
             <div className="flex items-center gap-4">
-              <div className="text-xs text-gray-400">
+              {/* <div className="text-xs text-gray-400">
                 {messages.length} message{messages.length !== 1 ? "s" : ""}
-              </div>
+              </div> */}
               <div
                 className={`flex items-center gap-1.5 text-xs ${
                   socketConnected ? "text-green-400" : "text-red-400"
@@ -325,7 +324,7 @@ const ChatInterface = ({ hackathonId }) => {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-green-500/20 bg-gray-900/40">
+          <div className="p-4 border-t border-green-500/20 bg-gray-900/40 shrink-0">
             <form onSubmit={sendMessage} className="flex gap-3">
               <input
                 type="text"
@@ -337,7 +336,7 @@ const ChatInterface = ({ hackathonId }) => {
               <button
                 type="submit"
                 disabled={!newMessage.trim()}
-                className="bg-green-600 hover:bg-green-500 text-white rounded-xl px-5 py-3 flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-green-900/20"
+                className="bg-green-600 hover:bg-green-500 text-white rounded-xl px-3 sm:px-5 py-3 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-green-900/20"
               >
                 <Send className="w-4 h-4" />
                 <span className="hidden sm:inline">Send</span>

@@ -6,6 +6,7 @@ import {
   FileText,
   Image as ImageIcon,
   Video,
+  ClipboardList,
   Users,
   User,
   ChevronDown,
@@ -98,7 +99,7 @@ const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
               <div className="flex gap-1.5">
                 {submission.repoUrl?.length > 0 && (
                   <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                    REPO
+                    URL
                   </span>
                 )}
                 {submission.docs?.length > 0 && (
@@ -132,8 +133,8 @@ const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
               {/* Repository */}
               {submission.repoUrl?.length > 0 && (
                 <AssetSection
-                  icon={Github}
-                  label="Repository"
+                  icon={ClipboardList}
+                  label="Submission"
                   accentClass="text-blue-400"
                 >
                   <div className="flex flex-wrap gap-2">
@@ -146,7 +147,7 @@ const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
                         className="inline-flex items-center gap-2 px-3 py-2 bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 hover:border-blue-400/40 rounded-lg text-blue-400 hover:text-blue-300 transition-all duration-200 text-sm"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
-                        {submission.repoUrl.length > 1 ? `Repository ${i + 1}` : "View Repository"}
+                        {submission.repoUrl.length > 1 ? `Submission ${i + 1}` : "View Submission"}
                       </a>
                     ))}
                   </div>

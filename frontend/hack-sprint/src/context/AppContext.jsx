@@ -24,7 +24,7 @@ export const AppContextProvider = (props) => {
 
       data.success
         ? setUserData(data.userData)
-        : console.log("Error...", data.message)
+        : console.log("Error...")
     } catch (err) {
       setIsLoggedIn(false);
       // console.log("Error....", err.message)

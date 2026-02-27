@@ -1,14 +1,8 @@
-import React,{ useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
-import { Link } from 'react-router-dom'
-import {
-  Calendar,
-  Users,
-  Trophy,
-  Clock,
-  ChevronRight,
-} from "lucide-react";
+import { Link } from "react-router-dom";
+import { Calendar, Users, Trophy, Clock, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../backendApis/api";
 import LoginForm from "./LoginForm";
@@ -27,7 +21,7 @@ export const HeroSection = ({
   imageUrl = "/assets/hackathon-banner.png",
   hackathonId,
   submissionStartDate,
-  submissionEndDate
+  submissionEndDate,
 }) => {
   const [imageError, setImageError] = useState(false);
   const [userData, setUserData] = useState(null);
@@ -67,9 +61,12 @@ export const HeroSection = ({
         const team = data.team;
 
         // console.log(team)
-        setTeamData(team)
+        setTeamData(team);
 
-        if (team?.hackathon?._id && String(team.hackathon._id) === String(hackathonId)) {
+        if (
+          team?.hackathon?._id &&
+          String(team.hackathon._id) === String(hackathonId)
+        ) {
           const member = team.members?.some(
             (m) => String(m._id) === String(currentUserId)
           );
@@ -88,30 +85,30 @@ export const HeroSection = ({
       try {
         const res = await getDashboard();
         const fetchedUserData = res.data.userData;
-        console.log(fetchedUserData)
+        // console.log(fetchedUserData)
         setUserData(fetchedUserData);
         setIsVerified(fetchedUserData?.isVerified || false);
 
         const registered = Array.isArray(fetchedUserData.registeredHackathons)
           ? fetchedUserData.registeredHackathons.some(
-            (obj) => String(obj?._id) === String(hackathonId)
-          )
+              (obj) => String(obj?._id) === String(hackathonId)
+            )
           : false;
         setRegistrationInfo(registered);
 
         const leader = fetchedUserData.leaderOfHackathons?.some(
           (obj) => String(obj?._id) === String(hackathonId)
         );
-        if(leader) {
+        if (leader) {
           setIsLeader(true);
           setLeaderButton(true);
         } else {
           setIsLeader(false);
           setLeaderButton(false);
         }
-        console.log("Leader Status:", isLeader);
-        console.log("Leader Button:", leaderButton);
-        console.log("Registration Info:", registrationInfo);
+        // console.log("Leader Status:", isLeader);
+        // console.log("Leader Button:", leaderButton);
+        // console.log("Registration Info:", registrationInfo);
         // ✅ Always send teamId here
         if (fetchedUserData?.team) {
           await fetchTeamData(fetchedUserData.team, fetchedUserData._id);
@@ -132,7 +129,7 @@ export const HeroSection = ({
 
     fetchTeamData();
     fetchUserData();
-    renderActionButton()
+    renderActionButton();
   }, [hackathonId, isLeader, registrationInfo]);
 
   // useEffect(() => {
@@ -143,10 +140,9 @@ export const HeroSection = ({
     if (teamData?.code) {
       setLeaderValue(teamData.code);
     } else {
-      setLeaderValue(localStorage.getItem("teamDetails_code"))
+      setLeaderValue(localStorage.getItem("teamDetails_code"));
     }
-  }, [teamData])
-
+  }, [teamData]);
 
   const handleRegister = () => {
     if (isVerified) navigate(`/hackathon/RegistrationForm/${hackathonId}`);
@@ -178,7 +174,7 @@ export const HeroSection = ({
   };
 
   const getDaysRemaining = () => {
-    const diff = new Date(endDate) - new Date();
+    const diff = new Date(submissionEndDate) - new Date();
     const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
     return days > 0 ? days : 0;
   };
@@ -197,7 +193,7 @@ export const HeroSection = ({
     </div>
   );
 
- const PrizeStatCard = ({ prize1, prize2, prize3, icon: Icon }) => (
+  const PrizeStatCard = ({ prize1, prize2, prize3, icon: Icon }) => (
     <div className="bg-gray-900/70 backdrop-blur-sm border border-green-500/20 rounded-xl p-4 hover:border-green-400/30 transition-all">
       <div className="flex items-center gap-4 mb-3">
         <div className="w-10 h-10 bg-green-400/10 rounded-lg flex items-center justify-center border border-green-500/20">
@@ -215,12 +211,15 @@ export const HeroSection = ({
   );
 
   const renderActionButton = () => {
-    const baseClasses = "px-6 py-2.5 w-full sm:w-auto flex justify-center sm:justify-start items-center gap-2";
+    const baseClasses =
+      "px-6 py-2.5 w-full sm:w-auto flex justify-center sm:justify-start items-center gap-2";
 
     if (loading || !userData) {
       return (
         <Link to="/account/login">
-          <Button className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}>
+          <Button
+            className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}
+          >
             Login
           </Button>
         </Link>
@@ -240,7 +239,10 @@ export const HeroSection = ({
         );
       }
       return (
-        <Button disabled className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}>
+        <Button
+          disabled
+          className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}
+        >
           Registration Closed
         </Button>
       );
@@ -259,7 +261,10 @@ export const HeroSection = ({
 
     if (isTeamMember) {
       return (
-        <Button disabled className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}>
+        <Button
+          disabled
+          className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}
+        >
           Submit (Leader Only)
         </Button>
       );
@@ -275,7 +280,6 @@ export const HeroSection = ({
       </Button>
     );
   };
-
 
   const fallbackImage = `https://via.placeholder.com/1200x400/0a0f18/22c55e?text=${encodeURIComponent(
     title
@@ -297,10 +301,11 @@ export const HeroSection = ({
           {/* top badges */}
           <div className="flex flex-wrap items-center gap-4 mb-4">
             <Badge
-              className={`${isActive
-                ? "bg-green-400/10 text-green-300 border-green-400/20"
-                : "bg-gray-800 text-gray-400 border-gray-700"
-                } px-3 py-1 text-sm font-medium border`}
+              className={`${
+                isActive
+                  ? "bg-green-400/10 text-green-300 border-green-400/20"
+                  : "bg-gray-800 text-gray-400 border-gray-700"
+              } px-3 py-1 text-sm font-medium border`}
             >
               {isActive ? "Active" : "Ended"}
             </Badge>
@@ -338,8 +343,8 @@ export const HeroSection = ({
                   {isLeader
                     ? "Leader"
                     : isTeamMember
-                      ? "Team Member"
-                      : "Individual"}
+                    ? "Team Member"
+                    : "Individual"}
                 </p>
               )}
             </div>

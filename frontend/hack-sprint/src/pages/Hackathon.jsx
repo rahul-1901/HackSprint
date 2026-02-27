@@ -79,7 +79,7 @@ export default function HackathonDetails() {
         );
 
     // CORRECTED LOGIC: Determine active state from the end date for reliability.
-    const isHackathonActive = new Date() < new Date(hackathon.endDate);
+    const isHackathonActive = new Date() < new Date(hackathon.submissionEndDate);
 
     return (
         <div className="min-h-screen bg-gray-900 relative">

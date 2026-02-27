@@ -5,6 +5,7 @@ import hackathonModel from "../models/hackathon.models.js";
 import TeamModel from "../models/team.js";
 import UserModel from "../models/user.models.js";
 import s3Client from "../config/aws.js";
+import mongoose from "mongoose";
 // import cloudinary from "../config/cloudinary.js"; // COMMENTED OUT - USING AWS S3
 
 // helper: get file extension
@@ -35,7 +36,9 @@ const uploadFiles = async (files, resourceType, hackathonId) => {
         await s3Client.send(putObjectCommand);
 
         // ✅ Generate S3 URL
-        const url = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION || "ap-southeast-2"}.amazonaws.com/${key}`;
+        const url = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${
+          process.env.AWS_REGION || "ap-southeast-2"
+        }.amazonaws.com/${key}`;
 
         return {
           public_id: key,
@@ -88,146 +91,328 @@ const uploadFiles = async (files, resourceType, hackathonId) => {
 // };
 // */
 
+// export const submitHackathonSolution = async (req, res) => {
+//   try {
+//     const { hackathonId, repoUrl, userId } = req.body || {};
+//     console.log("req.body =>", req.body);
+//     console.log("req.files =>", req.files);
+//     // ✅ validate repoUrl is an array with at least one element
+//     if (!hackathonId || !Array.isArray(repoUrl) || repoUrl.length === 0) {
+//       return res.status(400).json({
+//         message: "Hackathon ID and at least one repo URL are required",
+//       });
+//     }
+//     if (!hackathonId || !repoUrl) {
+//       return res
+//         .status(400)
+//         .json({ message: "Hackathon ID and repo URL are required" });
+//     }
+
+//     // ✅ check hackathon exists
+//     const hackathon = await hackathonModel.findById(hackathonId);
+//     if (!hackathon) {
+//       return res.status(404).json({ message: "Hackathon not found" });
+//     }
+
+//     // ✅ check if user is in a team
+//     const team = await TeamModel.findOne({
+//       hackathon: hackathonId,
+//       $or: [{ leader: userId }, { members: userId }],
+//     });
+
+//     // Validate file types based on hackathon.allowedFileTypes (if provided)
+//     if (req.files && hackathon.allowedFileTypes) {
+//       for (const [field, files] of Object.entries(req.files)) {
+//         const allowed = hackathon.allowedFileTypes[field] || [];
+//         for (const file of files) {
+//           const ext = getFileExtension(file.originalname);
+//           if (!allowed.includes(ext)) {
+//             return res.status(400).json({
+//               message: `File type .${ext} is not allowed for ${field}. Allowed: ${allowed.join(
+//                 ", "
+//               )}`,
+//             });
+//           }
+//         }
+//       }
+//     }
+
+//     // ✅ upload files (if any)
+//     const docs = await uploadFiles(req.files?.docs || [], "raw", hackathonId);
+//     const images = await uploadFiles(
+//       req.files?.images || [],
+//       "image",
+//       hackathonId
+//     );
+//     const videos = await uploadFiles(
+//       req.files?.videos || [],
+//       "video",
+//       hackathonId
+//     );
+
+//     let submission;
+
+//     if (team) {
+//       // Only leader can submit
+//       if (team.leader.toString() !== userId.toString()) {
+//         return res
+//           .status(403)
+//           .json({ message: "Only the team leader can submit solution" });
+//       }
+
+//       // Prevent duplicate submission
+//       submission = await SubmissionModel.findOne({
+//         hackathon: hackathonId,
+//         team: team._id,
+//       });
+//       if (submission) {
+//         return res
+//           .status(400)
+//           .json({ message: "Team already submitted solution" });
+//       }
+
+//       // Save submission
+//       submission = await SubmissionModel.create({
+//         team: team._id,
+//         hackathon: hackathonId,
+//         repoUrl,
+//         submittedBy: userId,
+//         docs,
+//         images,
+//         videos,
+//       });
+
+//       hackathon.submissions.push(submission._id);
+//       await hackathon.save();
+
+//       // Update all team members
+//       const allMembers = [team.leader, ...team.members];
+//       await UserModel.updateMany(
+//         { _id: { $in: allMembers } },
+//         { $push: { submittedHackathons: submission._id } }
+//       );
+//     } else {
+//       // Individual submission
+//       submission = await SubmissionModel.findOne({
+//         hackathon: hackathonId,
+//         participant: userId,
+//       });
+//       if (submission) {
+//         return res
+//           .status(400)
+//           .json({ message: "You already submitted solution" });
+//       }
+
+//       submission = await SubmissionModel.create({
+//         participant: userId,
+//         hackathon: hackathonId,
+//         repoUrl,
+//         submittedBy: userId,
+//         docs,
+//         images,
+//         videos,
+//       });
+
+//       hackathon.submissions.push(submission._id);
+//       await hackathon.save();
+
+//       await UserModel.findByIdAndUpdate(userId, {
+//         $push: { submittedHackathons: submission._id },
+//       });
+//     }
+
+//     res.status(201).json({
+//       message: "Solution submitted successfully",
+//       submission,
+//     });
+//   } catch (error) {
+//     console.error("Error submitting hackathon solution:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
 export const submitHackathonSolution = async (req, res) => {
   try {
     const { hackathonId, repoUrl, userId } = req.body || {};
-    console.log("req.body =>", req.body);
-    console.log("req.files =>", req.files);
-    // ✅ validate repoUrl is an array with at least one element
-    if (!hackathonId || !Array.isArray(repoUrl) || repoUrl.length === 0) {
+
+    if (!hackathonId || !userId) {
       return res.status(400).json({
-        message: "Hackathon ID and at least one repo URL are required",
+        message: "Hackathon ID and userId are required",
       });
     }
-    if (!hackathonId || !repoUrl) {
-      return res
-        .status(400)
-        .json({ message: "Hackathon ID and repo URL are required" });
+
+    let repoUrls = [];
+
+    try {
+      repoUrls = JSON.parse(repoUrl || "[]");
+    } catch {
+      repoUrls = [repoUrl];
     }
 
-    // ✅ check hackathon exists
+    if (!Array.isArray(repoUrls) || repoUrls.length === 0 || !repoUrls[0]) {
+      return res.status(400).json({
+        message: "At least one repo URL is required",
+      });
+    }
+
     const hackathon = await hackathonModel.findById(hackathonId);
+
     if (!hackathon) {
       return res.status(404).json({ message: "Hackathon not found" });
     }
 
-    // ✅ check if user is in a team
     const team = await TeamModel.findOne({
       hackathon: hackathonId,
       $or: [{ leader: userId }, { members: userId }],
     });
 
-    // Validate file types based on hackathon.allowedFileTypes (if provided)
-    if (req.files && hackathon.allowedFileTypes) {
-      for (const [field, files] of Object.entries(req.files)) {
-        const allowed = hackathon.allowedFileTypes[field] || [];
-        for (const file of files) {
-          const ext = getFileExtension(file.originalname);
-          if (!allowed.includes(ext)) {
-            return res.status(400).json({
-              message: `File type .${ext} is not allowed for ${field}. Allowed: ${allowed.join(
-                ", "
-              )}`,
-            });
-          }
-        }
-      }
-    }
-
-    // ✅ upload files (if any)
-    const docs = await uploadFiles(req.files?.docs || [], "raw", hackathonId);
-    const images = await uploadFiles(
-      req.files?.images || [],
-      "image",
-      hackathonId
-    );
-    const videos = await uploadFiles(
-      req.files?.videos || [],
-      "video",
-      hackathonId
-    );
-
     let submission;
 
     if (team) {
-      // Only leader can submit
       if (team.leader.toString() !== userId.toString()) {
-        return res
-          .status(403)
-          .json({ message: "Only the team leader can submit solution" });
+        return res.status(403).json({
+          message: "Only the team leader can submit solution",
+        });
       }
 
-      // Prevent duplicate submission
-      submission = await SubmissionModel.findOne({
+      const existing = await SubmissionModel.findOne({
         hackathon: hackathonId,
         team: team._id,
       });
-      if (submission) {
-        return res
-          .status(400)
-          .json({ message: "Team already submitted solution" });
+
+      if (existing) {
+        return res.status(400).json({
+          message: "Team already submitted solution",
+        });
       }
 
-      // Save submission
+      if (req.files && hackathon.allowedFileTypes) {
+        for (const [field, files] of Object.entries(req.files)) {
+          const allowed = hackathon.allowedFileTypes?.[field] || [];
+
+          for (const file of files) {
+            const ext = getFileExtension(file.originalname);
+            if (allowed.length && !allowed.includes(ext)) {
+              return res.status(400).json({
+                message: `File type .${ext} not allowed for ${field}. Allowed: ${allowed.join(
+                  ", "
+                )}`,
+              });
+            }
+          }
+        }
+      }
+
+      const docs =
+        req.files?.docs?.length > 0
+          ? await uploadFiles(req.files.docs, "raw", hackathonId)
+          : [];
+
+      const images =
+        req.files?.images?.length > 0
+          ? await uploadFiles(req.files.images, "image", hackathonId)
+          : [];
+
+      const videos =
+        req.files?.videos?.length > 0
+          ? await uploadFiles(req.files.videos, "video", hackathonId)
+          : [];
+
       submission = await SubmissionModel.create({
         team: team._id,
         hackathon: hackathonId,
-        repoUrl,
+        repoUrl: repoUrls,
         submittedBy: userId,
         docs,
         images,
         videos,
       });
 
-      hackathon.submissions.push(submission._id);
-      await hackathon.save();
+      await hackathonModel.findByIdAndUpdate(hackathonId, {
+        $addToSet: { submissions: submission._id },
+      });
 
-      // Update all team members
       const allMembers = [team.leader, ...team.members];
+
       await UserModel.updateMany(
         { _id: { $in: allMembers } },
-        { $push: { submittedHackathons: submission._id } }
+        { $addToSet: { submittedHackathons: submission._id } }
       );
     } else {
-      // Individual submission
-      submission = await SubmissionModel.findOne({
+      const existing = await SubmissionModel.findOne({
         hackathon: hackathonId,
         participant: userId,
       });
-      if (submission) {
-        return res
-          .status(400)
-          .json({ message: "You already submitted solution" });
+
+      if (existing) {
+        return res.status(400).json({
+          message: "You already submitted solution",
+        });
       }
+
+      if (req.files && hackathon.allowedFileTypes) {
+        for (const [field, files] of Object.entries(req.files)) {
+          const allowed = hackathon.allowedFileTypes?.[field] || [];
+
+          for (const file of files) {
+            const ext = getFileExtension(file.originalname);
+            if (allowed.length && !allowed.includes(ext)) {
+              return res.status(400).json({
+                message: `File type .${ext} not allowed for ${field}. Allowed: ${allowed.join(
+                  ", "
+                )}`,
+              });
+            }
+          }
+        }
+      }
+
+      const docs =
+        req.files?.docs?.length > 0
+          ? await uploadFiles(req.files.docs, "raw", hackathonId)
+          : [];
+
+      const images =
+        req.files?.images?.length > 0
+          ? await uploadFiles(req.files.images, "image", hackathonId)
+          : [];
+
+      const videos =
+        req.files?.videos?.length > 0
+          ? await uploadFiles(req.files.videos, "video", hackathonId)
+          : [];
 
       submission = await SubmissionModel.create({
         participant: userId,
         hackathon: hackathonId,
-        repoUrl,
+        repoUrl: repoUrls,
         submittedBy: userId,
         docs,
         images,
         videos,
       });
 
-      hackathon.submissions.push(submission._id);
-      await hackathon.save();
+      await hackathonModel.findByIdAndUpdate(hackathonId, {
+        $addToSet: { submissions: submission._id },
+      });
 
       await UserModel.findByIdAndUpdate(userId, {
-        $push: { submittedHackathons: submission._id },
+        $addToSet: { submittedHackathons: submission._id },
       });
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Solution submitted successfully",
       submission,
     });
   } catch (error) {
     console.error("Error submitting hackathon solution:", error);
-    res.status(500).json({ message: "Server error" });
+
+    return res.status(500).json({
+      message: "Server error",
+    });
   }
 };
-
 
 export const getSubmissionStatus = async (req, res) => {
   try {
@@ -244,7 +429,7 @@ export const getSubmissionStatus = async (req, res) => {
       hackathon: hackathonId,
       $or: [
         teamId ? { team: teamId } : null,
-        userId ? { participant: userId } : null
+        userId ? { participant: userId } : null,
       ].filter(Boolean),
     });
 
@@ -262,16 +447,17 @@ export const getSubmissionStatus = async (req, res) => {
   }
 };
 
-
 export const getSubmissionById = async (req, res) => {
   try {
     const submission = await SubmissionModel.findById(req.params.id);
     if (!submission) {
-      return res.status(404).json({ message: 'Submission not found' });
+      return res.status(404).json({ message: "Submission not found" });
     }
     return res.json(submission);
   } catch (err) {
-    return res.status(500).json({ message: "Server error", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: err.message });
   }
 };
 
@@ -315,6 +501,8 @@ export const getSubmissionsByHackathon = async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching hackathon submissions:", err);
-    return res.status(500).json({ message: "Server error", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: err.message });
   }
 };
