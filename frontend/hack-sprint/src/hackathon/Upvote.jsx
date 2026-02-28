@@ -17,7 +17,14 @@ import { toast } from "react-toastify";
 import LoginForm from "./LoginForm";
 
 // ─── Submission Card ───────────────────────────────────────────────────────────
-const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
+const SubmissionCard = ({
+  submission,
+  isLiked,
+  onLike,
+  rank,
+  onOpenSubmission,
+  canVote,
+}) => {
   const [expanded, setExpanded] = useState(false);
 
   const teamName =
@@ -25,10 +32,10 @@ const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
   const isTeam = !!submission.team;
 
   const hasAssets =
-    (submission.repoUrl?.length > 0) ||
-    (submission.docs?.length > 0) ||
-    (submission.images?.length > 0) ||
-    (submission.videos?.length > 0);
+    submission.repoUrl?.length > 0 ||
+    submission.docs?.length > 0 ||
+    submission.images?.length > 0 ||
+    submission.videos?.length > 0;
 
   const medalColors = {
     1: "bg-amber-400/20 text-amber-300 border-amber-400/40",
@@ -43,7 +50,12 @@ const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
       <div className="flex items-center justify-between px-6 py-5 border-b border-gray-700/40">
         <div className="flex items-start gap-4">
           {/* Rank badge */}
-          <div className={`shrink-0 w-10 h-10 rounded-lg border flex items-center justify-center text-sm font-bold ${medalColors[rank] || "bg-gray-700/40 text-gray-400 border-gray-600/40"}`}>
+          <div
+            className={`shrink-0 w-10 h-10 rounded-lg border flex items-center justify-center text-sm font-bold ${
+              medalColors[rank] ||
+              "bg-gray-700/40 text-gray-400 border-gray-600/40"
+            }`}
+          >
             {rankLabel}
           </div>
 
@@ -74,14 +86,37 @@ const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
         {/* Right side: like button only */}
         <div className="flex items-center gap-4">
           <button
-            onClick={() => onLike(submission._id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 border ${
+            onClick={() => {
+              if (!localStorage.getItem("token")) {
+                toast.info("Login to karlo", {autoClose: 1300});
+                return;
+              }
+
+              if (isLiked) {
+                onLike(submission._id);
+                return;
+              }
+
+              if (!canVote) {
+                toast.info("Etni jaldi kya hai..pehle submission khol ke dekh lo!", {
+                  autoClose: 1300,
+                });
+                return;
+              }
+
+              onLike(submission._id);
+            }}
+            className={`flex items-center cursor-pointer gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 border ${
               isLiked
                 ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/40 shadow-inner"
                 : "bg-gray-700/40 text-gray-400 border-gray-600/50 hover:bg-gray-700 hover:text-white hover:border-gray-500"
             }`}
           >
-            <ThumbsUp className={`w-4 h-4 transition-transform ${isLiked ? "fill-current scale-110" : ""}`} />
+            <ThumbsUp
+              className={`w-4 h-4 transition-transform ${
+                isLiked ? "fill-current scale-110" : ""
+              }`}
+            />
             <span>{isLiked ? "Liked" : "Like"}</span>
           </button>
         </div>
@@ -118,7 +153,9 @@ const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
                   </span>
                 )}
               </div>
-              <span className="text-gray-500 text-xs">View submission assets</span>
+              <span className="text-gray-500 text-xs">
+                View submission assets
+              </span>
             </div>
             {expanded ? (
               <ChevronUp className="w-4 h-4 group-hover:text-emerald-400 transition-colors" />
@@ -127,9 +164,12 @@ const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
             )}
           </button>
 
-          <div className={`overflow-hidden transition-all duration-300 ${expanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"}`}>
+          <div
+            className={`overflow-hidden transition-all duration-300 ${
+              expanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
             <div className="px-6 pb-6 space-y-5 border-t border-gray-700/40 pt-5">
-
               {/* Repository */}
               {submission.repoUrl?.length > 0 && (
                 <AssetSection
@@ -144,10 +184,13 @@ const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
                         href={url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => onOpenSubmission(submission._id)}
                         className="inline-flex items-center gap-2 px-3 py-2 bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 hover:border-blue-400/40 rounded-lg text-blue-400 hover:text-blue-300 transition-all duration-200 text-sm"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
-                        {submission.repoUrl.length > 1 ? `Submission ${i + 1}` : "View Submission"}
+                        {submission.repoUrl.length > 1
+                          ? `Submission ${i + 1}`
+                          : "View Submission"}
                       </a>
                     ))}
                   </div>
@@ -168,6 +211,7 @@ const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
                         href={doc.url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => onOpenSubmission(submission._id)}
                         className="inline-flex items-center gap-2 px-3 py-2 bg-violet-500/5 hover:bg-violet-500/10 border border-violet-500/20 hover:border-violet-400/40 rounded-lg text-violet-400 hover:text-violet-300 transition-all duration-200 text-sm"
                       >
                         <FileText className="w-3.5 h-3.5" />
@@ -192,6 +236,7 @@ const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
                         href={image.url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => onOpenSubmission(submission._id)}
                         className="block rounded-lg overflow-hidden ring-1 ring-gray-700 hover:ring-amber-400/40 transition-all duration-200"
                       >
                         <img
@@ -239,7 +284,9 @@ const SubmissionCard = ({ submission, isLiked, onLike, rank }) => {
 // Small helper for asset sections
 const AssetSection = ({ icon: Icon, label, accentClass, children }) => (
   <div>
-    <h4 className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-3 ${accentClass}`}>
+    <h4
+      className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-3 ${accentClass}`}
+    >
       <Icon className="w-3.5 h-3.5" />
       {label}
     </h4>
@@ -259,7 +306,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     }
     pages.push(1);
     if (currentPage > 3) pages.push("...");
-    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+    for (
+      let i = Math.max(2, currentPage - 1);
+      i <= Math.min(totalPages - 1, currentPage + 1);
+      i++
+    ) {
       pages.push(i);
     }
     if (currentPage < totalPages - 2) pages.push("...");
@@ -282,7 +333,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       {/* Page numbers */}
       {getPages().map((page, i) =>
         page === "..." ? (
-          <span key={`ellipsis-${i}`} className="px-2 py-2 text-gray-600 text-sm select-none">
+          <span
+            key={`ellipsis-${i}`}
+            className="px-2 py-2 text-gray-600 text-sm select-none"
+          >
             …
           </span>
         ) : (
@@ -324,6 +378,7 @@ const Upvote = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [likedSubmissions, setLikedSubmissions] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
+  const [openedSubmissions, setOpenedSubmissions] = useState(new Set());
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -336,7 +391,9 @@ const Upvote = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/votes/hackathon/${hackathonId}`
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/votes/hackathon/${hackathonId}`
       );
       if (!response.ok) throw new Error("Failed to fetch submissions");
       const data = await response.json();
@@ -366,7 +423,10 @@ const Upvote = () => {
   };
 
   const handleLike = async (submissionId) => {
-    if (!isLoggedIn) { setShowLoginModal(true); return; }
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
 
     try {
       const token = localStorage.getItem("token");
@@ -392,7 +452,12 @@ const Upvote = () => {
       setSubmissions((prev) =>
         prev.map((sub) =>
           sub._id === submissionId
-            ? { ...sub, voteCount: data.voted ? (sub.voteCount || 0) + 1 : Math.max((sub.voteCount || 0) - 1, 0) }
+            ? {
+                ...sub,
+                voteCount: data.voted
+                  ? (sub.voteCount || 0) + 1
+                  : Math.max((sub.voteCount || 0) - 1, 0),
+              }
             : sub
         )
       );
@@ -443,7 +508,9 @@ const Upvote = () => {
           <FileText className="w-6 h-6 text-gray-600" />
         </div>
         <p className="text-gray-300 font-medium">No submissions yet</p>
-        <p className="text-gray-500 text-sm">Check back once the hackathon is underway.</p>
+        <p className="text-gray-500 text-sm">
+          Check back once the hackathon is underway.
+        </p>
       </div>
     );
   }
@@ -454,9 +521,12 @@ const Upvote = () => {
       {/* Section header */}
       <div className="flex items-end justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-white">Community Submissions</h2>
+          <h2 className="text-2xl font-bold text-white">
+            Community Submissions
+          </h2>
           <p className="text-gray-400 text-sm mt-1">
-            {submissions.length} {submissions.length === 1 ? "submission" : "submissions"} ·{" "}
+            {submissions.length}{" "}
+            {submissions.length === 1 ? "submission" : "submissions"} ·{" "}
             {!isLoggedIn ? (
               <button
                 onClick={() => setShowLoginModal(true)}
@@ -472,8 +542,14 @@ const Upvote = () => {
 
         {/* Legend */}
         <div className="hidden sm:flex items-center gap-4 text-xs text-gray-500">
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400/60" />Liked</span>
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gray-600" />Not voted</span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400/60" />
+            Liked
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-gray-600" />
+            Not voted
+          </span>
         </div>
       </div>
 
@@ -483,14 +559,18 @@ const Upvote = () => {
           <p className="text-xs text-gray-500">
             Showing{" "}
             <span className="text-gray-300 font-medium">
-              {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, sortedSubmissions.length)}
+              {(currentPage - 1) * PAGE_SIZE + 1}–
+              {Math.min(currentPage * PAGE_SIZE, sortedSubmissions.length)}
             </span>{" "}
             of{" "}
-            <span className="text-gray-300 font-medium">{sortedSubmissions.length}</span>{" "}
+            <span className="text-gray-300 font-medium">
+              {sortedSubmissions.length}
+            </span>{" "}
             submissions
           </p>
           <p className="text-xs text-gray-500">
-            Page <span className="text-gray-300 font-medium">{currentPage}</span> of{" "}
+            Page{" "}
+            <span className="text-gray-300 font-medium">{currentPage}</span> of{" "}
             <span className="text-gray-300 font-medium">{totalPages}</span>
           </p>
         </div>
@@ -502,6 +582,10 @@ const Upvote = () => {
           <SubmissionCard
             key={submission._id}
             submission={submission}
+            canVote={openedSubmissions.has(submission._id)}
+            onOpenSubmission={(id) => {
+              setOpenedSubmissions((prev) => new Set(prev).add(id));
+            }}
             isLiked={likedSubmissions.has(submission._id)}
             onLike={handleLike}
             rank={(currentPage - 1) * PAGE_SIZE + i + 1}
