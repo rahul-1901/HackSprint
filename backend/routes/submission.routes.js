@@ -1,5 +1,5 @@
 import express from "express";
-import { submitHackathonSolution, getSubmissionStatus, getSubmissionById, getSubmissionsByHackathon } from "../controllers/submission.controllers.js";
+import { submitHackathonSolution, getSubmissionStatus, getSubmissionById, getSubmissionsByHackathon, updateSubmission } from "../controllers/submission.controllers.js";
 import upload from "../middlewares/multer.js";
 import rateLimit from "express-rate-limit";
 
@@ -23,6 +23,17 @@ router.post( "/",
     { name: "videos", maxCount: 2 },
   ]),
   submitHackathonSolution
+);
+
+router.put(
+  "/:id",
+  submitLimiter,
+  upload.fields([
+    { name: "docs", maxCount: 5 },
+    { name: "images", maxCount: 5 },
+    { name: "videos", maxCount: 2 },
+  ]),
+  updateSubmission
 );
 
 router.get("/status", getSubmissionStatus);

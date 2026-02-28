@@ -506,3 +506,100 @@ export const getSubmissionsByHackathon = async (req, res) => {
       .json({ message: "Server error", error: err.message });
   }
 };
+
+
+export const updateSubmission = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { repoUrl, userId } = req.body;
+
+    const submission = await SubmissionModel.findById(id);
+    if (!submission) {
+      return res.status(404).json({ message: "Submission not found" });
+    }
+
+    const hackathon = await hackathonModel.findById(submission.hackathon);
+
+    const now = new Date();
+
+    if (hackathon.submissionEndDate && now > hackathon.submissionEndDate) {
+      return res.status(403).json({
+        message: "Submission deadline passed",
+      });
+    }
+
+    // 🔐 Authorization check
+    if (submission.team) {
+      const team = await TeamModel.findById(submission.team);
+
+      if (team.leader.toString() !== userId.toString()) {
+        return res.status(403).json({
+          message: "Only team leader can update submission",
+        });
+      }
+    } else {
+      if (submission.participant.toString() !== userId.toString()) {
+        return res.status(403).json({
+          message: "Unauthorized",
+        });
+      }
+    }
+
+    // Validate file types
+    if (req.files && hackathon.allowedFileTypes) {
+      for (const [field, files] of Object.entries(req.files)) {
+        const allowed = hackathon.allowedFileTypes?.[field] || [];
+
+        for (const file of files) {
+          const ext = getFileExtension(file.originalname);
+          if (allowed.length && !allowed.includes(ext)) {
+            return res.status(400).json({
+              message: `File type .${ext} not allowed for ${field}`,
+            });
+          }
+        }
+      }
+    }
+
+    // Upload new files (complete overwrite)
+    const docs =
+      req.files?.docs?.length > 0
+        ? await uploadFiles(req.files.docs, "raw", hackathon._id)
+        : [];
+
+    const images =
+      req.files?.images?.length > 0
+        ? await uploadFiles(req.files.images, "image", hackathon._id)
+        : [];
+
+    const videos =
+      req.files?.videos?.length > 0
+        ? await uploadFiles(req.files.videos, "video", hackathon._id)
+        : [];
+
+    let repoUrls = [];
+    try {
+      repoUrls = JSON.parse(repoUrl || "[]");
+    } catch {
+      repoUrls = [repoUrl];
+    }
+
+    // COMPLETE OVERWRITE
+    submission.repoUrl = repoUrls;
+    submission.docs = docs;
+    submission.images = images;
+    submission.videos = videos;
+    submission.submittedBy = userId;
+
+    await submission.save();
+
+    return res.status(200).json({
+      message: "Submission updated successfully",
+      submission,
+    });
+
+  } catch (error) {
+    console.error("Error updating submission:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};

@@ -148,8 +148,7 @@ const SubmissionForm = ({ isOpen, onClose }) => {
         if (fetchedUserData.team) {
           setTeamId(fetchedUserData.team);
           const teamRes = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/api/team/${
-              fetchedUserData.team
+            `${import.meta.env.VITE_API_BASE_URL}/api/team/${fetchedUserData.team
             }`
           );
           const teamData = await teamRes.json();
@@ -193,8 +192,7 @@ const SubmissionForm = ({ isOpen, onClose }) => {
         });
 
         const res = await fetch(
-          `${
-            import.meta.env.VITE_API_BASE_URL
+          `${import.meta.env.VITE_API_BASE_URL
           }/api/submit/status?${params.toString()}`
         );
         const data = await res.json();
@@ -207,6 +205,20 @@ const SubmissionForm = ({ isOpen, onClose }) => {
 
     fetchSubmissionStatus();
   }, [hackathonId, userData]);
+
+  // Prefill URLs from existing submission (or reset on open)
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (submissionStatus?.submitted) {
+      const existing = submissionStatus.submission?.repoUrl;
+      const urls = Array.isArray(existing) ? existing : existing ? [existing] : [];
+      setRepoUrls(urls.length ? urls : [""]);
+    } else {
+      setRepoUrls([""]);
+    }
+  }, [submissionStatus, isOpen]);
+
 
   // Cleanup video preview URL
   useEffect(
@@ -290,13 +302,26 @@ const SubmissionForm = ({ isOpen, onClose }) => {
       if (videoFile) formData.append("videos", videoFile);
       if (pdfFile) formData.append("docs", pdfFile);
 
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/submit`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      // const res = await fetch(
+      //   `${import.meta.env.VITE_API_BASE_URL}/api/submit`,
+      //   {
+      //     method: "POST",
+      //     body: formData,
+      //   }
+      // );
+
+      const isUpdating = submissionStatus?.submitted;
+
+      const url = isUpdating
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/submit/${submissionStatus.submission._id}`
+        : `${import.meta.env.VITE_API_BASE_URL}/api/submit`;
+
+      const method = isUpdating ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        body: formData,
+      });
 
       const data = await res.json();
 
@@ -333,6 +358,14 @@ const SubmissionForm = ({ isOpen, onClose }) => {
   const durationDays = Math.ceil(
     (new Date(hackathon.endDate) - new Date()) / (1000 * 60 * 60 * 24)
   );
+
+  const now = new Date();
+  const submissionEnd = hackathon?.submissionEndDate
+    ? new Date(hackathon.submissionEndDate)
+    : null;
+
+  const isDeadlineOver =
+    submissionEnd && now > submissionEnd;
 
   return createPortal(
     <motion.div
@@ -391,9 +424,9 @@ const SubmissionForm = ({ isOpen, onClose }) => {
 
         <p className="text-gray-300 mb-6">{hackathon.description}</p>
 
-        {submissionStatus?.submitted ? (
+        {submissionStatus?.submitted && (
           <div className="p-4 bg-gray-800 rounded-lg border border-green-500/50 space-y-4">
-            <p className="text-green-400 font-semibold">Already Submitted!</p>
+            <p className="text-green-400 font-semibold">Already Submitted! You can update before deadline.</p>
 
             {Array.isArray(submissionStatus.submission.repoUrl) &&
               submissionStatus.submission.repoUrl.length > 0 && (
@@ -460,45 +493,44 @@ const SubmissionForm = ({ isOpen, onClose }) => {
               </div>
             )} */}
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Section for multiple URL inputs */}
-            <div className="space-y-3">
-              <label className="block text-gray-300">URL(s)</label>
-              {repoUrls.map((url, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Input
-                    className="border-green-500/30 flex-grow"
-                    placeholder="e.g., https://github.com/your-repo"
-                    value={url}
-                    onChange={(e) => handleRepoUrlChange(index, e.target.value)}
-                    required
-                  />
-                  {repoUrls.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => handleRemoveRepoUrl(index)}
-                      className="p-2"
-                      title="Remove URL"
-                    >
-                      <X className="w-5 h-5 text-red-500" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddRepoUrl}
-                className="flex items-center gap-2 w-full justify-center sm:w-auto"
-              >
-                <Plus className="w-4 h-4" />
-                Add another URL
-              </Button>
-            </div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Section for multiple URL inputs */}
+          <div className="space-y-3">
+            <label className="block text-gray-300">URL(s)</label>
+            {repoUrls.map((url, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  className="border-green-500/30 flex-grow"
+                  placeholder="e.g., https://github.com/your-repo"
+                  value={url}
+                  onChange={(e) => handleRepoUrlChange(index, e.target.value)}
+                />
+                {repoUrls.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => handleRemoveRepoUrl(index)}
+                    className="p-2"
+                    title="Remove URL"
+                  >
+                    <X className="w-5 h-5 text-red-500" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleAddRepoUrl}
+              className="flex items-center gap-2 w-full justify-center sm:w-auto"
+            >
+              <Plus className="w-4 h-4" />
+              Add another URL
+            </Button>
+          </div>
 
-            {/* <FileUpload
+          {/* <FileUpload
               label="Upload Demo Video"
               icon={FileVideo}
               accept="video/*"
@@ -526,15 +558,46 @@ const SubmissionForm = ({ isOpen, onClose }) => {
               preview={<FileText className="w-12 h-12 text-blue-500" />}
             /> */}
 
-            <Button
+          {/* <Button
               type="submit"
               disabled={loading || (!isLeader && isTeamMember)}
               className="cursor-pointer group w-full bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
             >
               {loading ? "Submitting..." : "Submit Project"}
+            </Button> */}
+
+          {submissionStatus?.submitted ? (
+            isDeadlineOver ? (
+              <Button
+                type="button"
+                disabled
+                className="w-full bg-gray-700 text-gray-400"
+              >
+                Submission Closed
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                disabled={loading || (!isLeader && isTeamMember)}
+                className="cursor-pointer group w-full bg-yellow-500 text-gray-900 font-bold shadow-lg shadow-yellow-500/20 hover:bg-yellow-400 transition-all duration-300 hover:shadow-yellow-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+              >
+                {loading ? "Updating..." : "Update Submission"}
+              </Button>
+            )
+          ) : (
+            <Button
+              type="submit"
+              disabled={
+                loading ||
+                (!isLeader && isTeamMember) ||
+                isDeadlineOver
+              }
+              className="cursor-pointer group w-full bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
+            >
+              {loading ? "Submitting..." : "Submit Project"}
             </Button>
-          </form>
-        )}
+          )}
+        </form>
       </motion.div>
     </motion.div>,
     document.body
