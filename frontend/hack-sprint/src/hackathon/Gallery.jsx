@@ -134,7 +134,7 @@ const Gallery = () => {
           Glimpse from event
         </h2>
         <p className="text-gray-400">
-          {images.length} {images.length === 1 ? "photo" : "photos"} from the
+           Chekout photos and videos from the
           hackathon
         </p>
       </div>
