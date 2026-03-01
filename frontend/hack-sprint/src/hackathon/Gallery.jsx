@@ -16,7 +16,8 @@ const Gallery = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-
+  const [imagesPerSlide, setImagesPerSlide] = useState(3);
+  const totalSlides = Math.max(1, Math.ceil(images.length / imagesPerSlide));
   const isVideo = (url) => {
     return /\.(mp4|webm|ogg)$/i.test(url);
   };
@@ -48,9 +49,25 @@ const Gallery = () => {
       setLoading(false);
     }
   };
+  
+useEffect(() => {
+  const handleResize = () => {
+    if (window.innerWidth < 768) {
+      setImagesPerSlide(1);
+    } else {
+      setImagesPerSlide(3);
+    }
+  };
 
-  const imagesPerSlide = 3;
-  const totalSlides = Math.ceil(images.length / imagesPerSlide);
+  handleResize();
+  window.addEventListener("resize", handleResize);
+
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+  useEffect(() => {
+  setCurrentIndex(0);
+}, [imagesPerSlide]);
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % totalSlides);
