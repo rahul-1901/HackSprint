@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, X, Image as ImageIcon } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Image as ImageIcon,
+  Play,
+} from "lucide-react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
@@ -10,6 +16,13 @@ const Gallery = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  const isVideo = (url) => {
+    return /\.(mp4|webm|ogg)$/i.test(url);
+  };
+
+  const currentFile = images[lightboxIndex];
+  const video = isVideo(currentFile);
 
   useEffect(() => {
     fetchGallery();
@@ -117,7 +130,9 @@ const Gallery = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">Glimpse from event</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">
+          Glimpse from event
+        </h2>
         <p className="text-gray-400">
           {images.length} {images.length === 1 ? "photo" : "photos"} from the
           hackathon
@@ -128,27 +143,40 @@ const Gallery = () => {
       <div className="relative">
         {/* Images Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {visibleImages.map((image, idx) => {
+          {visibleImages.map((file, idx) => {
             const actualIndex = startIdx + idx;
+            const video = isVideo(file);
 
             return (
               <div
                 key={actualIndex}
-                className="relative group overflow-hidden rounded-lg aspect-video bg-gray-800"
+                className="relative group overflow-hidden rounded-lg aspect-video bg-gray-800 cursor-pointer"
                 onClick={() => openLightbox(actualIndex)}
               >
-                <img
-                  src={image}
-                  alt={`Gallery image ${actualIndex + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                />
+                {video ? (
+                  <>
+                    <video
+                      src={file}
+                      className="w-full h-full object-cover"
+                      muted
+                    />
 
-                {/* Hover Overlay */}
-                {/* <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <ImageIcon className="w-8 h-8 text-white" />
-                  </div>
-                </div> */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition">
+                      <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                        <Play
+                          className="w-6 h-6 text-black ml-1"
+                          fill="black"
+                        />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <img
+                    src={file}
+                    alt=""
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                )}
               </div>
             );
           })}
@@ -218,11 +246,20 @@ const Gallery = () => {
             </div>
 
             <div className="w-full h-[75vh] flex items-center justify-center">
-              <img
-                src={images[lightboxIndex]}
-                alt={`Image ${lightboxIndex + 1}`}
-                className="max-h-full max-w-full object-contain rounded-xl shadow-2xl"
-              />
+              {video ? (
+                <video
+                  src={currentFile}
+                  controls
+                  autoPlay
+                  className="max-h-full max-w-full rounded-xl shadow-2xl"
+                />
+              ) : (
+                <img
+                  src={currentFile}
+                  alt=""
+                  className="max-h-full max-w-full object-contain rounded-xl shadow-2xl"
+                />
+              )}
             </div>
 
             <button
