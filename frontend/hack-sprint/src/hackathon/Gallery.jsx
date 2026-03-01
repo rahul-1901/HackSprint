@@ -78,6 +78,18 @@ const Gallery = () => {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [showLightbox, images.length]);
 
+  useEffect(() => {
+    if (showLightbox) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [showLightbox]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
@@ -105,7 +117,7 @@ const Gallery = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">Event Gallery</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Glimpse from event</h2>
         <p className="text-gray-400">
           {images.length} {images.length === 1 ? "photo" : "photos"} from the
           hackathon
@@ -183,17 +195,17 @@ const Gallery = () => {
       )}
 
       {/* Lightbox */}
-      {/* {showLightbox && (
+      {showLightbox && (
         <div
-          className="fixed inset-0 z-999999999 bg-black/95 flex flex-col items-center justify-center"
+          className="fixed inset-0 z-100 bg-black/95 flex flex-col items-center justify-center"
           onClick={closeLightbox}
         >
           <div
-            className="relative w-full max-w-6xl flex flex-col items-center"
+            className="relative w-full max-w-7xl h-full flex flex-col items-center justify-center px-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="absolute top-4 left-0 right-0 flex justify-between items-center px-6 z-[10000]">
-              <div className="text-white text-sm">
+            <div className="absolute top-4 left-0 right-0 flex justify-between items-center px-6 z-50">
+              <div className="text-white text-sm md:text-base">
                 {lightboxIndex + 1} / {images.length}
               </div>
 
@@ -205,48 +217,30 @@ const Gallery = () => {
               </button>
             </div>
 
-            <div className="w-full flex items-center justify-center h-[70vh] mt-10">
+            <div className="w-full h-[75vh] flex items-center justify-center">
               <img
                 src={images[lightboxIndex]}
                 alt={`Image ${lightboxIndex + 1}`}
-                className="max-h-full max-w-full object-contain rounded-lg"
+                className="max-h-full max-w-full object-contain rounded-xl shadow-2xl"
               />
             </div>
 
             <button
               onClick={prevLightboxImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full z-[10000]"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full z-50"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-7 h-7" />
             </button>
 
             <button
               onClick={nextLightboxImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full z-[10000]"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full z-50"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-7 h-7" />
             </button>
-
-            <div className="w-full mt-6 px-4 overflow-x-auto">
-              <div className="flex gap-3 justify-center">
-                {images.map((image, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setLightboxIndex(idx)}
-                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                      idx === lightboxIndex
-                        ? "border-green-400 scale-105"
-                        : "border-transparent opacity-50 hover:opacity-80"
-                    }`}
-                  >
-                    <img src={image} className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 };
