@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
 import { Link } from "react-router-dom";
-import { Calendar, Users, Trophy, Clock, ChevronRight } from "lucide-react";
+import { Calendar, Users, Trophy, Clock, ChevronRight, ThumbsUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../backendApis/api";
 import LoginForm from "./LoginForm";
@@ -23,6 +23,7 @@ export const HeroSection = ({
   hackathonId,
   submissionStartDate,
   submissionEndDate,
+  onSectionChange,
 }) => {
   const [imageError, setImageError] = useState(false);
   const [userData, setUserData] = useState(null);
@@ -382,6 +383,14 @@ export const HeroSection = ({
                   className="bg-green-500 flex cursor-pointer justify-center sm:justify-start text-gray-900 px-6 py-2.5 w-full sm:w-auto"
                 >
                   Leader Dashboard <ChevronRight className="w-5 h-5 ml-2" />
+                </Button>
+              )}
+              {onSectionChange && (
+                <Button
+                  onClick={() => onSectionChange("upvote")}
+                  className="bg-green-500 flex cursor-pointer justify-center sm:justify-start text-gray-900 px-6 py-2.5 w-full sm:w-auto"
+                >
+                  View Voting <ThumbsUp className="w-5 h-5 ml-2" />
                 </Button>
               )}
               {renderActionButton()}

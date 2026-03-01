@@ -11,6 +11,8 @@ import {
   User,
   ChevronDown,
   ChevronUp,
+  Search,
+  X,
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -379,6 +381,7 @@ const Upvote = () => {
   const [likedSubmissions, setLikedSubmissions] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [openedSubmissions, setOpenedSubmissions] = useState(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -475,8 +478,15 @@ const Upvote = () => {
     toast.success("Login successful! You can now like submissions.");
   };
 
+  // Filter submissions based on search query
+  const filteredSubmissions = submissions.filter((submission) => {
+    const teamName = (submission.team?.name || submission.participant?.name || "").toLowerCase();
+    const query = searchQuery.toLowerCase();
+    return teamName.includes(query);
+  });
+
   // Sort by vote count descending for ranking
-  const sortedSubmissions = [...submissions].sort(
+  const sortedSubmissions = [...filteredSubmissions].sort(
     (a, b) => (b.voteCount || 0) - (a.voteCount || 0)
   );
 
@@ -519,7 +529,7 @@ const Upvote = () => {
   return (
     <div>
       {/* Section header */}
-      <div className="flex items-end justify-between mb-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-bold text-white">
             Community Submissions
@@ -551,6 +561,43 @@ const Upvote = () => {
             Not voted
           </span>
         </div>
+      </div>
+
+      {/* Search bar */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+            placeholder="Search by team or participant name..."
+            className="w-full pl-10 pr-10 py-2.5 bg-gray-800/50 border border-gray-700/60 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-200"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setCurrentPage(1);
+              }}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <p className="text-xs text-gray-500 mt-2">
+            Found{" "}
+            <span className="text-emerald-400 font-medium">
+              {sortedSubmissions.length}
+            </span>{" "}
+            {sortedSubmissions.length === 1 ? "submission" : "submissions"} matching "{searchQuery}"
+          </p>
+        )}
       </div>
 
       {/* Page info */}
