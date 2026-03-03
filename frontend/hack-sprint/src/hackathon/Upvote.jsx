@@ -89,7 +89,13 @@ const SubmissionCard = ({
         {/* Right side: like button only */}
         <div className="flex items-center gap-4">
           <button
+            disabled={isVotingClosed}
             onClick={() => {
+              if (isVotingClosed) {
+                toast.info("Voting period has ended.");
+                return;
+              }
+              
               if (!localStorage.getItem("token")) {
                 toast.info("Login to karlo", {autoClose: 1300});
                 return;
@@ -109,8 +115,10 @@ const SubmissionCard = ({
 
               onLike(submission._id);
             }}
-            className={`flex items-center cursor-pointer gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 border ${
-              isLiked
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 border ${
+              isVotingClosed
+                ? "bg-gray-700/30 text-gray-500 border-gray-600 cursor-not-allowed"
+                : isLiked
                 ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/40 shadow-inner"
                 : "bg-gray-700/40 text-gray-400 border-gray-600/50 hover:bg-gray-700 hover:text-white hover:border-gray-500"
             }`}
