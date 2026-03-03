@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { createPortal } from "react-dom";
 
 const Gallery = () => {
   const { id: hackathonId } = useParams();
@@ -240,7 +241,8 @@ useEffect(() => {
       )}
 
       {/* Lightbox */}
-      {showLightbox && (
+      {showLightbox && 
+        createPortal(
         <div
           className="fixed inset-0 z-100 bg-black/95 flex flex-col items-center justify-center"
           onClick={closeLightbox}
@@ -293,7 +295,8 @@ useEffect(() => {
               <ChevronRight className="w-7 h-7" />
             </button>
           </div>
-        </div>
+        </div>,
+          document.body
       )}
     </div>
   );
