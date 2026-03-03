@@ -1,6 +1,7 @@
 import VoteModel from "../models/vote.model.js";
 import SubmissionModel from "../models/submission.js";
 import UserModel from "../models/user.models.js";
+import hackathonModel from "../models/hackathon.models.js";
 
 // Toggle vote (add or remove)
 export const toggleVote = async (req, res) => {
@@ -13,6 +14,27 @@ export const toggleVote = async (req, res) => {
         message: "Submission ID and Hackathon ID are required",
         success: false,
       });
+    }
+
+    const hackathon = await hackathonModel.findById(hackathonId);
+
+    if (!hackathon) {
+      return res.status(404).json({
+        message: "Hackathon not found",
+        success: false,
+      });
+    }
+
+    if (hackathon.votingDate) {
+      const now = new Date();
+      const votingEnd = new Date(hackathon.votingDate);
+
+      if (now > votingEnd) {
+        return res.status(403).json({
+          message: "Voting period has ended",
+          success: false,
+        });
+      }
     }
 
     // Check if submission exists
