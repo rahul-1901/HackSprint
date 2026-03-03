@@ -387,7 +387,16 @@ export const HeroSection = ({
               )}
               {onSectionChange && (
                 <Button
-                  onClick={() => onSectionChange("upvote")}
+                  onClick={() => {
+                    onSectionChange("upvote");
+                    // Scroll to the content section after a short delay to let the DOM update
+                    setTimeout(() => {
+                      const contentSection = document.getElementById('content-section');
+                      if (contentSection) {
+                        contentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }, 100);
+                  }}
                   className="bg-green-500 flex cursor-pointer justify-center sm:justify-start text-gray-900 px-6 py-2.5 w-full sm:w-auto"
                 >
                   View Voting <ThumbsUp className="w-5 h-5 ml-2" />
