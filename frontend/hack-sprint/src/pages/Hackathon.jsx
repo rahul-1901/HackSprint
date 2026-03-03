@@ -102,7 +102,7 @@ export default function HackathonDetails() {
                     submissionEndDate={hackathon?.submissionEndDate}
                     onSectionChange={setActiveSection}
                 />
-                <div className="flex flex-col lg:flex-row max-w-screen-2xl mx-auto">
+                <div id="content-section" className="flex flex-col lg:flex-row max-w-screen-2xl mx-auto">
                     <SidebarNav
                         activeSection={activeSection}
                         onSectionChange={setActiveSection}

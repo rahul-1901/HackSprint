@@ -8,7 +8,7 @@ import { sendMail } from "../nodemailer/nodemailerConfig.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-const isIITJEmail = (email) => /^[A-Za-z0-9._%+-]+@iitj\.ac\.in$/i.test(email);
+const isIITJEmail = (email) => /^[A-Za-z0-9._%+-]+@(iitj\.ac\.in|alumni\.iitj\.ac\.in)$/i.test(email);
 
 /**
  * SIGNUP - creates user, sends verification email

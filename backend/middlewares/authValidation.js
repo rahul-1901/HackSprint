@@ -1,6 +1,6 @@
 import Joi from 'joi'
 
-const IITJ_EMAIL = /^[A-Za-z0-9._%+-]+@iitj\.ac\.in$/i
+const IITJ_EMAIL = /^[A-Za-z0-9._%+-]+@(iitj\.ac\.in|alumni\.iitj\.ac\.in)$/i
 
 const signupValidation = (req, res, next) => {
     const schema = Joi.object({
