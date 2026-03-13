@@ -186,7 +186,7 @@ export const getHackathonResults = async (req, res) => {
     const { id } = req.params;
     const results = await SubmissionModel.find({ hackathon: id })
       .sort({ hackathonPoints: -1 })
-      .limit(5)
+      .limit(10)
       .populate("participant", "name avatar email")
       .populate("team", "name members");
     res.status(200).json(results);
