@@ -31,6 +31,9 @@ const hackathonSchema = new mongoose.Schema({
     submissionEndDate : {
         type : Date
     },
+     votingDate: {
+        type: Date
+    },
     refMaterial: {
         type: String
     },

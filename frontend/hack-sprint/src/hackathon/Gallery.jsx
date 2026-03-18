@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { createPortal } from "react-dom";
 
 const Gallery = () => {
   const { id: hackathonId } = useParams();
@@ -16,7 +17,8 @@ const Gallery = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-
+  const [imagesPerSlide, setImagesPerSlide] = useState(3);
+  const totalSlides = Math.max(1, Math.ceil(images.length / imagesPerSlide));
   const isVideo = (url) => {
     return /\.(mp4|webm|ogg)$/i.test(url);
   };
@@ -48,9 +50,25 @@ const Gallery = () => {
       setLoading(false);
     }
   };
+  
+useEffect(() => {
+  const handleResize = () => {
+    if (window.innerWidth < 768) {
+      setImagesPerSlide(1);
+    } else {
+      setImagesPerSlide(3);
+    }
+  };
 
-  const imagesPerSlide = 3;
-  const totalSlides = Math.ceil(images.length / imagesPerSlide);
+  handleResize();
+  window.addEventListener("resize", handleResize);
+
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+  useEffect(() => {
+  setCurrentIndex(0);
+}, [imagesPerSlide]);
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % totalSlides);
@@ -134,7 +152,7 @@ const Gallery = () => {
           Glimpse from event
         </h2>
         <p className="text-gray-400">
-          {images.length} {images.length === 1 ? "photo" : "photos"} from the
+           Chekout photos and videos from the
           hackathon
         </p>
       </div>
@@ -223,7 +241,8 @@ const Gallery = () => {
       )}
 
       {/* Lightbox */}
-      {showLightbox && (
+      {showLightbox && 
+        createPortal(
         <div
           className="fixed inset-0 z-100 bg-black/95 flex flex-col items-center justify-center"
           onClick={closeLightbox}
@@ -276,7 +295,8 @@ const Gallery = () => {
               <ChevronRight className="w-7 h-7" />
             </button>
           </div>
-        </div>
+        </div>,
+          document.body
       )}
     </div>
   );

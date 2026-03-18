@@ -24,6 +24,7 @@ const SubmissionCard = ({
   isLiked,
   onLike,
   rank,
+  isVotingClosed,
   onOpenSubmission,
   canVote,
 }) => {
@@ -88,7 +89,13 @@ const SubmissionCard = ({
         {/* Right side: like button only */}
         <div className="flex items-center gap-4">
           <button
+            disabled={isVotingClosed}
             onClick={() => {
+              if (isVotingClosed) {
+                toast.info("Voting period has ended.");
+                return;
+              }
+              
               if (!localStorage.getItem("token")) {
                 toast.info("Login to karlo", {autoClose: 1300});
                 return;
@@ -108,8 +115,10 @@ const SubmissionCard = ({
 
               onLike(submission._id);
             }}
-            className={`flex items-center cursor-pointer gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 border ${
-              isLiked
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 border ${
+              isVotingClosed
+                ? "bg-gray-700/30 text-gray-500 border-gray-600 cursor-not-allowed"
+                : isLiked
                 ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/40 shadow-inner"
                 : "bg-gray-700/40 text-gray-400 border-gray-600/50 hover:bg-gray-700 hover:text-white hover:border-gray-500"
             }`}
@@ -382,6 +391,8 @@ const Upvote = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [openedSubmissions, setOpenedSubmissions] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState("");
+  const [hackathon, setHackathon] = useState(null);
+  const [isVotingClosed, setIsVotingClosed] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -478,6 +489,34 @@ const Upvote = () => {
     toast.success("Login successful! You can now like submissions.");
   };
 
+  useEffect(() => {
+    const loadHackathon = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${hackathonId}`
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch hackathon");
+
+        const data = await res.json();
+        setHackathon(data);
+
+        if (data?.votingDate) {
+          const votingEnd = new Date(data.votingDate);
+          const now = new Date();
+
+          if (now > votingEnd) {
+            setIsVotingClosed(true);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching hackathon:", err);
+      }
+    };
+
+    loadHackathon();
+  }, [hackathonId]);
+
   // Filter submissions based on search query
   const filteredSubmissions = submissions.filter((submission) => {
     const teamName = (submission.team?.name || submission.participant?.name || "").toLowerCase();
@@ -563,6 +602,22 @@ const Upvote = () => {
         </div>
       </div>
 
+       {isVotingClosed && (
+        <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-4 flex items-center justify-between">
+          <div>
+            <p className="text-red-400 font-semibold text-sm">
+              Voting has ended
+            </p>
+            <p className="text-gray-400 text-xs mt-1">
+              The community voting period is now closed.
+            </p>
+          </div>
+          <span className="text-xs text-red-300 bg-red-500/20 px-3 py-1 rounded-full border border-red-500/30">
+            Closed
+          </span>
+        </div>
+      )}
+
       {/* Search bar */}
       <div className="mb-6">
         <div className="relative max-w-md">
@@ -629,6 +684,7 @@ const Upvote = () => {
           <SubmissionCard
             key={submission._id}
             submission={submission}
+            isVotingClosed={isVotingClosed}
             canVote={openedSubmissions.has(submission._id)}
             onOpenSubmission={(id) => {
               setOpenedSubmissions((prev) => new Set(prev).add(id));
