@@ -113,11 +113,8 @@ export const getAdminHackathonDetail = (ids) => API.post('/api/admin/my-hackatho
  * Creates a new hackathon. The submission goes to a pending queue for approval.
  * @param {FormData} formData - The hackathon data, including the image file.
  */
-export const createHackathon = (formData) => API.post('/api/admin/createHackathon', formData, {
-  headers: {
-    'Content-Type': 'multipart/form-data',
-  },
-});
+export const createHackathon = (formData) =>
+  API.post('/api/admin/createHackathon', formData);
 
 /**
  * Fetches all hackathons pending approval.
@@ -141,3 +138,14 @@ export const rejectHackathon = (data) => API.post('/api/admin/rejectHackathon', 
  * @param {object} data - { adminId, submissionId, points }
  */
 export const updateSubmissionPoints = (data) => API.post('/api/admin/HackathonPoints', data);
+
+export const editHackathon = (formData) =>
+  API.post('/api/admin/editHackathon', formData);
+
+export const addGalleryImages = (hackathonId, formData) =>
+  API.post(`/api/hackathons/${hackathonId}/gallery`, formData);
+
+export const deleteGalleryImage = (hackathonId, imageUrl) =>
+  API.delete(`/api/hackathons/${hackathonId}/gallery`, {
+    data: { imageUrl },
+  });

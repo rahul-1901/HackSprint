@@ -170,3 +170,11 @@ html{
   margin: 0;
   padding: 0;
 }
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 10px;
+}

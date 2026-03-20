@@ -18,7 +18,7 @@ export const getAllHackathons = async (req, res) => {
     if (!adminId) {
       return res.status(400).json({ error: "Admin ID is required." });
     }
-    const hackathons = await hackathonModel.find({ "createdBy": adminId });
+    const hackathons = await hackathonModel.find({ createdBy: adminId });
     res.json(hackathons);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -33,32 +33,41 @@ export const getMyHackathon = async (req, res) => {
     // 1. Fetch the main hackathon document
     const hackathon = await hackathonModel.findOne({
       _id: hackathonId,
-      createdBy: adminId
+      createdBy: adminId,
     });
 
     if (!hackathon) {
-      return res.status(404).json({ error: "Hackathon not found or you are not the creator." });
+      return res
+        .status(404)
+        .json({ error: "Hackathon not found or you are not the creator." });
     }
 
     // 2. Fetch all related data from the database in parallel
     const [participants, teams, submissions] = await Promise.all([
-      RegisteredParticipantsModel.find({ hackathon: hackathonId }).populate('user', 'name email').lean(),
-      TeamModel.find({ hackathon: hackathonId }).populate("leader", "name email").populate("members", "name email").lean(),
-      SubmissionModel.find({ hackathon: hackathonId }).lean()
+      RegisteredParticipantsModel.find({ hackathon: hackathonId })
+        .populate("user", "name email")
+        .lean(),
+      TeamModel.find({ hackathon: hackathonId })
+        .populate("leader", "name email")
+        .populate("members", "name email")
+        .lean(),
+      SubmissionModel.find({ hackathon: hackathonId }).lean(),
     ]);
 
     // 3. Manually link submissions to their corresponding teams
-    const teamsWithSubmissions = teams.map(team => {
+    const teamsWithSubmissions = teams.map((team) => {
       // For each team, find its submission in the submissions array
-      const submission = submissions.find(s => s.team?.toString() === team._id.toString());
+      const submission = submissions.find(
+        (s) => s.team?.toString() === team._id.toString()
+      );
       return {
         ...team,
-        submission: submission || null // Attach the submission object, or null if none exists
+        submission: submission || null, // Attach the submission object, or null if none exists
       };
     });
 
     // 4. Manually link submissions to their corresponding individual participants
-    const participantsWithSubmissions = participants.map(p => {
+    const participantsWithSubmissions = participants.map((p) => {
       // For each participant, find their submission in the submissions array
       // Note: We link by the user's ID (p.user._id)
       if (!p.user?._id) {
@@ -68,20 +77,23 @@ export const getMyHackathon = async (req, res) => {
           submission: null,
         };
       }
-      const submission = submissions.find(s => s.participant?.toString() === p.user._id.toString());
+      const submission = submissions.find(
+        (s) => s.participant?.toString() === p.user._id.toString()
+      );
       return {
         ...p,
-        submission: submission || null // Attach the submission object, or null if none exists
-      }
-    })
+        submission: submission || null, // Attach the submission object, or null if none exists
+      };
+    });
 
     // 5. Send the final, combined data to the frontend
     res.json({
       hackathon,
-      participantsWithoutTeam: participantsWithSubmissions.filter(p => !p.team),
+      participantsWithoutTeam: participantsWithSubmissions.filter(
+        (p) => !p.team
+      ),
       teams: teamsWithSubmissions,
     });
-
   } catch (err) {
     console.error("Error in getMyHackathon:", err);
     res.status(500).json({ error: err.message });
@@ -93,24 +105,137 @@ export const getalladmin = async (req, res) => {
   try {
     const admindetails = await Admin.find().select("-password"); // Exclude passwords
     res.status(200).json({
-      admindetails
+      admindetails,
     });
   } catch (err) {
     res.status(404).json({
-      "message": err.message
+      message: err.message,
     });
   }
 };
 
 // Create a new hackathon and place it in the pending queue
+// export const createPendingHackathon = async (req, res) => {
+//   try {
+//     let imageUrl = "";
+
+//     // ================= IMAGE UPLOAD (UNCHANGED LOGIC) =================
+//     if (req.file) {
+//       try {
+//         const fileContent = fs.readFileSync(req.file.path);
+//         const timestamp = Date.now();
+//         const randomString = Math.random().toString(36).substring(2, 9);
+//         const key = `hackathons/images/${timestamp}-${randomString}-${req.file.originalname}`;
+
+//         const putObjectCommand = new PutObjectCommand({
+//           Bucket: process.env.AWS_S3_BUCKET_NAME,
+//           Key: key,
+//           Body: fileContent,
+//           ContentType: req.file.mimetype,
+//         });
+
+//         await s3Client.send(putObjectCommand);
+
+//         imageUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${
+//           process.env.AWS_REGION || "ap-southeast-2"
+//         }.amazonaws.com/${key}`;
+
+//         fs.unlinkSync(req.file.path);
+//       } catch (error) {
+//         console.error("Error uploading to AWS S3:", error);
+//         throw new Error(`File upload failed: ${error.message}`);
+//       }
+//     }
+
+//     // ================= DATA PROCESSING =================
+//     const data = { ...req.body };
+
+//     // 🔥 UNIVERSAL SAFE JSON PARSER (Fix for empty arrays/objects issue)
+//     Object.keys(data).forEach((key) => {
+//       if (typeof data[key] === "string") {
+//         const value = data[key].trim();
+
+//         // Try parsing only if looks like JSON
+//         if (
+//           (value.startsWith("{") && value.endsWith("}")) ||
+//           (value.startsWith("[") && value.endsWith("]"))
+//         ) {
+//           try {
+//             data[key] = JSON.parse(value);
+//           } catch (err) {
+//             console.warn(`Failed to parse JSON field: ${key}`);
+//           }
+//         }
+//       }
+//     });
+
+//     // ================= REQUIRED FIELDS =================
+//     if (!data.adminId) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Admin ID is required",
+//       });
+//     }
+
+//     data.createdBy = data.adminId;
+//     delete data.adminId;
+
+//     if (imageUrl) {
+//       data.image = imageUrl;
+//     }
+
+//     // Ensure default arrays exist if not provided
+//     const defaultArrayFields = [
+//       "techStackUsed",
+//       "category",
+//       "themes",
+//       "problems",
+//       "TandCforHackathon",
+//       "evaluationCriteria",
+//       "FAQs",
+//       "projectSubmission", // ✅ ADD THIS
+//       "gallery",
+//       "approvals",
+//       "rejectedBy",
+//       "rewards", // ✅ ADD THIS for new rewards system
+//     ];
+
+//     defaultArrayFields.forEach((field) => {
+//       if (!Array.isArray(data[field])) {
+//         data[field] = [];
+//       }
+//     });
+
+//     // Ensure object defaults
+//     if (!data.allowedFileTypes || typeof data.allowedFileTypes !== "object") {
+//       data.allowedFileTypes = {};
+//     }
+
+//     // ================= SAVE TO DB =================
+//     const pendingHackathon = new PendingHackathon(data);
+//     await pendingHackathon.save();
+
+//     return res.status(201).json({
+//       success: true,
+//       message: "Hackathon created and waiting for approval",
+//       pendingHackathon,
+//     });
+//   } catch (err) {
+//     console.error("Create Pending Hackathon Error:", err);
+//     return res.status(400).json({
+//       success: false,
+//       error: err.message,
+//     });
+//   }
+// };
+
 export const createPendingHackathon = async (req, res) => {
   try {
     let imageUrl = "";
 
-    // ================= IMAGE UPLOAD (UNCHANGED LOGIC) =================
+    // ================= IMAGE UPLOAD =================
     if (req.file) {
       try {
-        const fileContent = fs.readFileSync(req.file.path);
         const timestamp = Date.now();
         const randomString = Math.random().toString(36).substring(2, 9);
         const key = `hackathons/images/${timestamp}-${randomString}-${req.file.originalname}`;
@@ -118,7 +243,7 @@ export const createPendingHackathon = async (req, res) => {
         const putObjectCommand = new PutObjectCommand({
           Bucket: process.env.AWS_S3_BUCKET_NAME,
           Key: key,
-          Body: fileContent,
+          Body: fs.createReadStream(req.file.path), // ✅ STREAM (better than readFileSync)
           ContentType: req.file.mimetype,
         });
 
@@ -128,7 +253,12 @@ export const createPendingHackathon = async (req, res) => {
           process.env.AWS_REGION || "ap-southeast-2"
         }.amazonaws.com/${key}`;
 
-        fs.unlinkSync(req.file.path);
+        // Safe cleanup
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (e) {
+          console.warn("File cleanup failed:", e.message);
+        }
       } catch (error) {
         console.error("Error uploading to AWS S3:", error);
         throw new Error(`File upload failed: ${error.message}`);
@@ -138,12 +268,11 @@ export const createPendingHackathon = async (req, res) => {
     // ================= DATA PROCESSING =================
     const data = { ...req.body };
 
-    // 🔥 UNIVERSAL SAFE JSON PARSER (Fix for empty arrays/objects issue)
+    // 🔥 SAFE JSON PARSER
     Object.keys(data).forEach((key) => {
       if (typeof data[key] === "string") {
         const value = data[key].trim();
 
-        // Try parsing only if looks like JSON
         if (
           (value.startsWith("{") && value.endsWith("}")) ||
           (value.startsWith("[") && value.endsWith("]"))
@@ -151,13 +280,20 @@ export const createPendingHackathon = async (req, res) => {
           try {
             data[key] = JSON.parse(value);
           } catch (err) {
-            console.warn(`Failed to parse JSON field: ${key}`);
+            console.warn(`Failed to parse JSON field: ${key}`, value);
           }
         }
       }
     });
 
-    // ================= REQUIRED FIELDS =================
+    // ================= REQUIRED VALIDATION =================
+    if (!data.title) {
+      return res.status(400).json({
+        success: false,
+        message: "Title is required",
+      });
+    }
+
     if (!data.adminId) {
       return res.status(400).json({
         success: false,
@@ -165,6 +301,32 @@ export const createPendingHackathon = async (req, res) => {
       });
     }
 
+    if (!mongoose.Types.ObjectId.isValid(data.adminId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Admin ID",
+      });
+    }
+
+    // ================= DATE VALIDATION =================
+    const dateFields = [
+      "startDate",
+      "endDate",
+      "submissionStartDate",
+      "submissionEndDate",
+    ];
+
+    dateFields.forEach((field) => {
+      if (data[field]) {
+        const parsed = new Date(data[field]);
+        if (isNaN(parsed)) {
+          throw new Error(`${field} is invalid`);
+        }
+        data[field] = parsed;
+      }
+    });
+
+    // ================= FIELD TRANSFORM =================
     data.createdBy = data.adminId;
     delete data.adminId;
 
@@ -172,7 +334,7 @@ export const createPendingHackathon = async (req, res) => {
       data.image = imageUrl;
     }
 
-    // Ensure default arrays exist if not provided
+    // ================= DEFAULT ARRAYS =================
     const defaultArrayFields = [
       "techStackUsed",
       "category",
@@ -181,11 +343,11 @@ export const createPendingHackathon = async (req, res) => {
       "TandCforHackathon",
       "evaluationCriteria",
       "FAQs",
-      "projectSubmission", // ✅ ADD THIS
+      "projectSubmission",
       "gallery",
       "approvals",
       "rejectedBy",
-      "rewards", // ✅ ADD THIS for new rewards system
+      "rewards",
     ];
 
     defaultArrayFields.forEach((field) => {
@@ -194,9 +356,28 @@ export const createPendingHackathon = async (req, res) => {
       }
     });
 
-    // Ensure object defaults
-    if (!data.allowedFileTypes || typeof data.allowedFileTypes !== "object") {
-      data.allowedFileTypes = {};
+    // ================= SANITIZATION =================
+
+    // ✅ Rewards cleanup
+    if (Array.isArray(data.rewards)) {
+      data.rewards = data.rewards.filter((r) => r && r.description && r.amount);
+    }
+
+    // ✅ Gallery cleanup
+    if (Array.isArray(data.gallery)) {
+      data.gallery = data.gallery.filter((g) => g && g.public_id && g.url);
+    }
+
+    // ✅ FAQs cleanup
+    if (Array.isArray(data.FAQs)) {
+      data.FAQs = data.FAQs.filter((f) => f && f.question && f.answer);
+    }
+
+    // ================= OBJECT DEFAULTS =================
+
+    // ⚠️ Do NOT override schema defaults
+    if (data.allowedFileTypes && typeof data.allowedFileTypes !== "object") {
+      delete data.allowedFileTypes;
     }
 
     // ================= SAVE TO DB =================
@@ -210,6 +391,7 @@ export const createPendingHackathon = async (req, res) => {
     });
   } catch (err) {
     console.error("Create Pending Hackathon Error:", err);
+
     return res.status(400).json({
       success: false,
       error: err.message,
@@ -261,133 +443,167 @@ export const createPendingHackathon = async (req, res) => {
 // Approve a pending hackathon (controller-only)
 export const approveHackathon = async (req, res) => {
   try {
-    console.log("=== APPROVAL REQUEST ===");
     const { pendingHackathonId, adminId } = req.body;
-    console.log("Pending Hackathon ID:", pendingHackathonId);
-    console.log("Admin ID:", adminId);
 
+    // 🔒 Validate admin
     const admin = await Admin.findById(adminId);
-    console.log("Admin found:", admin ? admin.adminName : "Not found");
-    console.log("Is controller:", admin?.controller);
-
     if (!admin || !admin.controller) {
-      return res.status(403).json({ success: false, message: "Not a controller admin" });
+      return res.status(403).json({
+        success: false,
+        message: "Not a controller admin",
+      });
     }
 
+    // 🔍 Find pending hackathon
     const pending = await PendingHackathon.findById(pendingHackathonId);
     if (!pending) {
-      return res.status(404).json({ success: false, message: "Pending hackathon not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Pending hackathon not found",
+      });
     }
-    console.log("Pending hackathon found:", pending.title);
 
+    // 🚫 Prevent duplicate approval
     if (pending.approvals.includes(adminId)) {
-      console.log("Already approved - returning 400");
-      console.log("=== END APPROVAL REQUEST ===");
-      res.status(400).json({ success: false, message: "Already approved" });
+      return res.status(400).json({
+        success: false,
+        message: "Already approved",
+      });
     }
 
+    // 🔁 If previously rejected → reset rejection
+    if (pending.approvalStatus === "rejected") {
+      pending.rejectionDetails = {};
+      pending.approvalStatus = "pending";
+    }
+
+    // ✅ Add approval
     pending.approvals.push(adminId);
     await pending.save();
-    console.log("Approval added. Total approvals:", pending.approvals.length);
 
+    // 🔍 Get all controllers
     const controllers = await Admin.find({ controller: true }).select("_id");
-    console.log("Total controllers:", controllers.length);
-    const allControllerIds = controllers.map(c => c._id.toString());
-    const approvedIds = pending.approvals.map(a => a.toString());
-    console.log("Controller IDs:", allControllerIds);
-    console.log("Approved IDs:", approvedIds);
-    const allApproved = allControllerIds.every(id => approvedIds.includes(id));
-    console.log("All approved?", allApproved);
+    const allControllerIds = controllers.map((c) => c._id.toString());
+    const approvedIds = pending.approvals.map((a) => a.toString());
 
+    const allApproved = allControllerIds.every((id) =>
+      approvedIds.includes(id)
+    );
+
+    // 🚀 If all approved → move to main collection
     if (allApproved) {
-      console.log("All controllers approved! Moving to main collection...");
-
-      // Convert pending hackathon to plain object and clean it
       const pendingData = pending.toObject();
-      console.log("Pending data fields:", Object.keys(pendingData));
 
-      // Remove fields that don't belong in the main hackathon model
+      // 🧹 Clean unwanted fields
       delete pendingData._id;
       delete pendingData.approvals;
-      delete pendingData.rejectedBy;
+      delete pendingData.rejectionDetails;
       delete pendingData.createdAt;
       delete pendingData.updatedAt;
       delete pendingData.__v;
 
-      // Add gallery field (empty array) if not present
+      // Ensure gallery exists
       if (!pendingData.gallery) {
         pendingData.gallery = [];
       }
 
-      // Determine the correct status based on dates
+      // 🧠 Compute active status safely
       const now = new Date();
-      console.log("Current date:", now);
-      console.log("Start date:", pendingData.startDate);
-      console.log("Submission end date:", pendingData.submissionEndDate);
 
-      const isActive = pendingData.startDate <= now && pendingData.submissionEndDate >= now;
+      const isActive =
+        pendingData.startDate &&
+        pendingData.submissionEndDate &&
+        pendingData.startDate <= now &&
+        pendingData.submissionEndDate >= now;
+
       pendingData.status = isActive;
-      console.log("Is active?", isActive);
-      console.log("Setting status to:", pendingData.status);
 
-      // Create and save the hackathon
+      // 💾 Save to main collection
       const hackathon = new hackathonModel(pendingData);
       await hackathon.save();
-      console.log("Hackathon saved with ID:", hackathon._id);
-      console.log("Hackathon status:", hackathon.status);
 
-      // Delete the pending hackathon
+      // 🗑 Delete from pending
       await PendingHackathon.findByIdAndDelete(pendingHackathonId);
-      console.log("Pending hackathon deleted");
-      console.log("=== END APPROVAL REQUEST ===");
 
       return res.status(200).json({
         success: true,
-        message: "Hackathon approved by all controllers and moved to main collection",
+        message: "Hackathon approved and moved to main collection",
         hackathon,
-        isActive: isActive ? "Hackathon is now active" : "Hackathon is upcoming or expired"
+        isActive: isActive
+          ? "Hackathon is now live"
+          : "Hackathon is upcoming or expired",
       });
     }
 
-    console.log("Not all controllers approved yet");
-    console.log("=== END APPROVAL REQUEST ===");
-
-    res.status(200).json({
+    // ⏳ Waiting for other approvals
+    return res.status(200).json({
       success: true,
-      message: "Hackathon approved. Waiting for other controller approvals.",
-      approvals: pending?.approvals?.length,
+      message: "Approved. Waiting for other controllers.",
+      approvals: pending.approvals.length,
     });
   } catch (err) {
     console.error("Approval error:", err);
-    console.log("=== END APPROVAL REQUEST (ERROR) ===");
-    res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
 
 // Reject a pending hackathon (controller-only)
 export const rejectHackathon = async (req, res) => {
   try {
-    const { pendingHackathonId, adminId } = req.body;
-    const admin = await Admin.findById(adminId);
+    const { pendingHackathonId, adminId, rejectionReason } = req.body;
 
+    // 🔒 Validate admin
+    const admin = await Admin.findById(adminId);
     if (!admin || !admin.controller) {
-      return res.status(403).json({ success: false, message: "Not a controller admin" });
+      return res.status(403).json({
+        success: false,
+        message: "Not a controller admin",
+      });
     }
 
+    // 🔍 Find hackathon
     const pending = await PendingHackathon.findById(pendingHackathonId);
     if (!pending) {
-      return res.status(404).json({ success: false, message: "Pending hackathon not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Pending hackathon not found",
+      });
     }
 
-    pending.rejectedBy.push(adminId);
+    // 🚫 Prevent duplicate reject
+    if (pending.approvalStatus === "rejected") {
+      return res.status(400).json({
+        success: false,
+        message: "Hackathon already rejected",
+      });
+    }
+
+    // ✅ Set approval status
+    pending.approvalStatus = "rejected";
+
+    // ✅ Store rejection details (NEW STRUCTURE)
+    pending.rejectionDetails = {
+      reason: rejectionReason || "",
+      rejectedAt: new Date(),
+      rejectedBy: adminId,
+    };
+
     await pending.save();
 
     return res.status(200).json({
       success: true,
-      message: "Hackathon rejected and stays in pending list",
+      message: "Hackathon rejected successfully",
+      rejectionDetails: pending.rejectionDetails,
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("Reject Hackathon Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
 
@@ -396,11 +612,11 @@ export const displayPendingHackathon = async (req, res) => {
   try {
     const pendingHackathonsData = await PendingHackathon.find();
     res.status(200).json({
-      pendingHackathonsData
+      pendingHackathonsData,
     });
   } catch (err) {
     res.status(500).json({
-      error: err.message
+      error: err.message,
     });
   }
 };
@@ -410,7 +626,9 @@ export const updateHackathonPoint = async (req, res) => {
   try {
     const { adminId, submissionId, points } = req.body;
     if (!adminId) {
-      return res.status(401).json({ success: false, message: "Not authenticated" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Not authenticated" });
     }
 
     if (!submissionId || typeof points !== "number") {
@@ -421,24 +639,36 @@ export const updateHackathonPoint = async (req, res) => {
     }
 
     if (!mongoose.Types.ObjectId.isValid(submissionId)) {
-      return res.status(400).json({ success: false, message: "Invalid submissionId" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid submissionId" });
     }
 
     // Load submission (we'll use session in transaction)
-    const submission = await SubmissionModel.findById(submissionId).session(session);
+    const submission = await SubmissionModel.findById(submissionId).session(
+      session
+    );
     if (!submission) {
-      return res.status(404).json({ success: false, message: "Submission not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Submission not found" });
     }
 
-    const hackathon = await hackathonModel.findById(submission.hackathon).select("createdBy");
+    const hackathon = await hackathonModel
+      .findById(submission.hackathon)
+      .select("createdBy");
     if (!hackathon) {
-      return res.status(404).json({ success: false, message: "Hackathon for this submission not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Hackathon for this submission not found",
+      });
     }
 
     if (hackathon.createdBy.toString() !== adminId.toString()) {
       return res.status(403).json({
         success: false,
-        message: "You are not authorized to update points for submissions of this hackathon",
+        message:
+          "You are not authorized to update points for submissions of this hackathon",
       });
     }
 
@@ -455,7 +685,9 @@ export const updateHackathonPoint = async (req, res) => {
     // Build list of user ids to update (leader + members OR participant)
     const userIds = [];
     if (submission.team) {
-      const team = await TeamModel.findById(submission.team).select("leader members").lean();
+      const team = await TeamModel.findById(submission.team)
+        .select("leader members")
+        .lean();
       if (team) {
         if (team.leader) userIds.push(team.leader);
         if (Array.isArray(team.members) && team.members.length) {
@@ -467,7 +699,9 @@ export const updateHackathonPoint = async (req, res) => {
     }
 
     // Dedupe and filter ids
-    const uniqueUserIds = [...new Set(userIds.map(id => id?.toString()).filter(Boolean))];
+    const uniqueUserIds = [
+      ...new Set(userIds.map((id) => id?.toString()).filter(Boolean)),
+    ];
 
     let usersUpdatedCount = 0;
     if (uniqueUserIds.length) {
@@ -477,7 +711,8 @@ export const updateHackathonPoint = async (req, res) => {
         { $set: { hackathonPoints: points } },
         { session }
       );
-      usersUpdatedCount = updateResult.nModified ?? updateResult.modifiedCount ?? 0;
+      usersUpdatedCount =
+        updateResult.nModified ?? updateResult.modifiedCount ?? 0;
     }
 
     // Commit transaction
@@ -499,10 +734,11 @@ export const updateHackathonPoint = async (req, res) => {
     }
     session.endSession();
     console.error("updateHackathonPoint error:", err);
-    return res.status(500).json({ success: false, message: "Server error", error: err.message });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error", error: err.message });
   }
 };
-
 
 // Get the profile details of the currently logged-in admin
 export const getAdminDetails = async (req, res) => {
@@ -512,7 +748,9 @@ export const getAdminDetails = async (req, res) => {
 
     if (!admin) {
       // This is a safeguard, but adminAuth should have already handled it
-      return res.status(401).json({ success: false, message: "Not authenticated" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Not authenticated" });
     }
 
     return res.status(200).json({
@@ -533,5 +771,200 @@ export const getAdminDetails = async (req, res) => {
   } catch (err) {
     console.error("getAdminDetails error:", err);
     return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const editHackathon = async (req, res) => {
+  try {
+    // ── 1. Validate IDs ──────────────────────────────────────────────────────
+    const { hackathonId, adminId } = req.body;
+
+    if (!hackathonId || !mongoose.Types.ObjectId.isValid(hackathonId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Valid hackathonId is required." });
+    }
+    if (!adminId || !mongoose.Types.ObjectId.isValid(adminId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Valid adminId is required." });
+    }
+
+    // ── 2. Find hackathon and verify ownership ───────────────────────────────
+    const hackathon = await hackathonModel.findById(hackathonId);
+    if (!hackathon) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Hackathon not found." });
+    }
+    if (hackathon.createdBy.toString() !== adminId.toString()) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "You are not the creator of this hackathon.",
+        });
+    }
+
+    // ── 3. Parse incoming data ───────────────────────────────────────────────
+    const data = { ...req.body };
+
+    // Remove fields that must never be overwritten via this route
+    const PROTECTED = [
+      "hackathonId",
+      "adminId",
+      "createdBy",
+      "gallery",
+      "approvals",
+      "rejectedBy",
+      "rejectionDetails",
+      "approvalStatus",
+      "__v",
+    ];
+    PROTECTED.forEach((f) => delete data[f]);
+
+    // Safe-parse any JSON-stringified fields (arrays / objects from FormData)
+    Object.keys(data).forEach((key) => {
+      if (typeof data[key] === "string") {
+        const v = data[key].trim();
+        if (
+          (v.startsWith("{") && v.endsWith("}")) ||
+          (v.startsWith("[") && v.endsWith("]"))
+        ) {
+          try {
+            data[key] = JSON.parse(v);
+          } catch {
+            console.warn(
+              `editHackathon: could not parse field "${key}" as JSON — keeping as string`
+            );
+          }
+        }
+      }
+    });
+
+    // ── 4. Date validation ───────────────────────────────────────────────────
+    const DATE_FIELDS = [
+      "startDate",
+      "endDate",
+      "submissionStartDate",
+      "submissionEndDate",
+    ];
+    for (const field of DATE_FIELDS) {
+      if (data[field] !== undefined) {
+        const parsed = new Date(data[field]);
+        if (isNaN(parsed.getTime())) {
+          return res
+            .status(400)
+            .json({
+              success: false,
+              message: `Invalid date value for "${field}".`,
+            });
+        }
+        data[field] = parsed;
+      }
+    }
+
+    // ── 5. Sanitise arrays ───────────────────────────────────────────────────
+    if (Array.isArray(data.rewards)) {
+      data.rewards = data.rewards.filter(
+        (r) => r && r.description && r.amount > 0
+      );
+    }
+    if (Array.isArray(data.FAQs)) {
+      data.FAQs = data.FAQs.filter((f) => f && f.question && f.answer);
+    }
+    // allowedFileTypes — don't override schema defaults if it's not a valid object
+    if (data.allowedFileTypes && typeof data.allowedFileTypes !== "object") {
+      delete data.allowedFileTypes;
+    }
+
+    // ── 6. Handle image replacement ──────────────────────────────────────────
+    if (req.file) {
+      try {
+        // Upload new image to S3
+        const timestamp = Date.now();
+        const randomStr = Math.random().toString(36).substring(2, 9);
+        const key = `hackathons/images/${timestamp}-${randomStr}-${req.file.originalname}`;
+
+        const putCmd = new PutObjectCommand({
+          Bucket: process.env.AWS_S3_BUCKET_NAME,
+          Key: key,
+          Body: fs.createReadStream(req.file.path),
+          ContentType: req.file.mimetype,
+        });
+        await s3Client.send(putCmd);
+
+        data.image = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${
+          process.env.AWS_REGION || "ap-southeast-2"
+        }.amazonaws.com/${key}`;
+
+        // Delete old image from S3 if it exists and was stored on our bucket
+        if (
+          hackathon.image &&
+          hackathon.image.includes(process.env.AWS_S3_BUCKET_NAME)
+        ) {
+          try {
+            const oldKey = hackathon.image.split(".amazonaws.com/")[1];
+            if (oldKey) {
+              await s3Client.send(
+                new DeleteObjectCommand({
+                  Bucket: process.env.AWS_S3_BUCKET_NAME,
+                  Key: oldKey,
+                })
+              );
+            }
+          } catch (delErr) {
+            // Non-fatal — log but continue
+            console.warn(
+              "editHackathon: could not delete old S3 image:",
+              delErr.message
+            );
+          }
+        }
+
+        // Clean up temp file
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch {
+          /* ignore */
+        }
+      } catch (uploadErr) {
+        console.error("editHackathon: S3 upload failed:", uploadErr);
+        return res
+          .status(500)
+          .json({
+            success: false,
+            message: `Image upload failed: ${uploadErr.message}`,
+          });
+      }
+    }
+
+    // ── 7. Recompute `status` if dates changed ───────────────────────────────
+    if (data.startDate || data.submissionEndDate) {
+      const start = data.startDate
+        ? new Date(data.startDate)
+        : hackathon.startDate;
+      const subEnd = data.submissionEndDate
+        ? new Date(data.submissionEndDate)
+        : hackathon.submissionEndDate;
+      const now = new Date();
+      data.status = !!(start && subEnd && start <= now && subEnd >= now);
+    }
+
+    // ── 8. Apply update ──────────────────────────────────────────────────────
+    const updated = await hackathonModel.findByIdAndUpdate(
+      hackathonId,
+      { $set: data },
+      { new: true, runValidators: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Hackathon updated successfully.",
+      hackathon: updated,
+    });
+  } catch (err) {
+    console.error("editHackathon error:", err);
+    return res.status(500).json({ success: false, message: err.message });
   }
 };

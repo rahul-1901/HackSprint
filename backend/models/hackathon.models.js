@@ -1,160 +1,158 @@
 // import { array, number, required } from 'joi'
-import mongoose from 'mongoose'
+import mongoose from "mongoose";
 
-const hackathonSchema = new mongoose.Schema({
+const hackathonSchema = new mongoose.Schema(
+  {
     image: {
-        type: String
+      type: String,
     },
     title: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     subTitle: {
-        type: String
+      type: String,
     },
     description: {
-        type: String
+      type: String,
     },
     submissions: {
-        type: [{ type: mongoose.Schema.Types.ObjectId, ref: "submissions" }],
-        //No. of participants of a hackathon are equal to submissions array no.of elements.
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "submissions" }],
+      //No. of participants of a hackathon are equal to submissions array no.of elements.
     },
     startDate: {
-        type: Date
+      type: Date,
     },
     endDate: {
-        type: Date
+      type: Date,
     },
-    submissionStartDate : {
-        type : Date
+    submissionStartDate: {
+      type: Date,
     },
-    submissionEndDate : {
-        type : Date
+    submissionEndDate: {
+      type: Date,
     },
-     votingDate: {
-        type: Date
+    votingDate: {
+      type: Date,
     },
     refMaterial: {
-        type: String
+      type: String,
     },
     status: {
-        type: Boolean,
-        default: false
+      type: Boolean,
+      default: false,
     },
     difficulty: {
-        type: String,
-        enum: {
-            values: ["Advanced", "Expert", "Intermediate", "Beginner", "Tough"]
-        }
+      type: String,
+      enum: {
+        values: ["Advanced", "Expert", "Intermediate", "Beginner", "Tough"],
+      },
     },
     category: {
-        type: Array,
-        // enum : {
-        //     values : ["Web Dev" , "AI/ML" , "Blockchain" , "IoT"]
-        // }
+      type: Array,
+      // enum : {
+      //     values : ["Web Dev" , "AI/ML" , "Blockchain" , "IoT"]
+      // }
     },
     // New flexible rewards system
     rewards: [
-        {
-            description: { type: String, required: true },
-            amount: { type: Number, required: true }
-        }
+      {
+        description: { type: String, required: true },
+        amount: { type: Number, required: true },
+      },
     ],
     // Keep old prize fields for backward compatibility (optional)
     prizeMoney1: {
-        type: Number
+      type: Number,
     },
-    prizeMoney2 :{
-        type : Number
+    prizeMoney2: {
+      type: Number,
     },
-    prizeMoney3 : {
-        type : Number
+    prizeMoney3: {
+      type: Number,
     },
     techStackUsed: {
-        type: Array,
-        // enum : {
-        //     values : ["React" , "Node.js","MongoDB" , "Socket.io","Python","TensorFlow" , "OpenAI" , "FastAPI","Solidity" , "Web3.js" , "IPFS","Arduino" , "PostgreSQL"]
-        // }
+      type: Array,
+      // enum : {
+      //     values : ["React" , "Node.js","MongoDB" , "Socket.io","Python","TensorFlow" , "OpenAI" , "FastAPI","Solidity" , "Web3.js" , "IPFS","Arduino" , "PostgreSQL"]
+      // }
     },
     numParticipants: {
-        type: Number,
-        default: 0
+      type: Number,
+      default: 0,
     },
     overview: {
-        type: String
+      type: String,
     },
     themes: {
-        type: [String]
+      type: [String],
     },
     FAQs: [
-        {
-          question: { type: String },
-          answer: { type: String },
-        }
-      ],
+      {
+        question: { type: String },
+        answer: { type: String },
+      },
+    ],
     teams: {
-        type: [
-            { type: mongoose.Schema.Types.ObjectId, ref: "teams" },
-        ]
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "teams" }],
     },
     aboutUs: {
-        type: String
+      type: String,
     },
     projectSubmission: {
-        type: [String]
+      type: [String],
     },
     TandCforHackathon: {
-        type: [String]
+      type: [String],
     },
     evaluationCriteria: {
-        type: [String]
+      type: [String],
     },
     registeredParticipants: [
-        { type: mongoose.Schema.Types.ObjectId, ref: "registeredParticipants" }
+      { type: mongoose.Schema.Types.ObjectId, ref: "registeredParticipants" },
     ],
     allowedFileTypes: {
-        docs: { type: [String], default: ["pdf", "docx"] },   // default docs
-        images: { type: [String], default: ["jpg", "jpeg", "png"] }, // default images
-        videos: { type: [String], default: ["mp4"] }, // default videos
+      docs: { type: [String], default: ["pdf", "docx"] }, // default docs
+      images: { type: [String], default: ["jpg", "jpeg", "png"] }, // default images
+      videos: { type: [String], default: ["mp4"] }, // default videos
     },
     gallery: [
-  {
-    type: String,
-    required: true
-  }
-],
+      {
+        type: String,
+        required: true,
+      },
+    ],
     createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Admin"
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
     },
-    
-},{timestamps : true})
+  },
+  { timestamps: true }
+);
 
 hackathonSchema.pre(/^find/, async function (next) {
+  const currentTime = new Date(Date.now());
+  //mark status:true for active hackathons
+  await this.model.updateMany(
+    {
+      startDate: { $lte: currentTime },
+      submissionEndDate: { $gte: currentTime },
+    },
+    {
+      status: true,
+    }
+  );
 
-    const currentTime = new Date(Date.now())
-    //mark status:true for active hackathons
-    await this.model.updateMany(
-        {
-            startDate: { $lte: currentTime },
-            submissionEndDate: { $gte: currentTime }
-        },
-        {
-            status: true
-        }
-    )
+  //mark status : false for inactive hackathons
+  await this.model.updateMany(
+    {
+      submissionEndDate: { $lt: currentTime },
+    },
+    { status: false }
+  );
 
-    //mark status : false for inactive hackathons
-    await this.model.updateMany(
-        {
-            submissionEndDate: { $lt: currentTime }
-        },
-        { status: false }
-    )
+  next();
+});
+const hackathonModel = mongoose.model("hackathons", hackathonSchema);
 
-
-    next();
-})
-const hackathonModel = mongoose.model("hackathons", hackathonSchema)
-
-export default hackathonModel
+export default hackathonModel;

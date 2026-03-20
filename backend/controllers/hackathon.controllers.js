@@ -13,14 +13,19 @@ import { getNowUTC } from "../utils/dateUtils.js";
 export const getActiveHackathons = async (req, res) => {
   try {
     const now = getNowUTC(); // ✅ Always use UTC
-    const allHackathons = await hackathonModel.find({
-      startDate: { $lte: now },
-      submissionEndDate: { $gte: now },
-    }).sort({ endDate: 1 }); // Sort by ending soonest
+    const allHackathons = await hackathonModel
+      .find({
+        startDate: { $lte: now },
+        submissionEndDate: { $gte: now },
+      })
+      .sort({ endDate: 1 }); // Sort by ending soonest
 
     res.status(200).json({ allHackathons });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching active hackathons", error: error.message });
+    res.status(500).json({
+      message: "Error fetching active hackathons",
+      error: error.message,
+    });
   }
 };
 
@@ -49,9 +54,17 @@ const uploadFileToS3 = async (file, s3KeyPrefix) => {
 // ─── Helper: parse JSON-stringified array fields from FormData ────────────────
 const parseArrayFields = (body) => {
   const arrayFields = [
-    "category", "techStackUsed", "themes", "FAQs",
-    "problems", "TandCforHackathon", "evaluationCriteria",
-    "projectSubmission", "teams", "registeredParticipants", "rewards",
+    "category",
+    "techStackUsed",
+    "themes",
+    "FAQs",
+    "problems",
+    "TandCforHackathon",
+    "evaluationCriteria",
+    "projectSubmission",
+    "teams",
+    "registeredParticipants",
+    "rewards",
   ];
 
   const parsed = { ...body };
@@ -91,7 +104,10 @@ export const getExpiredHackathons = async (req, res) => {
     });
     res.status(200).json({ expiredHackathons });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching expired hackathons", error: error.message });
+    res.status(500).json({
+      message: "Error fetching expired hackathons",
+      error: error.message,
+    });
   }
 };
 
@@ -100,13 +116,18 @@ export const getExpiredHackathons = async (req, res) => {
 export const getUpcomingHackathons = async (req, res) => {
   try {
     const now = getNowUTC(); // ✅ Always use UTC
-    const upcomingHackathons = await hackathonModel.find({
-      startDate: { $gt: now },
-    }).sort({ startDate: 1 }); // Sort by starting soonest
+    const upcomingHackathons = await hackathonModel
+      .find({
+        startDate: { $gt: now },
+      })
+      .sort({ startDate: 1 }); // Sort by starting soonest
 
     res.status(200).json({ upcomingHackathons });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching upcoming hackathons", error: error.message });
+    res.status(500).json({
+      message: "Error fetching upcoming hackathons",
+      error: error.message,
+    });
   }
 };
 
@@ -114,10 +135,13 @@ export const getUpcomingHackathons = async (req, res) => {
 export const getHackathonById = async (req, res) => {
   try {
     const hackathon = await hackathonModel.findById(req.params.id);
-    if (!hackathon) return res.status(404).json({ message: "Hackathon not found" });
+    if (!hackathon)
+      return res.status(404).json({ message: "Hackathon not found" });
     return res.json(hackathon);
   } catch (err) {
-    return res.status(500).json({ message: "Server error", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: err.message });
   }
 };
 
@@ -143,10 +167,7 @@ export const createHackathon = async (req, res) => {
 
     for (const file of galleryFiles) {
       tempFiles.push(file.path);
-      const { url } = await uploadFileToS3(
-        file,
-        `hackathons/gallery`
-      );
+      const { url } = await uploadFileToS3(file, `hackathons/gallery`);
       galleryImages.push(url); // Just store the URL string
     }
 
@@ -171,7 +192,9 @@ export const createHackathon = async (req, res) => {
     // Clean up any temp files that didn't get deleted yet
     tempFiles.forEach((filePath) => {
       if (fs.existsSync(filePath)) {
-        try { fs.unlinkSync(filePath); } catch {}
+        try {
+          fs.unlinkSync(filePath);
+        } catch {}
       }
     });
 
@@ -191,7 +214,9 @@ export const getHackathonResults = async (req, res) => {
       .populate("team", "name members");
     res.status(200).json(results);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching results", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching results", error: error.message });
   }
 };
 
@@ -206,20 +231,42 @@ export const addGalleryImages = async (req, res) => {
     }
 
     const hackathon = await hackathonModel.findById(hackathonId);
-    if (!hackathon) return res.status(404).json({ message: "Hackathon not found" });
+    if (!hackathon) {
+      return res.status(404).json({ message: "Hackathon not found" });
+    }
 
-    // Upload images and get URLs
+    // ✅ Limit gallery size
+    if (hackathon.gallery.length + req.files.length > 30) {
+      return res.status(400).json({
+        message: "Max 10 images allowed in gallery",
+      });
+    }
+
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+
     const uploadPromises = req.files.map(async (file) => {
+      // ✅ File validation
+      if (!validTypes.includes(file.mimetype)) {
+        throw new Error(`Invalid file type: ${file.originalname}`);
+      }
+
       const { url } = await uploadFileToS3(
         file,
         `hackathons/${hackathonId}/gallery`
       );
-      return url; // Just return the URL string
+
+      // ✅ Delete temp file
+      try {
+        fs.unlinkSync(file.path);
+      } catch (e) {
+        console.warn("File cleanup failed:", e.message);
+      }
+
+      return url;
     });
 
     const newImageUrls = await Promise.all(uploadPromises);
-    
-    // Push URL strings to gallery array
+
     hackathon.gallery.push(...newImageUrls);
     await hackathon.save();
 
@@ -229,48 +276,58 @@ export const addGalleryImages = async (req, res) => {
     });
   } catch (error) {
     console.error("Add gallery images error:", error);
-    res.status(500).json({ message: "Error adding images to gallery", error: error.message });
+    res.status(500).json({
+      message: "Error adding images to gallery",
+      error: error.message,
+    });
   }
 };
 
 // --- DELETE IMAGE FROM GALLERY ---
 export const deleteGalleryImage = async (req, res) => {
   try {
-    const { hackathonId, imageId } = req.params;
+    const { hackathonId } = req.params;
+    const { imageUrl } = req.body; // ✅ changed
 
     const hackathon = await hackathonModel.findById(hackathonId);
-    if (!hackathon) return res.status(404).json({ message: "Hackathon not found" });
+    if (!hackathon) {
+      return res.status(404).json({ message: "Hackathon not found" });
+    }
 
-    // imageId is actually the index in the array
-    const imageIndex = parseInt(imageId);
-    if (imageIndex < 0 || imageIndex >= hackathon.gallery.length) {
+    const imageIndex = hackathon.gallery.indexOf(imageUrl);
+
+    if (imageIndex === -1) {
       return res.status(404).json({ message: "Image not found in gallery" });
     }
 
-    const imageUrl = hackathon.gallery[imageIndex];
-    
-    // Extract S3 key from URL
-    // URL format: https://bucket-name.s3.region.amazonaws.com/key
+    // ✅ Delete from S3
     try {
       const urlParts = new URL(imageUrl);
-      const s3Key = urlParts.pathname.substring(1); // Remove leading slash
-      
-      await s3Client.send(new DeleteObjectCommand({
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
-        Key: s3Key,
-      }));
+      const s3Key = urlParts.pathname.substring(1);
+
+      await s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: process.env.AWS_S3_BUCKET_NAME,
+          Key: s3Key,
+        })
+      );
     } catch (s3Error) {
-      console.error("S3 deletion error:", s3Error);
-      // Continue even if S3 deletion fails
+      console.warn("S3 deletion failed:", s3Error.message);
     }
 
     hackathon.gallery.splice(imageIndex, 1);
     await hackathon.save();
 
-    res.status(200).json({ message: "Image deleted from gallery successfully", gallery: hackathon.gallery });
+    res.status(200).json({
+      message: "Image deleted successfully",
+      gallery: hackathon.gallery,
+    });
   } catch (error) {
     console.error("Delete gallery image error:", error);
-    res.status(500).json({ message: "Error deleting image from gallery", error: error.message });
+    res.status(500).json({
+      message: "Error deleting image from gallery",
+      error: error.message,
+    });
   }
 };
 
@@ -278,12 +335,17 @@ export const deleteGalleryImage = async (req, res) => {
 export const getHackathonGallery = async (req, res) => {
   try {
     const { hackathonId } = req.params;
-    const hackathon = await hackathonModel.findById(hackathonId).select("gallery");
-    if (!hackathon) return res.status(404).json({ message: "Hackathon not found" });
+    const hackathon = await hackathonModel
+      .findById(hackathonId)
+      .select("gallery");
+    if (!hackathon)
+      return res.status(404).json({ message: "Hackathon not found" });
     res.status(200).json({ success: true, gallery: hackathon.gallery || [] });
   } catch (error) {
     console.error("Get gallery error:", error);
-    res.status(500).json({ message: "Error fetching gallery", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching gallery", error: error.message });
   }
 };
 
@@ -293,28 +355,50 @@ export const toggleHackathonWishlist = async (req, res) => {
     const { hackathonId } = req.body;
     const userId = req.userId || req.body.userId; // Try req.userId first
 
-    if (!hackathonId) return res.status(400).json({ message: "Hackathon ID is required", success: false });
-    if (!userId) return res.status(401).json({ message: "User not authenticated", success: false });
+    if (!hackathonId)
+      return res
+        .status(400)
+        .json({ message: "Hackathon ID is required", success: false });
+    if (!userId)
+      return res
+        .status(401)
+        .json({ message: "User not authenticated", success: false });
 
     const hackathon = await hackathonModel.findById(hackathonId);
-    if (!hackathon) return res.status(404).json({ message: "Hackathon not found", success: false });
+    if (!hackathon)
+      return res
+        .status(404)
+        .json({ message: "Hackathon not found", success: false });
 
     const user = await UserModel.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found", success: false });
+    if (!user)
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
 
     const wishlistIndex = user.wishlist.indexOf(hackathonId);
     if (wishlistIndex > -1) {
       user.wishlist.splice(wishlistIndex, 1);
       await user.save();
-      return res.status(200).json({ message: "Removed from wishlist", success: true, liked: false });
+      return res.status(200).json({
+        message: "Removed from wishlist",
+        success: true,
+        liked: false,
+      });
     } else {
       user.wishlist.push(hackathonId);
       await user.save();
-      return res.status(201).json({ message: "Added to wishlist", success: true, liked: true });
+      return res
+        .status(201)
+        .json({ message: "Added to wishlist", success: true, liked: true });
     }
   } catch (error) {
     console.error("Toggle hackathon wishlist error:", error);
-    return res.status(500).json({ message: "Internal server error", success: false, error: error.message });
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+      error: error.message,
+    });
   }
 };
 
@@ -322,26 +406,36 @@ export const toggleHackathonWishlist = async (req, res) => {
 export const getUserHackathonWishlist = async (req, res) => {
   try {
     const userId = req.userId || req.body?.userId; // Try req.userId first
-    
+
     if (!userId) {
-      return res.status(401).json({ 
-        message: "User not authenticated", 
-        success: false 
+      return res.status(401).json({
+        message: "User not authenticated",
+        success: false,
       });
     }
 
     const user = await UserModel.findById(userId).populate({
       path: "wishlist",
-      select: "title subTitle description image startDate endDate submissionStartDate submissionEndDate prizeMoney difficulty category techStackUsed themes status",
+      select:
+        "title subTitle description image startDate endDate submissionStartDate submissionEndDate prizeMoney difficulty category techStackUsed themes status",
     });
 
-    if (!user) return res.status(404).json({ message: "User not found", success: false });
+    if (!user)
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
 
     const likedHackathons = user.wishlist.filter((h) => h !== null);
-    return res.status(200).json({ success: true, likedHackathons, count: likedHackathons.length });
+    return res
+      .status(200)
+      .json({ success: true, likedHackathons, count: likedHackathons.length });
   } catch (error) {
     console.error("Get user hackathon wishlist error:", error);
-    return res.status(500).json({ message: "Internal server error", success: false, error: error.message });
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+      error: error.message,
+    });
   }
 };
 
@@ -352,18 +446,27 @@ export const checkHackathonLiked = async (req, res) => {
     const userId = req.userId || req.body?.userId; // Try req.userId first, fallback to req.body.userId
 
     if (!userId) {
-      return res.status(401).json({ 
-        message: "User not authenticated", 
-        success: false 
+      return res.status(401).json({
+        message: "User not authenticated",
+        success: false,
       });
     }
 
     const user = await UserModel.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found", success: false });
+    if (!user)
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
 
-    return res.status(200).json({ success: true, liked: user.wishlist.includes(hackathonId) });
+    return res
+      .status(200)
+      .json({ success: true, liked: user.wishlist.includes(hackathonId) });
   } catch (error) {
     console.error("Check hackathon liked error:", error);
-    return res.status(500).json({ message: "Internal server error", success: false, error: error.message });
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+      error: error.message,
+    });
   }
 };

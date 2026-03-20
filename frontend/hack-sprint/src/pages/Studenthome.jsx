@@ -326,26 +326,7 @@ export default function StudentHome() {
   useEffect(() => {
     setIsVisible(true);
   }, []);
-
-  const faqs = [
-    {
-      q: "Who can participate in hackathons?",
-      a: "Students and professionals from any background are welcome. Whether you're a beginner or experienced developer, there's a place for you.",
-    },
-    {
-      q: "Do I need to have a team?",
-      a: "You can participate solo or form a team with friends or other participants. Many hackathons also have team formation sessions to help you find teammates.",
-    },
-    {
-      q: "Is there a registration fee?",
-      a: "No, all hackathons on our platform are completely free to join. We believe in making innovation accessible to everyone.",
-    },
-    {
-      q: "How do I submit my project?",
-      a: "Submit your project through the provided portal before the deadline. Make sure to include your code, demo, and presentation materials.",
-    },
-  ];
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white overflow-hidden">
       {/* Hero Section */}
@@ -392,23 +373,6 @@ export default function StudentHome() {
       {/* Skills — workflow */}
       <SkillsWorkflow />
 
-      {/* FAQ — formal */}
-      {/* <section className="py-24">
-        <div className="container mx-auto px-6 max-w-3xl">
-          <h2 className="text-5xl md:text-6xl ZaptronFont font-bold text-center mb-2 bg-gradient-to-r from-white to-emerald-300 bg-clip-text text-transparent">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-gray-400 text-center mb-12">
-            Everything you need to know about participating in hackathons
-          </p>
-
-          <div className="bg-gradient-to-b from-gray-800/60 to-gray-900/60 rounded-2xl border border-gray-700 overflow-hidden divide-y divide-gray-700/60 px-4">
-            {faqs.map((faq, i) => (
-              <FAQItem key={i} {...faq} index={i} />
-            ))}
-          </div>
-        </div>
-      </section> */}
     </div>
   );
 }

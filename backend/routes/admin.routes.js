@@ -1,5 +1,5 @@
 import express from "express";
-import { getMyHackathon, getAllHackathons,getalladmin,createPendingHackathon, approveHackathon, rejectHackathon, displayPendingHackathon,updateHackathonPoint, getAdminDetails} from "../controllers/admin.controllers.js";
+import { getMyHackathon, editHackathon, getAllHackathons,getalladmin,createPendingHackathon, approveHackathon, rejectHackathon, displayPendingHackathon,updateHackathonPoint, getAdminDetails} from "../controllers/admin.controllers.js";
 // import { addhackathons } from "../controllers/hackathon.controllers.js";
 import upload from "../middlewares/multer1.js";
 import { adminAuth } from "../middlewares/adminAuth.js";
@@ -19,4 +19,5 @@ router.post("/approveHackathon", approveHackathon);
 router.post("/rejectHackathon" , rejectHackathon);
 router.get("/pendingHackathon", displayPendingHackathon);
 router.post("/HackathonPoints" , updateHackathonPoint);
+router.post("/editHackathon",   adminAuth, upload.single("image"), editHackathon);
 export default router;

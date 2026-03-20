@@ -48,6 +48,6 @@ router.post("/", uploadHackathonImages, createHackathon);
 router.post("/:hackathonId/gallery", uploadGalleryImages, addGalleryImages);
 
 // DELETE gallery image
-router.delete("/:hackathonId/gallery/:imageId", deleteGalleryImage);
+router.delete("/:hackathonId/gallery", deleteGalleryImage);
 
 export default router;
