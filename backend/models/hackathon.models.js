@@ -1,4 +1,3 @@
-// import { array, number, required } from 'joi'
 import mongoose from "mongoose";
 
 const hackathonSchema = new mongoose.Schema(
@@ -36,7 +35,7 @@ const hackathonSchema = new mongoose.Schema(
       type: Date,
     },
     refMaterial: {
-      type: String,
+      type: [String],
     },
     status: {
       type: Boolean,
@@ -50,18 +49,13 @@ const hackathonSchema = new mongoose.Schema(
     },
     category: {
       type: Array,
-      // enum : {
-      //     values : ["Web Dev" , "AI/ML" , "Blockchain" , "IoT"]
-      // }
     },
-    // New flexible rewards system
     rewards: [
       {
         description: { type: String, required: true },
         amount: { type: Number, required: true },
       },
     ],
-    // Keep old prize fields for backward compatibility (optional)
     prizeMoney1: {
       type: Number,
     },
@@ -73,9 +67,6 @@ const hackathonSchema = new mongoose.Schema(
     },
     techStackUsed: {
       type: Array,
-      // enum : {
-      //     values : ["React" , "Node.js","MongoDB" , "Socket.io","Python","TensorFlow" , "OpenAI" , "FastAPI","Solidity" , "Web3.js" , "IPFS","Arduino" , "PostgreSQL"]
-      // }
     },
     numParticipants: {
       type: Number,

@@ -1,5 +1,3 @@
-/* This is the googleOauth controllers section, where we write the logic to get userInfo and send jwt token via googleApi credentials we have taken*/
-
 import { oauth2client } from '../utils/googleAuth.utils.js'
 import UserModel from '../models/user.models.js'
 import axios from 'axios'

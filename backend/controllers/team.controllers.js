@@ -1,9 +1,7 @@
-
 import TeamModel from "../models/team.js";
 import UserModel from "../models/user.models.js";
 import RegisteredParticipantsModel from "../models/registeredParticipants.js"
 import hackathonModel from "../models/hackathon.models.js"
-
 
 const generateCode = (length = 8) => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -14,7 +12,6 @@ const generateCode = (length = 8) => {
   return code;
 };
 
-// Create team with unique secret code
 export const createTeam = async (req, res) => {
   try {
 
@@ -128,92 +125,6 @@ export const joinTeam = async (req, res) => {
   }
 };
 
-
-
-// export const handleRequests = async (req, res) => {
-//   try {
-//     const { leaderId, userId, action } = req.body; // action = "accept" | "reject"
-
-//     // 1. Find leader's registration to get teamId
-//     const leaderRegistration = await RegisteredParticipantsModel.findOne({
-//       user: leaderId,
-//     });
-
-//     if (!leaderRegistration || !leaderRegistration.team) {
-//       return res.status(404).json({ message: "Leader or team not found" });
-//     }
-
-//     const teamId = leaderRegistration.team;
-
-//     // 2. Find team by teamId
-//     const team = await TeamModel.findById(teamId);
-//     if (!team) return res.status(404).json({ message: "Team not found" });
-
-//     // 3. Remove user from pending
-//     team.pendingMembers = team.pendingMembers.filter(
-//       (id) => id.toString() !== userId.toString()
-//     );
-
-//     // 4. If accepted
-//     if (action === "accept") {
-//       team.members.push(userId);
-//       await UserModel.findByIdAndUpdate(userId, { team: team._id });
-
-//       const hackathonId = team.hackathon;
-
-//       const alreadyRegisteredMember = await RegisteredParticipantsModel.findOne({
-//         user: userId,
-//         hackathon: hackathonId,
-//       });
-
-//       if (alreadyRegisteredMember) {
-//         return res.status(400).json({
-//           success: false,
-//           message: "Member already registered for this hackathon",
-//         });
-//       }
-//       // create registered participant entry for accepted member
-//       const userDoc = await UserModel.findById(userId);
-//       if (!userDoc) {
-//         return res.status(404).json({ message: "User not found" });
-//       }
-
-//       // create registered participant entry for accepted member
-//       await RegisteredParticipantsModel.create({
-//         user: userId,
-//         hackathon: hackathonId,
-//         team: team._id,
-//         name: userDoc.name || "",
-//         contactNumber: userDoc.contactNumber || "",
-//         email: userDoc.email || "",
-//         college: userDoc.college || "",
-//         gender: userDoc.gender || "",
-//         currentYearOfStudy: userDoc.currentYearOfStudy || "",
-//         city: userDoc.city || "",
-//         state: userDoc.state || "",
-//         yearsOfExperience: userDoc.yearsOfExperience || "",
-//         workEmailAddress: userDoc.workEmailAddress || "",
-//       });
-
-//       await UserModel.findByIdAndUpdate(userId, {
-//         $addToSet: { registeredHackathons: hackathonId },
-//       });
-
-//       await hackathonModel.findByIdAndUpdate(hackathonId, {
-//         $addToSet: { registeredParticipants: userId },
-//         $inc: { numParticipants: 1 },
-//       });
-//     }
-
-//     // 5. Save updated team
-//     await team.save();
-
-//     res.json({ message: `User ${action}ed successfully` });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
 export const handleRequests = async (req, res) => {
   try {
     const { teamCode, userId, action } = req.body; // accept | reject
@@ -311,7 +222,6 @@ export const handleRequests = async (req, res) => {
   }
 };
 
-
 export const searchTeamByCode = async (req, res) => {
   try {
     const { secretCode } = req.params;
@@ -351,31 +261,6 @@ export const searchTeamByCode = async (req, res) => {
   }
 };
 
-
-// export const getPendingRequests = async (req, res) => {
-//   try {
-//     const { leaderId } = req.body;
-
-//     const leaderRegistration = await RegisteredParticipantsModel.findOne({
-//       user: leaderId
-//     });
-
-//     if (!leaderRegistration || !leaderRegistration.team) {
-//       return res.status(404).json({ message: "Leader or team not found" });
-//     }
-
-//     const teamId = leaderRegistration.team;
-
-//     // 2. Find team by teamId
-//     const team = await TeamModel.findById(teamId).populate("pendingMembers");
-//     if (!team) return res.status(404).json({ message: "Team not found" });
-
-//     res.json(team.pendingMembers);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
 export const getPendingRequests = async (req, res) => {
   try {
     const { teamCode } = req.body;
@@ -402,7 +287,6 @@ export const getPendingRequests = async (req, res) => {
   }
 };
 
-// Find team by ID
 export const getTeamById = async (req, res) => {
   try {
     const { teamId } = req.params;

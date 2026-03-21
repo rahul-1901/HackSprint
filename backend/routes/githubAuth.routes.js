@@ -4,9 +4,7 @@ import { githubAuthLogin, githubTokenExchange } from "../controllers/github.cont
 
 const router = express.Router();
 
-
 router.get("/auth/github/callback", verifyAuth, githubAuthLogin);
-
 router.get("/auth/github/verify", verifyAuth, githubTokenExchange);
 
 export default router;

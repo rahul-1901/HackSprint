@@ -41,6 +41,7 @@ import {
   getPendingHackathons,
   approveHackathon,
   rejectHackathon,
+  deleteHackathon,
   editHackathon,
 } from "../backendApis/api";
 import { createPortal } from "react-dom";
@@ -280,7 +281,6 @@ const ListEditor = ({
 );
 
 const EditModal = ({ hackathon, adminData, onClose, onSaved }) => {
-  /* Pre-fill form from hackathon */
   const toLocal = (iso) => {
     if (!iso) return "";
     const d = new Date(iso);
@@ -294,7 +294,11 @@ const EditModal = ({ hackathon, adminData, onClose, onSaved }) => {
     description: hackathon.description || "",
     overview: hackathon.overview || "",
     difficulty: hackathon.difficulty || "Beginner",
-    refMaterial: hackathon.refMaterial || "",
+    refMaterial: Array.isArray(hackathon.refMaterial)
+      ? hackathon.refMaterial
+      : hackathon.refMaterial
+      ? [hackathon.refMaterial]
+      : [],
     aboutUs: hackathon.aboutUs || "",
     startDate: toLocal(hackathon.startDate),
     endDate: toLocal(hackathon.endDate),
@@ -311,15 +315,12 @@ const EditModal = ({ hackathon, adminData, onClose, onSaved }) => {
     rewards: [...(hackathon.rewards || [])],
   });
 
-  /* Banner */
   const [bannerFile, setBannerFile] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(hackathon.image || "");
   const bannerRef = useRef(null);
 
-  /* Saving */
   const [isSaving, setIsSaving] = useState(false);
 
-  /* Dynamic list helpers */
   const [listInputs, setListInputs] = useState({});
   const [faqInput, setFaqInput] = useState({ question: "", answer: "" });
   const [rewardInput, setRewardInput] = useState({
@@ -380,7 +381,6 @@ const EditModal = ({ hackathon, adminData, onClose, onSaved }) => {
     setBannerPreview(URL.createObjectURL(file));
   };
 
-  /* Submit */
   const handleSave = async () => {
     if (!form.title.trim()) {
       toast.error("Title is required.");
@@ -393,20 +393,19 @@ const EditModal = ({ hackathon, adminData, onClose, onSaved }) => {
       fd.append("hackathonId", hackathon._id);
       fd.append("adminId", adminId);
 
-      /* String fields */
+      // String fields — refMaterial removed from here
       [
         "title",
         "subTitle",
         "description",
         "overview",
         "difficulty",
-        "refMaterial",
         "aboutUs",
       ].forEach((f) => {
         fd.append(f, form[f]);
       });
 
-      /* Dates → ISO */
+      // Dates → ISO
       [
         "startDate",
         "endDate",
@@ -419,7 +418,7 @@ const EditModal = ({ hackathon, adminData, onClose, onSaved }) => {
         }
       });
 
-      /* Arrays */
+      // Arrays — refMaterial now included here as JSON
       [
         "techStackUsed",
         "category",
@@ -428,6 +427,7 @@ const EditModal = ({ hackathon, adminData, onClose, onSaved }) => {
         "TandCforHackathon",
         "evaluationCriteria",
         "projectSubmission",
+        "refMaterial",
       ].forEach((f) => {
         fd.append(f, JSON.stringify(form[f]));
       });
@@ -439,7 +439,6 @@ const EditModal = ({ hackathon, adminData, onClose, onSaved }) => {
         )
       );
 
-      /* Banner */
       if (bannerFile) fd.append("image", bannerFile);
 
       const res = await editHackathon(fd);
@@ -453,7 +452,6 @@ const EditModal = ({ hackathon, adminData, onClose, onSaved }) => {
     }
   };
 
-  /* Prevent body scroll */
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
@@ -802,17 +800,18 @@ const EditModal = ({ hackathon, adminData, onClose, onSaved }) => {
 
           {/* Additional */}
           <ModalSection title="Additional Content">
-            <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-1.5">
-                Reference Material URL
-              </label>
-              <input
-                value={form.refMaterial}
-                onChange={(e) => set("refMaterial", e.target.value)}
-                placeholder="https://…"
-                className={inputClsModal}
-              />
-            </div>
+            {/* ✅ refMaterial now uses ListEditor for multiple URLs */}
+            <ListEditor
+              field="refMaterial"
+              label="Reference Material URLs"
+              placeholder="https://…"
+              values={form.refMaterial}
+              listInputs={listInputs}
+              setListInputs={setListInputs}
+              onAdd={addToList}
+              onRemove={removeFromList}
+            />
+
             <div>
               <label className="block text-xs font-semibold text-gray-400 mb-1.5">
                 About the Organiser
@@ -903,6 +902,29 @@ const HackathonCard = ({ hackathon, adminData, onEdited }) => {
       (hackathon.prizeMoney2 || 0) +
       (hackathon.prizeMoney3 || 0);
 
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this hackathon?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await deleteHackathon({
+        hackathonId: hackathon._id,
+        adminId: adminData.id,
+      });
+
+      toast.success("Hackathon deleted successfully");
+
+      onEdited({ _id: hackathon._id, deleted: true });
+    } catch (err) {
+      toast.error("Failed to delete hackathon");
+    }
+  };
+
   return (
     <>
       {showEdit && (
@@ -919,18 +941,30 @@ const HackathonCard = ({ hackathon, adminData, onEdited }) => {
 
       <div className="relative w-full rounded-2xl overflow-hidden shadow-lg border border-gray-800 hover:border-green-500/50 transition-all duration-300 hover:-translate-y-0.5 bg-gray-900/70 backdrop-blur-sm group">
         {/* Edit button — top-right corner on hover */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowEdit(true);
-          }}
-          className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-3 py-1.5
-            bg-gray-900/90 hover:bg-green-500/20 border border-gray-700 hover:border-green-500/40
-            text-gray-400 hover:text-green-400 text-xs font-semibold rounded-lg
-            opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-all duration-200 backdrop-blur-sm"
-        >
-          <Pencil size={12} /> Edit
-        </button>
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-2 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-all duration-200">
+          {/* Edit */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowEdit(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5
+      bg-gray-900/90 hover:bg-green-500/20 border border-gray-700 hover:border-green-500/40
+      text-gray-400 hover:text-green-400 text-xs font-semibold rounded-lg backdrop-blur-sm"
+          >
+            <Pencil size={12} /> Edit
+          </button>
+
+          {/* Delete */}
+          <button
+            onClick={handleDelete}
+            className="flex items-center gap-1.5 px-3 py-1.5
+      bg-gray-900/90 hover:bg-red-500/20 border border-gray-700 hover:border-red-500/40
+      text-gray-400 hover:text-red-400 text-xs font-semibold rounded-lg backdrop-blur-sm"
+          >
+            <Trash2 size={12} /> Delete
+          </button>
+        </div>
 
         <div
           onClick={() => navigate(`/admin/${hackathon._id}/usersubmissions`)}
@@ -1010,9 +1044,13 @@ const HackathonSection = ({
   const navigate = useNavigate();
 
   const handleEdited = (updated) => {
-    setHackathons((prev) =>
-      prev.map((h) => (h._id === updated._id ? updated : h))
-    );
+    if (updated.deleted) {
+      setHackathons((prev) => prev.filter((h) => h._id !== updated._id));
+    } else {
+      setHackathons((prev) =>
+        prev.map((h) => (h._id === updated._id ? updated : h))
+      );
+    }
   };
 
   return (
@@ -1071,6 +1109,7 @@ const PendingHackathonCard = ({
   hackathon: initialHackathon,
   onApprove,
   onReject,
+  isReadOnly,
 }) => {
   const [hackathon, setHackathon] = useState(initialHackathon);
   const [expanded, setExpanded] = useState(false);
@@ -1084,7 +1123,7 @@ const PendingHackathonCard = ({
   const isRejected = status === "rejected";
 
   const handleApprove = async () => {
-    if (isApproving) return;
+    if (isApproving || isReadOnly) return;
     if (!isPending && !isRejected) return;
     setIsApproving(true);
     try {
@@ -1097,6 +1136,7 @@ const PendingHackathonCard = ({
   };
 
   const handleRejectConfirm = async (reason) => {
+    if (isReadOnly) return;
     setIsRejecting(true);
     try {
       const result = await onReject(hackathon._id, reason);
@@ -1139,7 +1179,8 @@ const PendingHackathonCard = ({
 
   return (
     <>
-      {showRejectModal && (
+      {/* Only render modal if not read-only */}
+      {!isReadOnly && showRejectModal && (
         <RejectModal
           hackathon={hackathon}
           onConfirm={handleRejectConfirm}
@@ -1166,6 +1207,7 @@ const PendingHackathonCard = ({
               </div>
             )}
           </div>
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="font-bold text-white truncate">{hackathon.title}</p>
@@ -1185,12 +1227,22 @@ const PendingHackathonCard = ({
               )}
             </div>
           </div>
+
           <div className="flex items-center gap-2 flex-shrink-0">
-            {isPending && (
+            {/* Read-only: show "Awaiting review" hint when pending */}
+            {isReadOnly && isPending && (
+              <span className="hidden sm:flex items-center gap-1.5 text-xs text-amber-400/70 italic bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg">
+                <Clock size={11} /> Awaiting review
+              </span>
+            )}
+
+            {/* Controller: show "Expand to review" hint when pending */}
+            {!isReadOnly && isPending && (
               <span className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 italic">
                 Expand to review
               </span>
             )}
+
             {isApproved && (
               <span className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold px-3 py-1.5 rounded-lg">
                 <CheckCircle size={14} /> Approved
@@ -1279,6 +1331,14 @@ const PendingHackathonCard = ({
                     </span>
                   )}
                 </div>
+
+                {/* Read-only: tell submitter they can resubmit/contact */}
+                {isReadOnly && (
+                  <p className="text-xs text-gray-500 italic border-t border-red-500/15 pt-2">
+                    Contact the platform admin if you believe this was rejected
+                    in error.
+                  </p>
+                )}
               </div>
             )}
 
@@ -1488,24 +1548,65 @@ const PendingHackathonCard = ({
                 <p className="text-sm text-gray-400">{hackathon.aboutUs}</p>
               </div>
             )}
-            {hackathon.refMaterial && (
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <Link2 size={12} /> Reference Material
-                </p>
-                <a
-                  href={hackathon.refMaterial}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-green-400 hover:underline break-all"
-                >
-                  {hackathon.refMaterial}
-                </a>
+            {(() => {
+              const refs = Array.isArray(hackathon.refMaterial)
+                ? hackathon.refMaterial
+                : hackathon.refMaterial
+                ? [hackathon.refMaterial]
+                : [];
+              return refs.length > 0 ? (
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <Link2 size={12} /> Reference Material
+                  </p>
+                  <div className="space-y-1.5">
+                    {refs.map((url, i) => (
+                      <a
+                        key={i}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-sm text-green-400 hover:underline break-all"
+                      >
+                        <Link2 size={11} className="flex-shrink-0 opacity-60" />
+                        {url}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ) : null;
+            })()}
+
+            {/* ── ACTION FOOTER ── role-based ── */}
+
+            {/* READ-ONLY (submitter view) */}
+            {isReadOnly && (
+              <div className="pt-3 border-t border-gray-700/50">
+                {isPending && (
+                  <div className="flex items-center gap-2 text-xs text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
+                    <Clock size={13} className="flex-shrink-0" />
+                    Your hackathon is under review. You'll be notified once a
+                    decision is made.
+                  </div>
+                )}
+                {isApproved && (
+                  <div className="flex items-center gap-2 text-xs text-green-400/80 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
+                    <CheckCircle size={13} className="flex-shrink-0" />
+                    This hackathon has been approved and is now live.
+                  </div>
+                )}
+                {isRejected && (
+                  <div className="flex items-center gap-2 text-xs text-red-400/80 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                    <XCircle size={13} className="flex-shrink-0" />
+                    This hackathon was rejected. Review the reason above and
+                    contact an admin if needed.
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Re-approve */}
-            {isRejected && (
+            {/* CONTROLLER: re-approve a rejected hackathon */}
+            {!isReadOnly && isRejected && (
               <div className="flex justify-end pt-3 border-t border-gray-700/50">
                 <button
                   onClick={handleApprove}
@@ -1525,8 +1626,8 @@ const PendingHackathonCard = ({
               </div>
             )}
 
-            {/* Pending actions */}
-            {isPending && (
+            {/* CONTROLLER: approve / reject a pending hackathon */}
+            {!isReadOnly && isPending && (
               <div className="flex justify-end gap-3 pt-3 border-t border-gray-700/50">
                 <button
                   onClick={() => setShowRejectModal(true)}
@@ -1672,13 +1773,13 @@ const AdminProfile = () => {
   }, [adminData]);
 
   useEffect(() => {
-    if (!adminData?.controller) {
-      setPendingLoading(false);
+    if (!adminData) {
       return;
     }
     const run = async () => {
       try {
-        const res = await getPendingHackathons();
+        setPendingLoading(true);
+        const res = await getPendingHackathons(adminData?.id);
         setPendingHackathons(res.data.pendingHackathonsData || []);
       } catch {
         toast.error("Could not load pending hackathons.");
@@ -1849,41 +1950,50 @@ const AdminProfile = () => {
         )}
 
         {/* Pending Approvals */}
-        {adminData.controller && (
+        {pendingHackathons.length > 0 && (
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-3">
               <Clock size={22} className="text-amber-400" />
-              Pending Approvals
+
+              {adminData.controller
+                ? "Pending Approvals"
+                : "Given for Approval"}
+
               {pendingCount > 0 && (
                 <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold px-2.5 py-0.5 rounded-full">
                   {pendingCount} pending
                 </span>
               )}
             </h2>
+
             <p className="text-xs text-gray-500 mb-5">
-              Expand any card with <ChevronDown size={12} className="inline" />{" "}
-              to review full details. Rejecting requires a written reason.
+              {adminData.controller ? (
+                <>
+                  Expand any card with{" "}
+                  <ChevronDown size={12} className="inline" /> to review full
+                  details. Rejecting requires a written reason.
+                </>
+              ) : (
+                "These are hackathons you submitted for approval. You can track their status here."
+              )}
             </p>
+
             {pendingLoading ? (
               <div className="flex items-center gap-3 text-gray-500 bg-gray-800/30 rounded-xl px-5 py-4 border border-gray-700/40">
-                <div className="w-4 h-4 border-2 border-gray-600 border-t-gray-400 rounded-full animate-spin" />{" "}
-                Loading pending hackathons…
+                <div className="w-4 h-4 border-2 border-gray-600 border-t-gray-400 rounded-full animate-spin" />
+                Loading hackathons…
               </div>
-            ) : pendingHackathons.length > 0 ? (
+            ) : (
               <div className="space-y-3">
                 {pendingHackathons.map((h) => (
                   <PendingHackathonCard
                     key={h._id}
                     hackathon={h}
-                    onApprove={handleApprove}
-                    onReject={handleReject}
+                    onApprove={adminData.controller ? handleApprove : null}
+                    onReject={adminData.controller ? handleReject : null}
+                    isReadOnly={!adminData.controller}
                   />
                 ))}
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 text-gray-500 bg-gray-800/30 rounded-xl px-5 py-4 border border-gray-700/40">
-                <CheckCircle size={16} className="text-green-500" /> No
-                hackathons pending approval.
               </div>
             )}
           </div>

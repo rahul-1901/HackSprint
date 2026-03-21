@@ -6,7 +6,7 @@ import rateLimit from "express-rate-limit";
 const router = express.Router();
 
 const submitLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
+  windowMs: 60 * 1000,
   max: 5,
   message: {
     message: "Too many submissions. Please try again later.",
@@ -24,7 +24,6 @@ router.post( "/",
   ]),
   submitHackathonSolution
 );
-
 router.put(
   "/:id",
   submitLimiter,
@@ -35,7 +34,6 @@ router.put(
   ]),
   updateSubmission
 );
-
 router.get("/status", getSubmissionStatus);
 router.get("/getSubmissionById/:id", getSubmissionById);
 router.get("/hackathon/:hackathonId", getSubmissionsByHackathon);

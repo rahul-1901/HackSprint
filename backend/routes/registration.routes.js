@@ -5,7 +5,6 @@ import { isregistered, registerParicipants , registerTeam} from "../controllers/
 
 const router = express.Router();
 
-// POST /api/register
 router.post("/:hackathonId", registerParicipants);
 router.post("/:hackathonId/team" , registerTeam);
 router.get("/:hackathonId/:userId" , isregistered);

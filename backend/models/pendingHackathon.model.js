@@ -24,7 +24,9 @@ const pendingHackathonSchema = new mongoose.Schema(
         ref: "Admin",
       },
     },
-    refMaterial: { type: String },
+    refMaterial: {
+      type: [String],
+    },
     status: { type: Boolean, default: false },
     difficulty: {
       type: String,

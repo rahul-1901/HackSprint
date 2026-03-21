@@ -6,7 +6,6 @@ import SubmissionModel from "../models/submission.js";
 import UserModel from "../models/user.models.js";
 import fs from "fs";
 import { getNowUTC } from "../utils/dateUtils.js";
-// import cloudinary from "../config/cloudinary.js"; // COMMENTED OUT - REPLACED WITH AWS S3
 
 // --- GET ACTIVE HACKATHONS ---
 // Finds hackathons where the current date (UTC) is between the start and end dates.
@@ -80,21 +79,6 @@ const parseArrayFields = (body) => {
   return parsed;
 };
 
-// --- GET ACTIVE HACKATHONS ---
-// export const getActiveHackathons = async (req, res) => {
-//   try {
-//     const now = new Date();
-//     const allHackathons = await hackathonModel
-//       .find({ startDate: { $lte: now }, submissionEndDate: { $gte: now } })
-//       .sort({ endDate: 1 });
-//     res.status(200).json({ allHackathons });
-//   } catch (error) {
-//     res.status(500).json({ message: "Error fetching active hackathons", error: error.message });
-//   }
-// };
-
-// --- GET EXPIRED HACKATHONS ---
-// Finds hackathons where the end date is in the past (UTC).
 export const getExpiredHackathons = async (req, res) => {
   try {
     const now = getNowUTC(); // ✅ Always use UTC
@@ -173,6 +157,27 @@ export const createHackathon = async (req, res) => {
 
     // ── 3. Parse array fields ────────────────────────────────────────────────
     const parsedBody = parseArrayFields(req.body);
+
+    // ── Handle refMaterial safely ─────────────────────────────
+    if (parsedBody.refMaterial !== undefined) {
+      if (Array.isArray(parsedBody.refMaterial)) {
+        parsedBody.refMaterial = parsedBody.refMaterial.filter(Boolean);
+      } else if (typeof parsedBody.refMaterial === "string") {
+        try {
+          const parsed = JSON.parse(parsedBody.refMaterial);
+
+          if (Array.isArray(parsed)) {
+            parsedBody.refMaterial = parsed;
+          } else {
+            parsedBody.refMaterial = [parsedBody.refMaterial];
+          }
+        } catch {
+          parsedBody.refMaterial = [parsedBody.refMaterial];
+        }
+      } else {
+        parsedBody.refMaterial = [];
+      }
+    }
 
     // ── 4. Save to DB ────────────────────────────────────────────────────────
     const hackathonData = new hackathonModel({

@@ -381,7 +381,7 @@ const CreateHackathonPage = () => {
     evaluationCriteria: [],
     projectSubmission: [],
     FAQs: [],
-    refMaterial: "",
+    refMaterial: [],
     aboutUs: "",
   });
 
@@ -475,7 +475,6 @@ const CreateHackathonPage = () => {
         "description",
         "overview",
         "difficulty",
-        "refMaterial",
         "aboutUs",
       ];
       stringFields.forEach((field) => {
@@ -496,6 +495,7 @@ const CreateHackathonPage = () => {
         "category",
         "themes",
         "problems",
+        "refMaterial",
         "TandCforHackathon",
         "evaluationCriteria",
         "projectSubmission",
@@ -740,13 +740,11 @@ const CreateHackathonPage = () => {
               Additional Content
             </h2>
             <div className="space-y-6">
-              <input
-                type="text"
-                name="refMaterial"
-                placeholder="Reference Material URL"
-                value={formData.refMaterial}
-                onChange={handleChange}
-                className={inputClass}
+              <DynamicListInput
+                label="Reference Material URLs"
+                placeholder="https://…"
+                values={formData.refMaterial}
+                onUpdate={(v) => setFormData((p) => ({ ...p, refMaterial: v }))}
               />
               <textarea
                 name="aboutUs"
