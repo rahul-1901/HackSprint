@@ -12,14 +12,13 @@ const HideRoute = ({ children }) => {
         const isRegistrationDynamic = matchPath({ path: "/hackathon/RegistrationForm/:id", exact: true }, location.pathname);
         const isTeamDynamic = matchPath({ path: "/hackathon/:hackathonId/team/:teamId", exact: true }, location.pathname);
         
-        const isUserSubmissionDynamic = matchPath({ path: "/hackathon/:slug/submission/:userId", exact: true }, location.pathname);
+        // const isUserSubmissionDynamic = matchPath({ path: "/hackathon/:slug/submission/:userId", exact: true }, location.pathname);
 
         if (
             !navVisible.includes(location.pathname) &&
             !isHackathonDynamic &&
             !isRegistrationDynamic &&
-            !isTeamDynamic &&
-            !isUserSubmissionDynamic
+            !isTeamDynamic
         ) {
             setShowNavbar(false);
         } else {

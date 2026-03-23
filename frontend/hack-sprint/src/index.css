@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import 'tw-animate-css';
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap');
 
 
 @custom-variant dark (&:is(.dark *));
@@ -123,21 +124,6 @@
   }
 }
 
-
-@font-face {
-    font-family: 'Techbit';
-    src: url("./assets/TechbitdemoRegular-m2nAm.otf") format('opentype');
-    font-style: normal;
-    font-weight: 400;
-}
-
-@font-face {
-    font-family: 'Molgan';
-    src: url("./assets/MolganRegular-YqWj2.otf") format('opentype');
-    font-style: normal;
-    font-weight: 400;
-}
-
 body {
     background-color: #111827;
 }
@@ -172,9 +158,16 @@ html{
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
+  display: none;
 }
 ::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 10px;
+  display: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;    /* Firefox */
 }

@@ -11,15 +11,32 @@ import {
   CloudUpload,
   Play,
 } from "lucide-react";
+import { createPortal } from "react-dom";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+const FontStyle = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap');
+    .font-jb   { font-family: 'JetBrains Mono', monospace; }
+    .font-syne { font-family: 'Syne', sans-serif; }
+    .agm-card::before, .agm-card::after {
+      content: ''; position: absolute;
+      width: 9px; height: 9px; border-style: solid;
+      border-color: rgba(95,255,96,.45);
+    }
+    .agm-card::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .agm-card::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+    .agm-thumb-strip::-webkit-scrollbar { display: none; }
+    @keyframes agm-spin { to { transform: rotate(360deg); } }
+    .agm-spin { animation: agm-spin .7s linear infinite; }
+  `}</style>
+);
+
 const isVideo = (url) => /\.(mp4|webm|ogg)$/i.test(url);
 const getToken = () =>
   localStorage.getItem("adminToken") || localStorage.getItem("token");
 const API = (id, path = "") =>
   `${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${id}/gallery${path}`;
 
-// ─── Lazy Media ───────────────────────────────────────────────────────────────
 const LazyMedia = ({ url, alt, className }) => {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -61,7 +78,6 @@ const LazyMedia = ({ url, alt, className }) => {
   );
 };
 
-// ─── Fullscreen Lightbox ──────────────────────────────────────────────────────
 const Lightbox = ({ items, startIndex, onClose }) => {
   const [index, setIndex] = useState(startIndex);
   const [loaded, setLoaded] = useState(false);
@@ -103,24 +119,24 @@ const Lightbox = ({ items, startIndex, onClose }) => {
 
   const url = items[index];
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-sm">
+  return createPortal(
+    <div className="font-jb fixed inset-0 z-50 flex flex-col bg-[rgba(0,0,0,0.96)] backdrop-blur-sm">
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-3 flex-shrink-0 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <span className="text-white/40 text-xs font-mono tracking-widest uppercase">
+      <div className="flex items-center justify-between px-5 py-[0.65rem] flex-shrink-0 border-b border-[rgba(95,255,96,0.1)]">
+        <div className="flex items-center gap-[0.6rem]">
+          <span className="text-[0.55rem] tracking-[0.18em] uppercase text-[rgba(95,255,96,0.4)]">
             Gallery
           </span>
-          <span className="w-px h-4 bg-white/20" />
-          <span className="text-white/70 text-xs font-mono">
+          <span className="w-px h-3.5 bg-[rgba(95,255,96,0.15)]" />
+          <span className="text-[0.62rem] text-[rgba(180,220,180,0.55)]">
             {index + 1} / {items.length}
           </span>
         </div>
         <button
           onClick={onClose}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/8 hover:bg-white/15 text-white/70 hover:text-white text-xs font-medium transition-all cursor-pointer border border-white/10"
+          className="inline-flex items-center gap-[0.35rem] px-[0.7rem] py-[0.3rem] rounded-[3px] border border-[rgba(95,255,96,0.15)] bg-[rgba(95,255,96,0.05)] text-[rgba(95,255,96,0.5)] hover:text-[#5fff60] hover:border-[rgba(95,255,96,0.35)] text-[0.6rem] tracking-[0.08em] uppercase transition-all cursor-pointer"
         >
-          <X className="w-3.5 h-3.5" /> Close
+          <X size={12} /> Close
         </button>
       </div>
 
@@ -129,16 +145,16 @@ const Lightbox = ({ items, startIndex, onClose }) => {
         {items.length > 1 && (
           <button
             onClick={prev}
-            className="absolute left-4 z-10 p-2.5 rounded-xl bg-white/8 hover:bg-white/18 border border-white/10 text-white/70 hover:text-white transition-all cursor-pointer"
+            className="absolute left-3 z-10 p-[0.5rem] rounded-[3px] border border-[rgba(95,255,96,0.15)] bg-[rgba(95,255,96,0.05)] text-[rgba(95,255,96,0.45)] hover:text-[#5fff60] hover:border-[rgba(95,255,96,0.35)] transition-all cursor-pointer"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft size={18} />
           </button>
         )}
 
         <div className="relative flex items-center justify-center w-full h-full">
           {!loaded && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-white/20 border-t-white/70 rounded-full animate-spin" />
+              <div className="agm-spin w-7 h-7 border-2 border-[rgba(95,255,96,0.15)] border-t-[#5fff60] rounded-full" />
             </div>
           )}
           {isVideo(url) ? (
@@ -148,7 +164,7 @@ const Lightbox = ({ items, startIndex, onClose }) => {
               controls
               autoPlay
               onLoadedData={() => setLoaded(true)}
-              className="max-w-full max-h-full rounded-xl"
+              className="max-w-full max-h-full rounded-[3px]"
               style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.25s" }}
             />
           ) : (
@@ -157,7 +173,7 @@ const Lightbox = ({ items, startIndex, onClose }) => {
               src={url}
               alt=""
               onLoad={() => setLoaded(true)}
-              className="max-w-full max-h-full object-contain rounded-xl"
+              className="max-w-full max-h-full object-contain rounded-[3px]"
               style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.25s" }}
             />
           )}
@@ -166,20 +182,19 @@ const Lightbox = ({ items, startIndex, onClose }) => {
         {items.length > 1 && (
           <button
             onClick={next}
-            className="absolute right-4 z-10 p-2.5 rounded-xl bg-white/8 hover:bg-white/18 border border-white/10 text-white/70 hover:text-white transition-all cursor-pointer"
+            className="absolute right-3 z-10 p-[0.5rem] rounded-[3px] border border-[rgba(95,255,96,0.15)] bg-[rgba(95,255,96,0.05)] text-[rgba(95,255,96,0.45)] hover:text-[#5fff60] hover:border-[rgba(95,255,96,0.35)] transition-all cursor-pointer"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight size={18} />
           </button>
         )}
       </div>
 
       {/* Thumbnail strip */}
       {items.length > 1 && (
-        <div className="flex-shrink-0 border-t border-white/10 px-4 py-3">
+        <div className="flex-shrink-0 border-t border-[rgba(95,255,96,0.08)] px-4 py-[0.65rem]">
           <div
             ref={thumbsRef}
-            className="flex gap-2 overflow-x-auto pb-1"
-            style={{ scrollbarWidth: "none" }}
+            className="agm-thumb-strip flex gap-[0.4rem] overflow-x-auto pb-1"
           >
             {items.map((thumbUrl, i) => (
               <button
@@ -189,18 +204,18 @@ const Lightbox = ({ items, startIndex, onClose }) => {
                   setLoaded(false);
                   setIndex(i);
                 }}
-                className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 border-2"
+                className="flex-shrink-0 w-12 h-12 rounded-[2px] overflow-hidden cursor-pointer transition-all duration-200 border"
                 style={{
                   borderColor:
                     i === index
-                      ? "rgba(255,255,255,0.8)"
-                      : "rgba(255,255,255,0.1)",
-                  opacity: i === index ? 1 : 0.45,
+                      ? "rgba(95,255,96,0.8)"
+                      : "rgba(95,255,96,0.12)",
+                  opacity: i === index ? 1 : 0.4,
                 }}
               >
                 {isVideo(thumbUrl) ? (
-                  <div className="w-full h-full bg-white/10 flex items-center justify-center">
-                    <Play className="w-4 h-4 text-white/60" />
+                  <div className="w-full h-full bg-[rgba(95,255,96,0.06)] flex items-center justify-center">
+                    <Play size={14} className="text-[rgba(95,255,96,0.5)]" />
                   </div>
                 ) : (
                   <img
@@ -214,22 +229,21 @@ const Lightbox = ({ items, startIndex, onClose }) => {
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 };
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
 const AdminGalleryManager = ({ hackathonId }) => {
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [gallery, setGallery] = useState([]); // string[]
+  const [gallery, setGallery] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef(null);
 
-  // Fetch gallery
   useEffect(() => {
     let cancelled = false;
     axios
@@ -246,7 +260,6 @@ const AdminGalleryManager = ({ hackathonId }) => {
     };
   }, [hackathonId]);
 
-  // Revoke preview URLs on unmount
   useEffect(() => () => previews.forEach(URL.revokeObjectURL), [previews]);
 
   const handleFiles = useCallback((selected) => {
@@ -261,7 +274,6 @@ const AdminGalleryManager = ({ hackathonId }) => {
     setPreviews([]);
   };
 
-  // Upload — backend expects req.files so we append with key "images"
   const handleUpload = async () => {
     if (!files.length) return;
     const formData = new FormData();
@@ -275,7 +287,7 @@ const AdminGalleryManager = ({ hackathonId }) => {
         },
       });
       toast.success(`${files.length} image(s) uploaded!`);
-      setGallery(data.gallery); // string[]
+      setGallery(data.gallery);
       clearSelection();
     } catch (err) {
       toast.error(err.response?.data?.message || "Upload failed");
@@ -284,7 +296,6 @@ const AdminGalleryManager = ({ hackathonId }) => {
     }
   };
 
-  // Delete — backend expects { imageUrl } in request body
   const handleDelete = async (imageUrl) => {
     if (!window.confirm("Delete this image?")) return;
     try {
@@ -292,180 +303,212 @@ const AdminGalleryManager = ({ hackathonId }) => {
         data: { imageUrl },
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      // toast.success("Deleted");
-      setGallery(data.gallery); // updated string[]
-      // Close lightbox if the deleted item was being viewed
-      if (lightboxIndex !== null && lightboxIndex >= data.gallery.length) {
+      setGallery(data.gallery);
+      if (lightboxIndex !== null && lightboxIndex >= data.gallery.length)
         setLightboxIndex(null);
-      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Delete failed");
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* ── Upload ─────────────────────────────────────────────────────── */}
-      <div className="bg-gray-900/60 border border-green-500/20 rounded-2xl p-6 space-y-4">
-        <h3 className="text-lg font-bold text-white flex items-center gap-2">
-          <Upload className="w-5 h-5 text-green-400" /> Upload Images
-        </h3>
+    <>
+      <FontStyle />
+      <div className="font-jb flex flex-col gap-[1.25rem]">
+        <div className="agm-card relative bg-[rgba(10,12,10,0.88)] border border-[rgba(95,255,96,0.12)] rounded-[4px] backdrop-blur-[14px] p-[1.5rem] flex flex-col gap-[1rem]">
+          {/* heading */}
+          <div className="flex items-center gap-[0.5rem]">
+            <Upload size={14} className="text-[#5fff60]" />
+            <span className="font-syne text-[0.95rem] font-extrabold text-white tracking-tight">
+              Upload Images
+            </span>
+          </div>
 
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragging(false);
-            handleFiles(
-              Array.from(e.dataTransfer.files).filter((f) =>
-                f.type.startsWith("image/")
-              )
-            );
-          }}
-          onClick={() => inputRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 ${
-            dragging
-              ? "border-green-400 bg-green-400/10"
-              : "border-gray-600 hover:border-green-500/60 hover:bg-gray-700/20"
-          }`}
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            multiple
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => handleFiles(Array.from(e.target.files))}
-          />
-          <CloudUpload
-            className={`w-9 h-9 mx-auto mb-2 transition-colors ${
-              dragging ? "text-green-400" : "text-gray-500"
-            }`}
-          />
-          <p className="text-gray-300 text-sm">
-            Drop images or <span className="text-green-400">browse</span>
-          </p>
-          <p className="text-gray-600 text-xs mt-1">
-            Max 10 images · JPEG, PNG, WEBP
-          </p>
+          {/* drop zone */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              handleFiles(
+                Array.from(e.dataTransfer.files).filter((f) =>
+                  f.type.startsWith("image/")
+                )
+              );
+            }}
+            onClick={() => inputRef.current?.click()}
+            className={`flex flex-col items-center justify-center gap-[0.5rem] h-[8rem] border rounded-[3px] cursor-pointer transition-all duration-200
+              ${
+                dragging
+                  ? "border-[#5fff60] bg-[rgba(95,255,96,0.07)]"
+                  : "border-dashed border-[rgba(95,255,96,0.2)] bg-[rgba(95,255,96,0.03)] hover:border-[rgba(95,255,96,0.38)] hover:bg-[rgba(95,255,96,0.06)]"
+              }`}
+          >
+            <input
+              ref={inputRef}
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleFiles(Array.from(e.target.files))}
+            />
+            <CloudUpload
+              size={22}
+              className={`transition-colors ${
+                dragging ? "text-[#5fff60]" : "text-[rgba(95,255,96,0.3)]"
+              }`}
+            />
+            <div className="text-center">
+              <p className="text-[0.7rem] text-[rgba(180,220,180,0.6)]">
+                Drop images or <span className="text-[#5fff60]">browse</span>
+              </p>
+              <p className="text-[0.58rem] text-[rgba(120,160,120,0.38)] mt-[0.15rem] tracking-[0.05em]">
+                MAX 10 IMAGES · JPEG, PNG, WEBP
+              </p>
+            </div>
+          </div>
+
+          {/* preview strip */}
+          {previews.length > 0 && (
+            <div className="flex flex-col gap-[0.5rem]">
+              <div className="flex items-center justify-between">
+                <span className="text-[0.6rem] text-[rgba(180,220,180,0.45)] tracking-[0.06em]">
+                  {files.length} selected
+                </span>
+                <button
+                  onClick={clearSelection}
+                  className="inline-flex items-center gap-[0.3rem] text-[0.58rem] tracking-[0.06em] uppercase text-[rgba(255,80,80,0.55)] hover:text-[#ff6060] transition-colors cursor-pointer"
+                >
+                  <X size={10} /> Clear
+                </button>
+              </div>
+              <div className="flex gap-[0.4rem] flex-wrap">
+                {previews.map((src, i) => (
+                  <div
+                    key={i}
+                    className="w-12 h-12 rounded-[2px] overflow-hidden bg-[rgba(95,255,96,0.06)] border border-[rgba(95,255,96,0.12)] flex-shrink-0"
+                  >
+                    <img
+                      src={src}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* upload button */}
+          <button
+            onClick={handleUpload}
+            disabled={uploading || !files.length}
+            className="font-jb self-start inline-flex items-center gap-[0.4rem] text-[0.65rem] tracking-[0.1em] uppercase px-[1.1rem] py-[0.55rem] rounded-[3px] border cursor-pointer transition-all duration-150
+              bg-[#5fff60] border-[#5fff60] text-[#050905] font-bold
+              hover:bg-[#7fff80] hover:shadow-[0_0_18px_rgba(95,255,96,0.28)]
+              disabled:bg-[rgba(95,255,96,0.18)] disabled:border-[rgba(95,255,96,0.18)] disabled:text-[rgba(95,255,96,0.35)] disabled:cursor-not-allowed disabled:shadow-none"
+          >
+            {uploading ? (
+              <>
+                <div className="agm-spin w-[12px] h-[12px] border-2 border-[rgba(5,9,5,0.25)] border-t-[#050905] rounded-full" />{" "}
+                Uploading…
+              </>
+            ) : (
+              <>
+                <Upload size={12} /> Upload
+              </>
+            )}
+          </button>
         </div>
 
-        {previews.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <p className="text-gray-400 text-xs">{files.length} selected</p>
-              <button
-                onClick={clearSelection}
-                className="text-xs text-red-400 hover:text-red-300 cursor-pointer flex items-center gap-1"
-              >
-                <X className="w-3 h-3" /> Clear
-              </button>
+        <div className="agm-card relative bg-[rgba(10,12,10,0.88)] border border-[rgba(95,255,96,0.12)] rounded-[4px] backdrop-blur-[14px] p-[1.5rem] flex flex-col gap-[1rem]">
+          {/* heading */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-[0.5rem]">
+              <ImageIcon size={14} className="text-[#5fff60]" />
+              <span className="font-syne text-[0.95rem] font-extrabold text-white tracking-tight">
+                Gallery
+              </span>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              {previews.map((src, i) => (
+            {gallery.length > 0 && (
+              <span className="font-jb text-[0.58rem] tracking-[0.1em] uppercase text-[rgba(95,255,96,0.45)] border border-[rgba(95,255,96,0.15)] px-[0.55rem] py-[0.18rem] rounded-[2px]">
+                {gallery.length} items
+              </span>
+            )}
+          </div>
+
+          {/* states */}
+          {loading ? (
+            <div className="flex justify-center py-14">
+              <div className="agm-spin w-7 h-7 border-2 border-[rgba(95,255,96,0.15)] border-t-[#5fff60] rounded-full" />
+            </div>
+          ) : gallery.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-[0.5rem] py-12">
+              <ImageIcon size={36} className="text-[rgba(95,255,96,0.12)]" />
+              <p className="font-jb text-[0.62rem] text-[rgba(120,160,120,0.38)] tracking-[0.08em] uppercase">
+                No images yet
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-[0.6rem]">
+              {gallery.map((url, i) => (
                 <div
                   key={i}
-                  className="w-14 h-14 rounded-lg overflow-hidden bg-gray-800 shrink-0"
+                  className="relative group aspect-square bg-[rgba(95,255,96,0.05)] border border-[rgba(95,255,96,0.08)] rounded-[3px] overflow-hidden cursor-pointer"
                 >
-                  <img
-                    src={src}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
+                  <LazyMedia url={url} alt="" className="w-full h-full" />
+
+                  {isVideo(url) && (
+                    <div
+                      className="absolute top-[0.35rem] left-[0.35rem] pointer-events-none
+                      font-jb inline-flex items-center gap-[0.25rem] text-[0.5rem] tracking-[0.08em] uppercase
+                      px-[0.4rem] py-[0.15rem] rounded-[2px] bg-[rgba(0,0,0,0.7)] text-[rgba(95,255,96,0.7)] border border-[rgba(95,255,96,0.2)]"
+                    >
+                      <Play size={9} /> Video
+                    </div>
+                  )}
+
+                  {/* hover overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/55 [@media(hover:none)]:bg-black/45 transition-all duration-200 flex items-center justify-center gap-[0.5rem]">
+                    {/* view */}
+                    <button
+                      onClick={() => setLightboxIndex(i)}
+                      className="opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity
+                        p-[0.45rem] rounded-[2px] border border-[rgba(95,255,96,0.3)] bg-[rgba(95,255,96,0.1)] text-[#5fff60]
+                        hover:bg-[rgba(95,255,96,0.2)] cursor-pointer"
+                    >
+                      <ImageIcon size={14} />
+                    </button>
+                    {/* delete */}
+                    <button
+                      onClick={() => handleDelete(url)}
+                      className="opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity
+                        p-[0.45rem] rounded-[2px] border border-[rgba(255,60,60,0.3)] bg-[rgba(255,60,60,0.15)] text-[#ff9090]
+                        hover:bg-[rgba(255,60,60,0.28)] cursor-pointer"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
-
-        <button
-          onClick={handleUpload}
-          disabled={uploading || !files.length}
-          className="w-full sm:w-auto px-5 py-2.5 bg-green-500 hover:bg-green-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition cursor-pointer flex items-center justify-center gap-2 text-sm"
-        >
-          {uploading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{" "}
-              Uploading…
-            </>
-          ) : (
-            <>
-              <Upload className="w-4 h-4" /> Upload
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* ── Gallery ────────────────────────────────────────────────────── */}
-      <div className="bg-gray-900/60 border border-green-500/20 rounded-2xl p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <ImageIcon className="w-5 h-5 text-green-400" /> Gallery
-          </h3>
-          {gallery.length > 0 && (
-            <span className="text-xs text-gray-500 font-mono bg-gray-800 px-2.5 py-1 rounded-full">
-              {gallery.length} items
-            </span>
           )}
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-16">
-            <div className="w-8 h-8 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : gallery.length === 0 ? (
-          <div className="text-center py-14 space-y-2">
-            <ImageIcon className="w-12 h-12 text-gray-700 mx-auto" />
-            <p className="text-gray-500 text-sm">No images yet</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {gallery.map((url, i) => (
-              <div
-                key={i}
-                className="relative group aspect-square bg-gray-800 rounded-xl overflow-hidden cursor-pointer"
-              >
-                <LazyMedia url={url} alt="" className="w-full h-full" />
-
-                {isVideo(url) && (
-                  <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1 pointer-events-none">
-                    <Play className="w-3 h-3" /> Video
-                  </div>
-                )}
-
-                {/* Overlay — always visible on touch, hover-only on desktop */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 [@media(hover:none)]:bg-black/40 transition-all duration-300 flex items-center justify-center gap-2">
-                  <button
-                    onClick={() => setLightboxIndex(i)}
-                    className="opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity p-2.5 bg-white/15 hover:bg-white/30 active:bg-white/40 text-white rounded-full cursor-pointer backdrop-blur-sm"
-                  >
-                    <ImageIcon className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(url)}
-                    className="opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity p-2.5 bg-red-500/80 hover:bg-red-500 active:bg-red-600 text-white rounded-full cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+        {/* Lightbox */}
+        {lightboxIndex !== null && (
+          <Lightbox
+            items={gallery}
+            startIndex={lightboxIndex}
+            onClose={() => setLightboxIndex(null)}
+          />
         )}
       </div>
-
-      {lightboxIndex !== null && (
-        <Lightbox
-          items={gallery}
-          startIndex={lightboxIndex}
-          onClose={() => setLightboxIndex(null)}
-        />
-      )}
-    </div>
+    </>
   );
 };
 

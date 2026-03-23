@@ -1,0 +1,119 @@
+.ud-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+      rgba(95, 255, 96, 0.026) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(95, 255, 96, 0.026) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+.ud-bg::after {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    rgba(95, 255, 96, 0.055) 0%,
+    transparent 65%
+  );
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ── card corner brackets ── */
+.ud-card::before,
+.ud-card::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-style: solid;
+  border-color: rgba(95, 255, 96, 0.35);
+  transition: border-color 0.2s;
+}
+.ud-card::before {
+  top: -1px;
+  left: -1px;
+  border-width: 2px 0 0 2px;
+}
+.ud-card::after {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 2px 2px 0;
+}
+.ud-card:hover::before,
+.ud-card:hover::after {
+  border-color: rgba(95, 255, 96, 0.65);
+}
+
+/* amber card corners */
+.ud-card-amber::before,
+.ud-card-amber::after {
+  border-color: rgba(255, 184, 77, 0.35);
+}
+.ud-card-amber:hover::before,
+.ud-card-amber:hover::after {
+  border-color: rgba(255, 184, 77, 0.65);
+}
+
+/* ── heatmap override ── */
+.react-calendar-heatmap rect {
+  rx: 2px;
+}
+.react-calendar-heatmap text {
+  fill: rgba(95, 255, 96, 0.3);
+  font-size: 8px;
+}
+.react-calendar-heatmap .color-empty {
+  fill: rgba(95, 255, 96, 0.06);
+}
+.react-calendar-heatmap .color-scale-1 {
+  fill: rgba(95, 255, 96, 0.2);
+}
+.react-calendar-heatmap .color-scale-2 {
+  fill: rgba(95, 255, 96, 0.4);
+}
+.react-calendar-heatmap .color-scale-3 {
+  fill: rgba(95, 255, 96, 0.65);
+}
+.react-calendar-heatmap .color-scale-4 {
+  fill: rgba(95, 255, 96, 0.9);
+}
+
+/* ── reward modal animate ── */
+@keyframes ud-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.ud-reward-modal {
+  animation: ud-pop 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ── loading spinner ── */
+@keyframes ud-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ud-spinner {
+  width: 26px;
+  height: 26px;
+  border: 2px solid rgba(95, 255, 96, 0.15);
+  border-top-color: #5fff60;
+  border-radius: 50%;
+  animation: ud-spin 0.7s linear infinite;
+}

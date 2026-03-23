@@ -10,6 +10,17 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { createPortal } from "react-dom";
 
+const isVideo = (url) => /\.(mp4|webm|ogg)$/i.test(url);
+
+const NavBtn = ({ onClick, children, className = "" }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center justify-center w-9 h-9 rounded-[3px] border bg-[rgba(10,12,10,0.88)] border-[rgba(95,255,96,0.2)] text-[rgba(95,255,96,0.6)] hover:bg-[rgba(95,255,96,0.08)] hover:border-[rgba(95,255,96,0.42)] hover:text-[#5fff60] transition-all cursor-pointer ${className}`}
+  >
+    {children}
+  </button>
+);
+
 const Gallery = () => {
   const { id: hackathonId } = useParams();
   const [images, setImages] = useState([]);
@@ -18,287 +29,264 @@ const Gallery = () => {
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [imagesPerSlide, setImagesPerSlide] = useState(3);
-  const totalSlides = Math.max(1, Math.ceil(images.length / imagesPerSlide));
-  const isVideo = (url) => {
-    return /\.(mp4|webm|ogg)$/i.test(url);
-  };
 
+  const totalSlides = Math.max(1, Math.ceil(images.length / imagesPerSlide));
+  const startIdx = currentIndex * imagesPerSlide;
+  const visible = images.slice(startIdx, startIdx + imagesPerSlide);
   const currentFile = images[lightboxIndex];
-  const video = isVideo(currentFile);
 
   useEffect(() => {
-    fetchGallery();
-  }, [hackathonId]);
-
-  const fetchGallery = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(
+    axios
+      .get(
         `${
           import.meta.env.VITE_API_BASE_URL
         }/api/hackathons/${hackathonId}/gallery`
-      );
-
-      if (response.data.success) {
-        setImages(response.data.gallery || []);
-      }
-
-      // console.log("Fetched gallery images:", response.data.gallery);
-    } catch (error) {
-      console.error("Error fetching gallery:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-useEffect(() => {
-  const handleResize = () => {
-    if (window.innerWidth < 768) {
-      setImagesPerSlide(1);
-    } else {
-      setImagesPerSlide(3);
-    }
-  };
-
-  handleResize();
-  window.addEventListener("resize", handleResize);
-
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
+      )
+      .then((r) => {
+        if (r.data.success) setImages(r.data.gallery || []);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [hackathonId]);
 
   useEffect(() => {
-  setCurrentIndex(0);
-}, [imagesPerSlide]);
+    const handle = () => setImagesPerSlide(window.innerWidth < 768 ? 1 : 3);
+    handle();
+    window.addEventListener("resize", handle);
+    return () => window.removeEventListener("resize", handle);
+  }, []);
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % totalSlides);
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
-  };
-
-  const openLightbox = (index) => {
-    setLightboxIndex(index);
-    setShowLightbox(true);
-  };
-
-  const closeLightbox = () => {
-    setShowLightbox(false);
-  };
-
-  const nextLightboxImage = () => {
-    setLightboxIndex((prev) => (prev + 1) % images.length);
-  };
-
-  const prevLightboxImage = () => {
-    setLightboxIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-
-  // Keyboard navigation for lightbox
   useEffect(() => {
-    const handleKeyPress = (e) => {
+    setCurrentIndex(0);
+  }, [imagesPerSlide]);
+
+  useEffect(() => {
+    const onKey = (e) => {
       if (!showLightbox) return;
-
-      if (e.key === "ArrowLeft") prevLightboxImage();
-      if (e.key === "ArrowRight") nextLightboxImage();
-      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft")
+        setLightboxIndex((p) => (p === 0 ? images.length - 1 : p - 1));
+      if (e.key === "ArrowRight")
+        setLightboxIndex((p) => (p + 1) % images.length);
+      if (e.key === "Escape") setShowLightbox(false);
     };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [showLightbox, images.length]);
 
   useEffect(() => {
-    if (showLightbox) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-
+    document.body.style.overflow = showLightbox ? "hidden" : "";
     return () => {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "";
     };
   }, [showLightbox]);
 
-  if (loading) {
+  const openLightbox = (idx) => {
+    setLightboxIndex(idx);
+    setShowLightbox(true);
+  };
+
+  if (loading)
     return (
-      <div className="flex items-center justify-center p-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400"></div>
+      <div className="flex items-center justify-center py-16 gap-3 font-[family-name:'JetBrains_Mono',monospace]">
+        <div className="w-7 h-7 rounded-full border-2 border-[rgba(95,255,96,0.15)] border-t-[#5fff60] animate-spin" />
+        <span className="text-[0.62rem] tracking-[0.1em] uppercase text-[rgba(95,255,96,0.35)]">
+          Loading gallery…
+        </span>
       </div>
     );
-  }
 
-  if (images.length === 0) {
+  if (images.length === 0)
     return (
-      <div className="text-center p-12 bg-gray-800/50 border border-green-500/20 rounded-lg">
-        <ImageIcon className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-        <p className="text-gray-400 text-lg">No images in gallery yet.</p>
-        <p className="text-gray-500 text-sm mt-2">
+      <div className="flex flex-col items-center justify-center py-16 gap-3 font-[family-name:'JetBrains_Mono',monospace]">
+        <div className="relative w-12 h-12 rounded-[3px] bg-[rgba(95,255,96,0.05)] border border-[rgba(95,255,96,0.12)] flex items-center justify-center">
+          <span className="absolute top-[-1px] left-[-1px] w-2 h-2 border-t-2 border-l-2 border-[rgba(95,255,96,0.3)]" />
+          <ImageIcon size={20} className="text-[rgba(95,255,96,0.2)]" />
+        </div>
+        <p className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-sm tracking-tight">
+          No gallery yet
+        </p>
+        <p className="text-[0.6rem] text-[rgba(180,220,180,0.3)]">
           Check back later for event photos!
         </p>
       </div>
     );
-  }
-
-  const startIdx = currentIndex * imagesPerSlide;
-  const visibleImages = images.slice(startIdx, startIdx + imagesPerSlide);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Glimpse from event
-        </h2>
-        <p className="text-gray-400">
-           Chekout photos and videos from the
-          hackathon
-        </p>
-      </div>
-
-      {/* Slider */}
-      <div className="relative">
-        {/* Images Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {visibleImages.map((file, idx) => {
-            const actualIndex = startIdx + idx;
-            const video = isVideo(file);
-
-            return (
-              <div
-                key={actualIndex}
-                className="relative group overflow-hidden rounded-lg aspect-video bg-gray-800 cursor-pointer"
-                onClick={() => openLightbox(actualIndex)}
-              >
-                {video ? (
-                  <>
-                    <video
-                      src={file}
-                      className="w-full h-full object-cover"
-                      muted
-                    />
-
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition">
-                      <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                        <Play
-                          className="w-6 h-6 text-black ml-1"
-                          fill="black"
-                        />
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <img
-                    src={file}
-                    alt=""
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                  />
-                )}
-              </div>
-            );
-          })}
+    <>
+      <div className="flex flex-col gap-5 font-[family-name:'JetBrains_Mono',monospace]">
+        <div>
+          <h2 className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-2xl tracking-tight mb-1">
+            Glimpse from event
+          </h2>
+          <p className="text-[0.62rem] text-[rgba(180,220,180,0.4)] tracking-[0.04em]">
+            Photos and videos from the hackathon
+          </p>
         </div>
 
-        {/* Navigation Arrows */}
-        {images.length > imagesPerSlide && (
-          <>
-            <button
-              onClick={prevSlide}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-gray-800/90 hover:bg-gray-700 border border-green-500/30 hover:border-green-400/50 text-white p-3 rounded-full transition-all duration-300 shadow-lg z-10"
-              aria-label="Previous slide"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
+        <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {visible.map((file, idx) => {
+              const actualIdx = startIdx + idx;
+              const vid = isVideo(file);
+              return (
+                <div
+                  key={actualIdx}
+                  onClick={() => openLightbox(actualIdx)}
+                  className="relative group overflow-hidden rounded-[4px] border border-[rgba(95,255,96,0.1)] hover:border-[rgba(95,255,96,0.3)] aspect-video bg-[rgba(10,12,10,0.7)] cursor-pointer transition-all"
+                >
+                  <span className="absolute top-[-1px] left-[-1px] w-2 h-2 border-t-2 border-l-2 border-[rgba(95,255,96,0.35)] z-10" />
+                  <span className="absolute bottom-[-1px] right-[-1px] w-2 h-2 border-b-2 border-r-2 border-[rgba(95,255,96,0.35)] z-10" />
 
-            <button
-              onClick={nextSlide}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-gray-800/90 hover:bg-gray-700 border border-green-500/30 hover:border-green-400/50 text-white p-3 rounded-full transition-all duration-300 shadow-lg z-10"
-              aria-label="Next slide"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          </>
+                  {vid ? (
+                    <>
+                      <video
+                        src={file}
+                        className="w-full h-full object-cover"
+                        muted
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition-all">
+                        <div className="w-10 h-10 rounded-[3px] bg-[rgba(95,255,96,0.15)] border border-[rgba(95,255,96,0.3)] flex items-center justify-center">
+                          <Play
+                            size={16}
+                            className="text-[#5fff60] ml-0.5"
+                            fill="currentColor"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <img
+                      src={file}
+                      alt=""
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {images.length > imagesPerSlide && (
+            <>
+              <NavBtn
+                onClick={() =>
+                  setCurrentIndex((p) => (p === 0 ? totalSlides - 1 : p - 1))
+                }
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-5 z-10"
+              >
+                <ChevronLeft size={16} />
+              </NavBtn>
+              <NavBtn
+                onClick={() => setCurrentIndex((p) => (p + 1) % totalSlides)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-5 z-10"
+              >
+                <ChevronRight size={16} />
+              </NavBtn>
+            </>
+          )}
+        </div>
+
+        {images.length > imagesPerSlide && (
+          <div className="flex justify-center gap-1.5">
+            {Array.from({ length: totalSlides }).map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                  idx === currentIndex
+                    ? "w-6 bg-[#5fff60]"
+                    : "w-1.5 bg-[rgba(95,255,96,0.2)] hover:bg-[rgba(95,255,96,0.4)]"
+                }`}
+              />
+            ))}
+          </div>
         )}
       </div>
 
-      {/* Dots */}
-      {images.length > imagesPerSlide && (
-        <div className="flex justify-center gap-2 mt-6">
-          {Array.from({ length: totalSlides }).map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                idx === currentIndex
-                  ? "w-8 bg-green-400"
-                  : "w-2 bg-gray-600 hover:bg-gray-500"
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Lightbox */}
-      {showLightbox && 
+      {showLightbox &&
         createPortal(
-        <div
-          className="fixed inset-0 z-100 bg-black/95 flex flex-col items-center justify-center"
-          onClick={closeLightbox}
-        >
           <div
-            className="relative w-full max-w-7xl h-full flex flex-col items-center justify-center px-4"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+            onClick={() => setShowLightbox(false)}
           >
-            <div className="absolute top-4 left-0 right-0 flex justify-between items-center px-6 z-50">
-              <div className="text-white text-sm md:text-base">
-                {lightboxIndex + 1} / {images.length}
+            <div
+              className="relative w-full max-w-6xl h-full flex flex-col items-center justify-center px-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="absolute top-4 left-0 right-0 flex items-center justify-between px-6 z-50">
+                <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.62rem] tracking-[0.1em] text-[rgba(95,255,96,0.5)]">
+                  {lightboxIndex + 1} / {images.length}
+                </span>
+                <button
+                  onClick={() => setShowLightbox(false)}
+                  className="flex items-center justify-center w-8 h-8 rounded-[3px] border border-[rgba(95,255,96,0.2)] bg-[rgba(10,12,10,0.8)] text-[rgba(95,255,96,0.5)] hover:text-[#5fff60] hover:border-[rgba(95,255,96,0.45)] transition-all cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
               </div>
 
-              <button
-                onClick={closeLightbox}
-                className="text-white hover:text-green-400 p-2 rounded-full hover:bg-white/10 transition-all"
+              <div className="w-full h-[75vh] flex items-center justify-center">
+                {isVideo(currentFile) ? (
+                  <video
+                    src={currentFile}
+                    controls
+                    autoPlay
+                    className="max-h-full max-w-full rounded-[4px] border border-[rgba(95,255,96,0.15)]"
+                  />
+                ) : (
+                  <img
+                    src={currentFile}
+                    alt=""
+                    className="max-h-full max-w-full object-contain rounded-[4px] border border-[rgba(95,255,96,0.12)]"
+                  />
+                )}
+              </div>
+
+              <NavBtn
+                onClick={() =>
+                  setLightboxIndex((p) => (p === 0 ? images.length - 1 : p - 1))
+                }
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-50 w-10 h-10"
               >
-                <X className="w-7 h-7" />
-              </button>
+                <ChevronLeft size={18} />
+              </NavBtn>
+              <NavBtn
+                onClick={() => setLightboxIndex((p) => (p + 1) % images.length)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-50 w-10 h-10"
+              >
+                <ChevronRight size={18} />
+              </NavBtn>
+
+              <div className="absolute bottom-5 left-0 right-0 flex justify-center gap-1.5 px-4 overflow-x-auto">
+                {images.map((file, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setLightboxIndex(i)}
+                    className={`flex-shrink-0 w-12 h-8 rounded-[2px] overflow-hidden border transition-all cursor-pointer ${
+                      i === lightboxIndex
+                        ? "border-[rgba(95,255,96,0.55)] opacity-100"
+                        : "border-[rgba(95,255,96,0.1)] opacity-50 hover:opacity-80"
+                    }`}
+                  >
+                    {isVideo(file) ? (
+                      <div className="w-full h-full bg-[rgba(95,255,96,0.08)] flex items-center justify-center">
+                        <Play size={10} className="text-[#5fff60]" />
+                      </div>
+                    ) : (
+                      <img
+                        src={file}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="w-full h-[75vh] flex items-center justify-center">
-              {video ? (
-                <video
-                  src={currentFile}
-                  controls
-                  autoPlay
-                  className="max-h-full max-w-full rounded-xl shadow-2xl"
-                />
-              ) : (
-                <img
-                  src={currentFile}
-                  alt=""
-                  className="max-h-full max-w-full object-contain rounded-xl shadow-2xl"
-                />
-              )}
-            </div>
-
-            <button
-              onClick={prevLightboxImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full z-50"
-            >
-              <ChevronLeft className="w-7 h-7" />
-            </button>
-
-            <button
-              onClick={nextLightboxImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full z-50"
-            >
-              <ChevronRight className="w-7 h-7" />
-            </button>
-          </div>
-        </div>,
+          </div>,
           document.body
-      )}
-    </div>
+        )}
+    </>
   );
 };
 

@@ -14,13 +14,14 @@ const HideAdminRoutes = ({ children }) => {
   ];
 
   useEffect(() => {
-    const isAdminDynamic = matchPath(
-      { path: "/admin/:slug", exact: true },
-      location.pathname
-    );
+    // const isAdminDynamic = matchPath(
+    //   { path: "/admin/:slug", exact: true },
+    //   location.pathname
+    // );
     const isAdminSubmissionsDynamic = matchPath({ path: "/admin/:slug/usersubmissions", exact: true }, location.pathname);
+    const isAdminSubmissionsDynamic2 = matchPath({ path: '/hackathon/:slug/submission/:id', exact: true }, location.pathname);
 
-    if (adminVisibleRoutes.includes(location.pathname) || isAdminDynamic || isAdminSubmissionsDynamic) {
+    if (adminVisibleRoutes.includes(location.pathname) || isAdminSubmissionsDynamic || isAdminSubmissionsDynamic2) {
       setShowNavbar(true);
     } else {
       setShowNavbar(false);

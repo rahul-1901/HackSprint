@@ -2,18 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getDashboard } from "../backendApis/api";
 import {
-  Menu,
-  X,
-  User,
-  Trophy,
-  Terminal,
-  LogOut,
-  Coins,
-  LogIn,
-  Crown,
-  Github,
-  GitBranch,
+  Menu, X, User, Trophy, Terminal, LogOut,
+  Coins, LogIn, Crown, Github, GitBranch,
 } from "lucide-react";
+import "./Navbar.css";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -25,27 +17,18 @@ const Navbar = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [coins, setCoins] = useState(0);
   const [streak, setStreak] = useState(0);
-
   const profileMenuRef = useRef(null);
-
+  
   useEffect(() => {
     const token = localStorage.getItem("token");
-
-    if (!token) {
-      setIsLoggedIn(false);
-      return;
-    }
-
+    if (!token) { setIsLoggedIn(false); return; }
     const fetchData = async () => {
       try {
         const res = await getDashboard();
         setUserInfo(res.data.userData);
         setIsLoggedIn(true);
-      } catch (err) {
-        handleLogout();
-      }
+      } catch { handleLogout(); }
     };
-
     fetchData();
   }, [location]);
 
@@ -55,212 +38,169 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navItems = [
-    { name: "Hackathons", pageLink: "/hackathons", icon: Trophy },
-    { name: "Practice", pageLink: "/quest", icon: Terminal },
-    { name: "Leaderboard", pageLink: "/leaderboard", icon: Crown },
-  ];
-
-  const handleNavigate = (link) => {
-    navigate(link);
-    setIsOpen(false);
-    setShowProfileMenu(false);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("email");
-    setUserInfo(null);
-    setIsLoggedIn(false);
-    navigate("/");
-    setIsOpen(false);
-    setShowProfileMenu(false);
-  };
-
   useEffect(() => {
     const today = new Date().toDateString();
     const lastVisit = localStorage.getItem("lastVisit");
-    const storedCoins = parseInt(localStorage.getItem("coins") || "0", 10);
+    const storedCoins  = parseInt(localStorage.getItem("coins")  || "0", 10);
     const storedStreak = parseInt(localStorage.getItem("streak") || "0", 10);
-
-    let newCoins = storedCoins;
-    let newStreak = storedStreak;
-    let rewardEarned = 0;
-
+    let newCoins = storedCoins, newStreak = storedStreak;
     if (lastVisit !== today) {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-
-      if (lastVisit === yesterday.toDateString()) {
-        newStreak = storedStreak + 1;
-      } else {
-        newStreak = 1;
-      }
-
-      rewardEarned = 10 + Math.floor(newStreak / 5) * 5;
-      newCoins += rewardEarned;
-
+      const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+      newStreak = lastVisit === yesterday.toDateString() ? storedStreak + 1 : 1;
+      newCoins += 10 + Math.floor(newStreak / 5) * 5;
       localStorage.setItem("coins", newCoins.toString());
       localStorage.setItem("streak", newStreak.toString());
       localStorage.setItem("lastVisit", today);
     }
-
-    setCoins(newCoins);
-    setStreak(newStreak);
+    setCoins(newCoins); setStreak(newStreak);
   }, []);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(e.target)
-      ) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target))
         setShowProfileMenu(false);
-      }
     };
-    if (showProfileMenu) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
+    if (showProfileMenu) document.addEventListener("mousedown", handleClickOutside);
+    else document.removeEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showProfileMenu]);
 
+  const navItems = [
+    { name: "Hackathons", pageLink: "/hackathons", icon: Trophy },
+    { name: "Practice",   pageLink: "/quest",       icon: Terminal },
+    { name: "Leaderboard",pageLink: "/leaderboard", icon: Crown },
+  ];
+
+  const handleNavigate = (link) => { navigate(link); setIsOpen(false); setShowProfileMenu(false); };
+  const handleLogout = () => {
+    localStorage.removeItem("token"); localStorage.removeItem("email");
+    setUserInfo(null); setIsLoggedIn(false);
+    navigate("/"); setIsOpen(false); setShowProfileMenu(false);
+  };
+
+  const isActive = (path) => location.pathname === path;
+
   return (
     <>
-      <nav
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          isScrolled
-            ? "bg-gray-900/95 backdrop-blur-md shadow-2xl border-b border-green-500/30"
-            : "bg-gray-900/80 backdrop-blur-sm border-b border-green-900/50"
-        }`}
-      >
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-60" />
+      <nav className={`nb-root nb-nav fixed top-0 w-full z-50 transition-all duration-300 p-1 ${
+        isScrolled
+          ? "bg-[rgba(8,10,8,0.97)] backdrop-blur-xl border-b border-[rgba(95,255,96,0.15)] shadow-[0_4px_24px_rgba(0,0,0,0.4)]"
+          : "bg-[rgba(8,10,8,0.82)] backdrop-blur-sm border-b border-[rgba(95,255,96,0.08)]"
+      }`}>
 
-        <div className="container mx-auto px-3 sm:px-4 lg:px-8 max-w-7xl">
-          <div className="flex items-center justify-between h-14 sm:h-16">
-            {/* Logo */}
-            <button
-              onClick={() => handleNavigate("/")}
-              className="flex items-center space-x-2 sm:space-x-3 cursor-pointer"
-            >
-              <div className="w-8 h-8 sm:w-10 sm:h-10">
-                <img
-                  src="/hackSprint.webp"
-                  className="w-full h-full object-contain"
-                  alt="HackSprint Logo"
-                />
-              </div>
-              <span className="text-lg sm:text-xl lg:text-2xl font-bold text-white font-mono tracking-wide">
-                HackSprint
+        {/* top scanline accent */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(95,255,96,0.35)] to-transparent pointer-events-none" />
+
+        <div className="max-w-[1200px] mx-auto px-5">
+          <div className="flex items-center justify-between h-14">
+
+            {/* ── Logo ── */}
+            <button onClick={() => handleNavigate("/")} className="flex items-center gap-[0.55rem] bg-transparent border-none cursor-pointer">
+              <img src="/hackSprint.webp" className="w-8 h-8 object-contain" alt="HackSprint" />
+              <span className="nb-syne font-extrabold text-[1.05rem] tracking-tight text-white">
+                Hack<span className="text-[#5fff60]">Sprint</span>
               </span>
             </button>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-2">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.name}
-                    onClick={() => handleNavigate(item.pageLink)}
-                    className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition cursor-pointer"
-                  >
-                    <Icon size={16} />
-                    <span>{item.name}</span>
-                  </button>
-                );
-              })}
-
-              {/* Icon Group: Architecture & GitHub */}
-              <div className="flex items-center space-x-2 ml-4 mr-2 border-l border-green-900/50 pl-4">
+            {/* ── Desktop nav ── */}
+            <div className="hidden md:flex items-center gap-1">
+              {navItems.map(({ name, pageLink, icon: Icon }) => (
                 <button
-                  onClick={() =>
-                    window.open(
-                      "https://github.com/devlup-labs/HackSprint",
-                      "_blank"
-                    )
-                  }
-                  title="GitHub"
-                  className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-green-400 hover:drop-shadow-[0_0_8px_rgba(74,222,128,0.8)] transition-all duration-300 cursor-pointer"
+                  key={name}
+                  onClick={() => handleNavigate(pageLink)}
+                  className={`relative nb-root inline-flex items-center gap-[0.35rem] text-[0.65rem] tracking-[0.08em] uppercase px-[0.75rem] py-[0.45rem] rounded-[3px] cursor-pointer transition-all duration-150
+                    ${isActive(pageLink)
+                      ? "text-[#5fff60] bg-[rgba(95,255,96,0.08)] border border-[rgba(95,255,96,0.25)] nb-link-active"
+                      : "text-[rgba(180,220,180,0.55)] border border-transparent hover:text-[#5fff60] hover:bg-[rgba(95,255,96,0.06)] hover:border-[rgba(95,255,96,0.15)]"
+                    }`}
                 >
-                  <Github size={20} />
+                  <Icon size={13} /> {name}
                 </button>
+              ))}
 
+              {/* icon group */}
+              <div className="flex items-center gap-1 ml-3 pl-3 border-l border-[rgba(95,255,96,0.1)]">
                 <button
-                  onClick={() =>
-                    window.open(
-                      "https://miro.com/app/board/uXjVGHQV81E=/?share_link_id=472464826506",
-                      "_blank"
-                    )
-                  }
-                  title="Architecture"
-                  className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-green-400 hover:drop-shadow-[0_0_8px_rgba(74,222,128,0.8)] transition-all duration-300 cursor-pointer"
+                  onClick={() => window.open("https://github.com/devlup-labs/HackSprint", "_blank")}
+                  title="GitHub"
+                  className="nb-root w-8 h-8 flex items-center justify-center text-[rgba(95,255,96,0.35)] hover:text-[#5fff60] hover:shadow-[0_0_10px_rgba(95,255,96,0.3)] rounded-[3px] transition-all duration-200 cursor-pointer"
                 >
-                  <GitBranch size={20} />
+                  <Github size={16} />
+                </button>
+                <button
+                  onClick={() => window.open("https://miro.com/app/board/uXjVGHQV81E=/?share_link_id=472464826506", "_blank")}
+                  title="Architecture"
+                  className="nb-root w-8 h-8 flex items-center justify-center text-[rgba(95,255,96,0.35)] hover:text-[#5fff60] hover:shadow-[0_0_10px_rgba(95,255,96,0.3)] rounded-[3px] transition-all duration-200 cursor-pointer"
+                >
+                  <GitBranch size={16} />
                 </button>
               </div>
 
-              {/* Profile Dropdown */}
-              <div className="relative" ref={profileMenuRef}>
+              {/* profile button */}
+              <div className="relative ml-1" ref={profileMenuRef}>
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center hover:scale-110 hover:shadow-[0_0_15px_rgba(74,222,128,0.4)] transition-all shadow-lg cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-[rgba(95,255,96,0.12)] border-2 border-[rgba(95,255,96,0.3)] flex items-center justify-center hover:border-[rgba(95,255,96,0.6)] hover:shadow-[0_0_12px_rgba(95,255,96,0.2)] transition-all duration-200 cursor-pointer"
                 >
-                  <User size={16} className="text-white" />
+                  {isLoggedIn && userInfo?.name
+                    ? <span className="nb-syne font-extrabold text-[#5fff60] text-[0.7rem]">{userInfo.name[0].toUpperCase()}</span>
+                    : <User size={14} className="text-[#5fff60]" />}
                 </button>
 
+                {/* ── Profile dropdown ── */}
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-64 bg-gray-900 border border-green-500/20 rounded-xl shadow-xl overflow-hidden">
+                  <div className="nb-dropdown absolute right-0 mt-2 w-60 bg-[rgba(8,10,8,0.98)] border border-[rgba(95,255,96,0.15)] rounded-[4px] shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden">
+                    {/* corner brackets */}
+                    <span className="absolute top-[-1px] left-[-1px] w-[8px] h-[8px] border-t-2 border-l-2 border-[rgba(95,255,96,0.45)]" />
+                    <span className="absolute bottom-[-1px] right-[-1px] w-[8px] h-[8px] border-b-2 border-r-2 border-[rgba(95,255,96,0.45)]" />
+
                     {isLoggedIn ? (
                       <>
-                        <div className="flex items-center p-4 border-b border-green-500/20 bg-gray-800">
-                          <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
-                            {userInfo?.name
-                              ? userInfo.name[0].toUpperCase()
-                              : "U"}
+                        {/* user header */}
+                        <div className="flex items-center gap-3 px-4 py-3 border-b border-[rgba(95,255,96,0.08)] bg-[rgba(95,255,96,0.04)]">
+                          <div className="w-9 h-9 rounded-full bg-[rgba(95,255,96,0.12)] border-2 border-[rgba(95,255,96,0.3)] flex items-center justify-center flex-shrink-0">
+                            <span className="nb-syne font-extrabold text-[#5fff60] text-[0.85rem]">
+                              {userInfo?.name ? userInfo.name[0].toUpperCase() : "U"}
+                            </span>
                           </div>
-                          <div className="ml-3">
-                            <p className="text-white font-semibold">
-                              {userInfo?.name || "Guest User"}
-                            </p>
-                            <p className="text-gray-400 text-xs">
-                              {userInfo?.email || ""}
-                            </p>
+                          <div className="min-w-0">
+                            <p className="nb-root text-[0.75rem] font-semibold text-white truncate">{userInfo?.name || "Guest"}</p>
+                            <p className="nb-root text-[0.6rem] text-[rgba(180,220,180,0.4)] truncate">{userInfo?.email || ""}</p>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3 p-4">
+                        {/* stats grid */}
+                        <div className="grid grid-cols-2 gap-2 p-3">
                           <button
                             onClick={() => handleNavigate("/dashboard")}
-                            className="flex flex-col items-center p-3 bg-gray-800 hover:bg-green-500/20 rounded-lg text-gray-200 cursor-pointer"
+                            className="nb-root flex flex-col items-center gap-1 p-2.5 bg-[rgba(95,255,96,0.05)] border border-[rgba(95,255,96,0.1)] rounded-[3px] text-[rgba(180,220,180,0.6)] hover:text-[#5fff60] hover:border-[rgba(95,255,96,0.28)] hover:bg-[rgba(95,255,96,0.08)] transition-all cursor-pointer"
                           >
-                            <User size={20} className="mb-1 text-green-400" />
-                            <span className="text-xs">Profile</span>
+                            <User size={15} className="text-[#5fff60]" />
+                            <span className="text-[0.58rem] tracking-[0.06em] uppercase">Profile</span>
                           </button>
-
-                          <div className="flex flex-col items-center p-3 bg-gray-800 rounded-lg text-gray-200 select-none">
-                            <Coins size={20} className="mb-1 text-yellow-400" />
-                            <span className="text-xs">{coins || 0} Coins</span>
+                          <div className="nb-coin-pulse nb-root flex flex-col items-center gap-1 p-2.5 bg-[rgba(255,184,77,0.06)] border border-[rgba(255,184,77,0.15)] rounded-[3px] select-none">
+                            <Coins size={15} className="text-[#ffb84d]" />
+                            <span className="text-[0.58rem] tracking-[0.06em] uppercase text-[rgba(255,184,77,0.7)]">{coins} Coins</span>
                           </div>
                         </div>
 
-                        <div className="flex flex-col p-2 border-t border-green-500/20">
+                        {/* logout */}
+                        <div className="px-3 pb-3 border-t border-[rgba(95,255,96,0.08)] pt-2">
                           <button
                             onClick={handleLogout}
-                            className="flex items-center px-4 py-2 text-sm text-red-400 hover:bg-red-500/20 rounded-lg cursor-pointer"
+                            className="nb-root w-full flex items-center gap-2 text-[0.62rem] tracking-[0.06em] uppercase px-3 py-2 rounded-[3px] text-[rgba(255,80,80,0.6)] hover:text-[#ff6060] hover:bg-[rgba(255,60,60,0.06)] border border-transparent hover:border-[rgba(255,60,60,0.2)] transition-all cursor-pointer"
                           >
-                            <LogOut size={16} className="mr-2" /> Logout
+                            <LogOut size={13} /> Logout
                           </button>
                         </div>
                       </>
                     ) : (
-                      <div className="p-4">
+                      <div className="p-3">
                         <button
                           onClick={() => handleNavigate("/account/login")}
-                          className="flex items-center w-full px-4 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg cursor-pointer"
+                          className="nb-root w-full flex items-center justify-center gap-2 text-[0.62rem] tracking-[0.08em] uppercase px-4 py-2.5 rounded-[3px] border cursor-pointer transition-all bg-[#5fff60] border-[#5fff60] text-[#050905] font-bold hover:bg-[#7fff80]"
                         >
-                          <LogIn size={16} className="mr-2" /> Login
+                          <LogIn size={13} /> Login
                         </button>
                       </div>
                     )}
@@ -269,95 +209,86 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Mobile Menu Button */}
-            <div className="flex md:hidden items-center space-x-2">
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="text-gray-300 hover:text-green-400 transition p-2 rounded-lg hover:bg-green-500/10 cursor-pointer"
-              >
-                {isOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
-            </div>
+            {/* ── Mobile hamburger ── */}
+            <button
+              className="md:hidden flex items-center justify-center p-1.5 rounded-[3px] border border-[rgba(95,255,96,0.12)] text-[rgba(95,255,96,0.55)] hover:border-[rgba(95,255,96,0.35)] hover:text-[#5fff60] transition-all cursor-pointer"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? <X size={17} /> : <Menu size={17} />}
+            </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* ── Mobile menu ── */}
         {isOpen && (
-          <div className="md:hidden bg-gray-900/95 backdrop-blur-md border-t border-green-500/20">
-            <div className="container mx-auto px-3 sm:px-4 py-4">
-              <div className="space-y-2 mb-6">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.name}
-                      onClick={() => handleNavigate(item.pageLink)}
-                      className="flex items-center space-x-3 w-full px-4 py-3 text-gray-300 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition cursor-pointer"
-                    >
-                      <Icon size={18} />
-                      <span>{item.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
+          <div className="nb-mobile md:hidden bg-[rgba(8,10,8,0.98)] border-t border-[rgba(95,255,96,0.08)]">
+            <div className="max-w-[1200px] mx-auto px-5 py-4 flex flex-col gap-1">
+
+              {navItems.map(({ name, pageLink, icon: Icon }) => (
+                <button
+                  key={name}
+                  onClick={() => handleNavigate(pageLink)}
+                  className={`nb-root w-full inline-flex items-center justify-between text-[0.65rem] tracking-[0.08em] uppercase px-4 py-3 rounded-[3px] border cursor-pointer transition-all
+                    ${isActive(pageLink)
+                      ? "text-[#5fff60] bg-[rgba(95,255,96,0.08)] border-[rgba(95,255,96,0.25)]"
+                      : "text-[rgba(180,220,180,0.55)] border-transparent hover:text-[#5fff60] hover:bg-[rgba(95,255,96,0.06)] hover:border-[rgba(95,255,96,0.15)]"
+                    }`}
+                >
+                  <span className="flex items-center gap-2"><Icon size={13} /> {name}</span>
+                </button>
+              ))}
+
+              {/* divider */}
+              <div className="h-px bg-gradient-to-r from-transparent via-[rgba(95,255,96,0.1)] to-transparent my-2" />
 
               {isLoggedIn ? (
-                <div className="border-t border-green-500/20 pt-4">
-                  <div className="flex items-center p-4 bg-gray-800 rounded-lg mb-4">
-                    <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
-                      {userInfo?.name ? userInfo.name[0].toUpperCase() : "U"}
-                    </div>
-                    <div className="ml-3 flex-1">
-                      <p className="text-white font-semibold">
-                        {userInfo?.name || "Guest User"}
-                      </p>
-                      <p className="text-gray-400 text-sm">
-                        {userInfo?.email || ""}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-1 text-yellow-400">
-                      <Coins size={16} />
-                      <span className="text-sm font-semibold">
-                        {coins || 10}
+                <>
+                  {/* user row */}
+                  <div className="nb-root flex items-center gap-3 px-4 py-3 bg-[rgba(95,255,96,0.04)] border border-[rgba(95,255,96,0.1)] rounded-[3px]">
+                    <div className="w-9 h-9 rounded-full bg-[rgba(95,255,96,0.12)] border-2 border-[rgba(95,255,96,0.3)] flex items-center justify-center flex-shrink-0">
+                      <span className="nb-syne font-extrabold text-[#5fff60] text-[0.85rem]">
+                        {userInfo?.name ? userInfo.name[0].toUpperCase() : "U"}
                       </span>
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="nb-root text-[0.72rem] font-semibold text-white truncate">{userInfo?.name || "Guest"}</p>
+                      <p className="nb-root text-[0.58rem] text-[rgba(180,220,180,0.4)] truncate">{userInfo?.email || ""}</p>
+                    </div>
+                    <div className="flex items-center gap-1 text-[#ffb84d]">
+                      <Coins size={13} />
+                      <span className="nb-root text-[0.62rem] font-semibold">{coins || 0}</span>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => handleNavigate("/dashboard")}
-                      className="flex items-center space-x-3 w-full px-4 py-3 text-gray-300 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition cursor-pointer"
-                    >
-                      <User size={18} className="text-green-400" />
-                      <span>Profile</span>
-                    </button>
-
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center space-x-3 w-full px-4 py-3 text-red-400 hover:bg-red-500/20 rounded-lg transition cursor-pointer"
-                    >
-                      <LogOut size={18} />
-                      <span>Logout</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="border-t border-green-500/20 pt-4">
                   <button
-                    onClick={() => handleNavigate("/account/login")}
-                    className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition cursor-pointer"
+                    onClick={() => handleNavigate("/dashboard")}
+                    className="nb-root w-full inline-flex items-center gap-2 text-[0.65rem] tracking-[0.08em] uppercase px-4 py-3 rounded-[3px] border border-transparent text-[rgba(180,220,180,0.55)] hover:text-[#5fff60] hover:bg-[rgba(95,255,96,0.06)] hover:border-[rgba(95,255,96,0.15)] transition-all cursor-pointer"
                   >
-                    <LogIn size={18} />
-                    <span>Login</span>
+                    <User size={13} className="text-[#5fff60]" /> Profile
                   </button>
-                </div>
+
+                  <button
+                    onClick={handleLogout}
+                    className="nb-root w-full inline-flex items-center gap-2 text-[0.65rem] tracking-[0.08em] uppercase px-4 py-3 rounded-[3px] border border-transparent text-[rgba(255,80,80,0.55)] hover:text-[#ff6060] hover:bg-[rgba(255,60,60,0.06)] hover:border-[rgba(255,60,60,0.15)] transition-all cursor-pointer"
+                  >
+                    <LogOut size={13} /> Logout
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => handleNavigate("/account/login")}
+                  className="nb-root w-full inline-flex items-center justify-center gap-2 text-[0.65rem] tracking-[0.1em] uppercase px-4 py-3 rounded-[3px] border cursor-pointer bg-[#5fff60] border-[#5fff60] text-[#050905] font-bold hover:bg-[#7fff80] transition-all"
+                >
+                  <LogIn size={13} /> Login
+                </button>
               )}
             </div>
           </div>
         )}
       </nav>
 
-      <div className="h-14 sm:h-16" />
+      {/* spacer */}
+      <div className="h-14" />
     </>
   );
 };

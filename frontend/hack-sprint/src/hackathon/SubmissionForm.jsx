@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useParams } from "react-router-dom";
 import { createPortal } from "react-dom";
 import {
   X,
@@ -11,50 +10,52 @@ import {
   FileVideo,
   FileText,
   Plus,
+  ExternalLink,
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import { getDashboard } from "../backendApis/api";
-import "./Hackathon.css";
 
-// Input component
-function Input({ className = "", ...props }) {
-  return (
-    <input
-      className={`w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:outline-none ${className}`}
-      {...props}
-    />
-  );
-}
+const mono = "font-[family-name:'JetBrains_Mono',monospace]";
+const syne = "font-[family-name:'Syne',sans-serif]";
 
-// Button component
-function Button({ children, variant = "default", className = "", ...props }) {
-  const base =
-    "px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none";
-  const variants = {
-    default:
-      "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg",
-    outline:
-      "border border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white",
-    ghost: "text-gray-400 hover:bg-gray-800 hover:text-white",
-  };
-  return (
-    <button className={`${base} ${variants[variant]} ${className}`} {...props}>
-      {children}
-    </button>
-  );
-}
+const inp = `${mono} w-full bg-[rgba(18,22,18,0.7)] border border-[rgba(95,255,96,0.15)] rounded-[3px] px-3 py-2.5 text-[0.7rem] text-[#e8ffe8] placeholder-[rgba(95,255,96,0.25)] focus:outline-none focus:border-[rgba(95,255,96,0.42)] focus:shadow-[0_0_0_2px_rgba(95,255,96,0.06)] transition-all`;
 
-// StatCard component
 const StatCard = ({ icon: Icon, label, value }) => (
-  <div className="p-4 bg-gray-800 rounded-xl border border-green-500/30">
-    <Icon className="w-5 h-5 text-green-500 mb-2" />
-    <div className="text-sm text-gray-400">{label}</div>
-    <div className="font-semibold text-white">{value}</div>
+  <div className="relative bg-[rgba(95,255,96,0.04)] border border-[rgba(95,255,96,0.12)] rounded-[3px] p-4">
+    <Icon size={13} className="text-[rgba(95,255,96,0.55)] mb-2" />
+    <div
+      className={`${mono} text-[0.52rem] tracking-[0.12em] uppercase text-[rgba(180,220,180,0.45)] mb-0.5`}
+    >
+      {label}
+    </div>
+    <div className={`${syne} font-extrabold text-white text-sm tracking-tight`}>
+      {value}
+    </div>
   </div>
 );
 
-// FileUpload component
-function FileUpload({
+const FieldLabel = ({ children, required }) => (
+  <div
+    className={`${mono} text-[0.55rem] tracking-[0.14em] uppercase text-[rgba(95,255,96,0.5)] mb-1.5`}
+  >
+    {children}
+    {required && <span className="text-[#ff9090] ml-1">*</span>}
+  </div>
+);
+
+const LinkRow = ({ href, label }) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noreferrer"
+    className={`${mono} inline-flex items-center gap-1.5 text-[0.62rem] text-[rgba(95,255,96,0.65)] hover:text-[#5fff60] transition-colors break-all`}
+  >
+    <ExternalLink size={11} className="flex-shrink-0" />
+    {label}
+  </a>
+);
+
+const DropZone = ({
   label,
   icon: Icon,
   accept,
@@ -62,52 +63,75 @@ function FileUpload({
   onFileChange,
   onRemove,
   preview,
-}) {
-  return (
-    <div className="space-y-1">
-      <label className="block text-gray-300">{label}</label>
-      <div className="relative">
-        <label className="flex items-center justify-center w-full h-32 p-4 border-2 border-dashed border-gray-600 rounded-xl cursor-pointer hover:border-blue-500 transition-colors">
-          <input
-            type="file"
-            accept={accept}
-            onChange={onFileChange}
-            className="hidden"
-          />
-          {file ? (
-            <div className="flex flex-col items-center space-y-2">
-              {preview}
-              <span className="text-gray-300 truncate w-40 text-center">
-                {file.name}
-              </span>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center text-gray-400">
-              <Icon className="w-8 h-8 mb-2" />
-              <span className="text-sm text-center">
-                Click to upload or drag and drop
-              </span>
-            </div>
-          )}
-        </label>
-        {file && (
-          <button
-            type="button"
-            onClick={onRemove}
-            className="absolute top-2 right-2 p-1 rounded-full bg-gray-700 hover:bg-red-500 transition-colors"
-          >
-            <X className="w-4 h-4 text-white" />
-          </button>
+}) => (
+  <div>
+    <FieldLabel>{label}</FieldLabel>
+    <div className="relative">
+      <label className="flex flex-col items-center justify-center w-full h-28 border border-dashed border-[rgba(95,255,96,0.2)] rounded-[3px] cursor-pointer hover:border-[rgba(95,255,96,0.38)] hover:bg-[rgba(95,255,96,0.03)] transition-all">
+        <input
+          type="file"
+          accept={accept}
+          onChange={onFileChange}
+          className="hidden"
+        />
+        {file ? (
+          <div className="flex flex-col items-center gap-1.5">
+            {preview}
+            <span
+              className={`${mono} text-[0.62rem] text-[rgba(180,220,180,0.6)] truncate max-w-[200px]`}
+            >
+              {file.name}
+            </span>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-1.5 text-[rgba(95,255,96,0.3)]">
+            <Icon size={22} />
+            <span className={`${mono} text-[0.58rem] tracking-[0.04em]`}>
+              Click to upload or drag and drop
+            </span>
+          </div>
         )}
-      </div>
+      </label>
+      {file && (
+        <button
+          type="button"
+          onClick={onRemove}
+          className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-[2px] bg-[rgba(255,60,60,0.1)] border border-[rgba(255,60,60,0.25)] text-[rgba(255,100,100,0.7)] hover:bg-[rgba(255,60,60,0.2)] hover:text-[#ff9090] transition-all cursor-pointer"
+        >
+          <X size={11} />
+        </button>
+      )}
     </div>
-  );
-}
+  </div>
+);
 
-// SubmissionForm component
+const PrimaryBtn = ({
+  children,
+  disabled,
+  type = "submit",
+  color = "green",
+}) => {
+  const c =
+    color === "amber"
+      ? "bg-[#ffb84d] border-[#ffb84d] hover:bg-[#ffc96e] hover:shadow-[0_0_18px_rgba(255,184,77,0.3)]"
+      : color === "gray"
+      ? "bg-[rgba(95,255,96,0.04)] border-[rgba(95,255,96,0.1)] text-[rgba(95,255,96,0.25)] cursor-not-allowed"
+      : "bg-[#5fff60] border-[#5fff60] hover:bg-[#7fff80] hover:shadow-[0_0_20px_rgba(95,255,96,0.3)]";
+  const textColor = color === "gray" ? "" : "text-[#050905]";
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      className={`${mono} w-full inline-flex items-center justify-center gap-2 text-[0.65rem] tracking-[0.1em] uppercase px-6 py-3 rounded-[3px] border cursor-pointer transition-all duration-150 font-bold disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none ${c} ${textColor}`}
+    >
+      {children}
+    </button>
+  );
+};
+
 const SubmissionForm = ({ isOpen, onClose }) => {
   const { id: hackathonId } = useParams();
-  const [repoUrls, setRepoUrls] = useState([""]); // State now handles an array of URLs
+  const [repoUrls, setRepoUrls] = useState([""]);
   const [loading, setLoading] = useState(false);
   const [hackathon, setHackathon] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
@@ -119,108 +143,76 @@ const SubmissionForm = ({ isOpen, onClose }) => {
   const [isTeamMember, setIsTeamMember] = useState(false);
   const [teamId, setTeamId] = useState(null);
 
-  const navigate = useNavigate();
-
-  // Fetch hackathon details
   useEffect(() => {
     if (!hackathonId || !isOpen) return;
     fetch(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${hackathonId}`)
-      .then((res) => res.json())
-      .then((data) => setHackathon(data))
-      .catch((err) => console.error("Error fetching hackathon:", err));
+      .then((r) => r.json())
+      .then(setHackathon)
+      .catch(console.error);
   }, [hackathonId, isOpen]);
 
-  // Fetch user and team info
   useEffect(() => {
     if (!isOpen) return;
-
-    const fetchUserData = async () => {
+    (async () => {
       try {
         const res = await getDashboard();
-        const fetchedUserData = res.data.userData;
-        setUserData(fetchedUserData);
-
-        const leader = fetchedUserData.leaderOfHackathons?.some(
-          (id) => String(id) === String(hackathonId)
+        const u = res.data.userData;
+        setUserData(u);
+        setIsLeader(
+          u.leaderOfHackathons?.some(
+            (id) => String(id) === String(hackathonId)
+          ) || false
         );
-        setIsLeader(leader || false);
-
-        if (fetchedUserData.team) {
-          setTeamId(fetchedUserData.team);
-          const teamRes = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/api/team/${fetchedUserData.team
-            }`
+        if (u.team) {
+          setTeamId(u.team);
+          const tr = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/api/team/${u.team}`
           );
-          const teamData = await teamRes.json();
-          const team = teamData.team;
-
+          const { team } = await tr.json();
           if (
             team?.hackathon?._id &&
             String(team.hackathon._id) === String(hackathonId)
-          ) {
-            const member = team.members?.some(
-              (m) => String(m._id) === String(fetchedUserData._id)
+          )
+            setIsTeamMember(
+              team.members?.some((m) => String(m._id) === String(u._id)) ||
+                false
             );
-            setIsTeamMember(member || false);
-          } else {
-            setIsTeamMember(false);
-          }
-        } else {
-          setIsTeamMember(false);
-        }
-      } catch (err) {
-        console.error("Error fetching user/team:", err);
+          else setIsTeamMember(false);
+        } else setIsTeamMember(false);
+      } catch {
         setUserData(null);
         setIsLeader(false);
         setIsTeamMember(false);
       }
-    };
-
-    fetchUserData();
+    })();
   }, [hackathonId, isOpen]);
 
-  // Fetch submission status
   useEffect(() => {
     if (!hackathonId || !userData) return;
-
-    const fetchSubmissionStatus = async () => {
-      try {
-        const params = new URLSearchParams({
-          hackathonId,
-          teamId: userData.team || "",
-          userId: userData._id,
-        });
-
-        const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL
-          }/api/submit/status?${params.toString()}`
-        );
-        const data = await res.json();
-        // console.log(data)
-        setSubmissionStatus(data);
-      } catch (err) {
-        console.error("Error fetching submission status:", err);
-      }
-    };
-
-    fetchSubmissionStatus();
+    const p = new URLSearchParams({
+      hackathonId,
+      teamId: userData.team || "",
+      userId: userData._id,
+    });
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/submit/status?${p}`)
+      .then((r) => r.json())
+      .then(setSubmissionStatus)
+      .catch(console.error);
   }, [hackathonId, userData]);
 
-  // Prefill URLs from existing submission (or reset on open)
   useEffect(() => {
     if (!isOpen) return;
-
     if (submissionStatus?.submitted) {
       const existing = submissionStatus.submission?.repoUrl;
-      const urls = Array.isArray(existing) ? existing : existing ? [existing] : [];
+      const urls = Array.isArray(existing)
+        ? existing
+        : existing
+        ? [existing]
+        : [];
       setRepoUrls(urls.length ? urls : [""]);
-    } else {
-      setRepoUrls([""]);
-    }
+    } else setRepoUrls([""]);
   }, [submissionStatus, isOpen]);
 
-
-  // Cleanup video preview URL
   useEffect(
     () => () => {
       if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
@@ -228,114 +220,58 @@ const SubmissionForm = ({ isOpen, onClose }) => {
     [videoPreviewUrl]
   );
 
-  const handleVideoFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setVideoFile(file);
-      setVideoPreviewUrl(URL.createObjectURL(file));
+  const handleVideoChange = (e) => {
+    const f = e.target.files[0];
+    if (f) {
+      setVideoFile(f);
+      setVideoPreviewUrl(URL.createObjectURL(f));
     }
   };
-
-  const handlePdfFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) setPdfFile(file);
-  };
-
-  const handleRemoveVideo = () => {
+  const removeVideo = () => {
     if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
     setVideoFile(null);
     setVideoPreviewUrl(null);
   };
-
-  const handleRemovePdf = () => setPdfFile(null);
-
-  // Handlers for managing multiple URL inputs
-  const handleRepoUrlChange = (index, value) => {
-    const newUrls = [...repoUrls];
-    newUrls[index] = value;
-    setRepoUrls(newUrls);
-  };
-
-  const handleAddRepoUrl = () => {
-    setRepoUrls([...repoUrls, ""]);
-  };
-
-  const handleRemoveRepoUrl = (index) => {
-    if (repoUrls.length > 1) {
-      const newUrls = repoUrls.filter((_, i) => i !== index);
-      setRepoUrls(newUrls);
-    }
-  };
+  const removePdf = () => setPdfFile(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const canSubmit = isLeader || !isTeamMember;
-    if (!canSubmit) {
-      toast.error("Only team leaders can submit!", {
-        position: "top-right",
-        theme: "dark",
-      });
+    if (!isLeader && isTeamMember) {
+      toast.error("Only team leaders can submit!");
       return;
     }
-
-    const validUrls = repoUrls.filter((url) => url.trim() !== "");
-    if (validUrls.length === 0) {
-      toast.error("Please provide at least one valid URL.", {
-        position: "top-right",
-        theme: "dark",
-      });
+    const valid = repoUrls.filter((u) => u.trim());
+    if (!valid.length) {
+      toast.error("Please provide at least one valid URL.");
       return;
     }
-
     setLoading(true);
     try {
-      const formData = new FormData();
-      // Append all valid URLs to the form data
-      // validUrls.forEach((url) => {
-      //   formData.append("repoUrl", url);
-      // });
-      formData.append("repoUrl", JSON.stringify(validUrls));
-      formData.append("hackathonId", hackathonId);
-      formData.append("userId", userData._id);
-      if (teamId) formData.append("teamId", teamId);
-      if (videoFile) formData.append("videos", videoFile);
-      if (pdfFile) formData.append("docs", pdfFile);
-
-      // const res = await fetch(
-      //   `${import.meta.env.VITE_API_BASE_URL}/api/submit`,
-      //   {
-      //     method: "POST",
-      //     body: formData,
-      //   }
-      // );
+      const fd = new FormData();
+      fd.append("repoUrl", JSON.stringify(valid));
+      fd.append("hackathonId", hackathonId);
+      fd.append("userId", userData._id);
+      if (teamId) fd.append("teamId", teamId);
+      if (videoFile) fd.append("videos", videoFile);
+      if (pdfFile) fd.append("docs", pdfFile);
 
       const isUpdating = submissionStatus?.submitted;
-
       const url = isUpdating
-        ? `${import.meta.env.VITE_API_BASE_URL}/api/submit/${submissionStatus.submission._id}`
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/submit/${
+            submissionStatus.submission._id
+          }`
         : `${import.meta.env.VITE_API_BASE_URL}/api/submit`;
-
-      const method = isUpdating ? "PUT" : "POST";
-
       const res = await fetch(url, {
-        method,
-        body: formData,
+        method: isUpdating ? "PUT" : "POST",
+        body: fd,
       });
-
       const data = await res.json();
-
-      if (res.status === 429) {
+      if (res.status === 429)
         throw new Error("Too many requests. Please try again later.");
-      }
-
       if (!res.ok) throw new Error(data.message || "Submission failed");
-
       toast.success(data.message || "Submission successful!", {
-        position: "top-right",
         autoClose: 1000,
       });
-
       setTimeout(() => {
         setRepoUrls([""]);
         setVideoFile(null);
@@ -343,11 +279,7 @@ const SubmissionForm = ({ isOpen, onClose }) => {
         onClose();
       }, 1200);
     } catch (err) {
-      console.error(err);
-      toast.error(err.message || "Submission failed.", {
-        position: "top-right",
-        autoClose: 1300,
-      });
+      toast.error(err.message || "Submission failed.", { autoClose: 1300 });
     } finally {
       setLoading(false);
     }
@@ -355,251 +287,260 @@ const SubmissionForm = ({ isOpen, onClose }) => {
 
   if (!isOpen || !hackathon || !userData) return null;
 
-  const durationDays = Math.ceil(
-    (new Date(hackathon.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+  const daysLeft = Math.ceil(
+    (new Date(hackathon.endDate) - new Date()) / 86400000
   );
-
-  const now = new Date();
-  const submissionEnd = hackathon?.submissionEndDate
-    ? new Date(hackathon.submissionEndDate)
-    : null;
-
+  const totalPrize =
+    hackathon.rewards?.length > 0
+      ? hackathon.rewards.reduce((s, r) => s + (r.amount || 0), 0)
+      : (hackathon.prizeMoney1 || 0) +
+        (hackathon.prizeMoney2 || 0) +
+        (hackathon.prizeMoney3 || 0);
   const isDeadlineOver =
-    submissionEnd && now > submissionEnd;
+    hackathon.submissionEndDate &&
+    new Date() > new Date(hackathon.submissionEndDate);
+  const sub = submissionStatus?.submission;
+  const already = submissionStatus?.submitted;
 
   return createPortal(
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/90 z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
-    >
-      <ToastContainer />
-      <motion.div
-        initial={{ scale: 0.95 }}
-        animate={{ scale: 1 }}
-        exit={{ scale: 0.95 }}
-        className="bg-gray-900 rounded-2xl w-full max-w-2xl max-h-[90vh] p-6 shadow-xl border border-green-500/50 text-white overflow-y-auto scrollbar-hide"
+    <>
+      <ToastContainer toastClassName="!z-[100000]" style={{ zIndex: 100000 }} />
+      <div
+        className={`${mono} fixed inset-0 bg-black/85 backdrop-blur-sm z-[99999] flex items-center justify-center p-4 overflow-y-auto`}
+        onClick={onClose}
       >
-        {/* Header */}
-        <div className="flex justify-between items-start mb-5">
-          <div>
-            <h2 className="text-2xl font-bold">{hackathon.title}</h2>
-            <p className="text-gray-400">{hackathon.subTitle}</p>
+        <div
+          className="relative w-full max-w-2xl bg-[rgba(8,10,8,0.98)] border border-[rgba(95,255,96,0.18)] rounded-[4px] p-6 shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-y-auto max-h-[90vh] [scrollbar-width:thin] [scrollbar-color:rgba(95,255,96,0.2)_transparent]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="absolute top-[-1px] left-[-1px] w-3 h-3 border-t-2 border-l-2 border-[rgba(95,255,96,0.55)]" />
+          <span className="absolute bottom-[-1px] right-[-1px] w-3 h-3 border-b-2 border-r-2 border-[rgba(95,255,96,0.55)]" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(95,255,96,0.3)] to-transparent" />
+
+          <div className="flex items-start justify-between gap-4 mb-5">
+            <div className="min-w-0">
+              <h2
+                className={`${syne} font-extrabold text-white text-xl tracking-tight`}
+              >
+                {hackathon.title}
+              </h2>
+              {hackathon.subTitle && (
+                <p
+                  className={`${mono} text-[0.65rem] text-[rgba(180,220,180,0.55)] mt-0.5`}
+                >
+                  {hackathon.subTitle}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center rounded-[3px] border border-[rgba(95,255,96,0.15)] text-[rgba(95,255,96,0.45)] hover:text-[#5fff60] hover:border-[rgba(95,255,96,0.35)] transition-all cursor-pointer flex-shrink-0"
+            >
+              <X size={14} />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white cursor-pointer"
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
+            <StatCard
+              icon={Code}
+              label="Prize Pool"
+              value={`₹${totalPrize.toLocaleString("en-IN")}`}
+            />
+            <StatCard
+              icon={Clock}
+              label="Days Left"
+              value={`${daysLeft} Days`}
+            />
+            <StatCard
+              icon={Users}
+              label="Participants"
+              value={hackathon.numParticipants || 0}
+            />
+            <StatCard
+              icon={Calendar}
+              label="Difficulty"
+              value={hackathon.difficulty}
+            />
+          </div>
+
+          <p
+            className={`${mono} text-[0.68rem] text-[rgba(180,220,180,0.6)] leading-relaxed mb-5`}
           >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+            {hackathon.description}
+          </p>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <StatCard
-            icon={Code}
-            label="Prize Pool"
-            value={`₹${(hackathon.rewards && hackathon.rewards.length > 0
-              ? hackathon.rewards.reduce((sum, r) => sum + (r.amount || 0), 0)
-              : (hackathon.prizeMoney1 || 0) + (hackathon.prizeMoney2 || 0) + (hackathon.prizeMoney3 || 0)
-            ).toLocaleString("en-IN")}`}
-          />
-          <StatCard
-            icon={Clock}
-            label="Duration"
-            value={`${durationDays} Days`}
-          />
-          <StatCard
-            icon={Users}
-            label="Participants"
-            value={hackathon.numParticipants || 0}
-          />
-          <StatCard
-            icon={Calendar}
-            label="Difficulty"
-            value={hackathon.difficulty}
-          />
-        </div>
+          {already && (
+            <div className="relative bg-[rgba(95,255,96,0.05)] border border-[rgba(95,255,96,0.2)] rounded-[3px] p-4 mb-5 flex flex-col gap-3">
+              <span className="absolute top-[-1px] left-[-1px] w-2 h-2 border-t-2 border-l-2 border-[rgba(95,255,96,0.45)]" />
+              <p
+                className={`${syne} font-extrabold text-[#5fff60] text-sm tracking-tight`}
+              >
+                Already Submitted — you can update before deadline.
+              </p>
 
-        <p className="text-gray-300 mb-6">{hackathon.description}</p>
-
-        {submissionStatus?.submitted && (
-          <div className="p-4 bg-gray-800 rounded-lg border border-green-500/50 space-y-4">
-            <p className="text-green-400 font-semibold">Already Submitted! You can update before deadline.</p>
-
-            {Array.isArray(submissionStatus.submission.repoUrl) &&
-              submissionStatus.submission.repoUrl.length > 0 && (
+              {Array.isArray(sub.repoUrl) && sub.repoUrl.length > 0 && (
                 <div>
-                  <p className="font-medium text-gray-300">URLs:</p>
-                  <ul className="list-disc list-inside text-gray-400 space-y-1">
-                    {submissionStatus.submission.repoUrl.map((url, idx) => (
-                      <li key={idx}>
-                        <a
-                          href={url}
-                          className="text-blue-400 underline"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {url}
-                        </a>
-                      </li>
+                  <div
+                    className={`${mono} text-[0.5rem] tracking-[0.14em] uppercase text-[rgba(95,255,96,0.4)] mb-1.5`}
+                  >
+                    URLs
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {sub.repoUrl.map((url, i) => (
+                      <LinkRow key={i} href={url} label={url} />
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
-
-            {/* Docs */}
-            {/* {submissionStatus.submission.docs?.length > 0 && (
-              <div>
-                <p className="font-medium text-gray-300">Submitted Documents:</p>
-                <ul className="list-disc list-inside text-gray-400 space-y-1">
-                  {submissionStatus.submission.docs.map((doc) => (
-                    <li key={doc._id}>
-                      <a
-                        href={doc.url}
-                        className="text-blue-400 underline"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {doc.original_filename || "Document"}
-                      </a>
-                      <span className="ml-2 text-xs text-gray-500">
-                        ({(doc.size / 1024).toFixed(1)} KB)
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )} */}
-
-            {/* {submissionStatus.submission.videos?.length > 0 && (
-              <div>
-                <p className="font-medium text-gray-300">Submitted Videos:</p>
-                <ul className="list-disc list-inside text-gray-400 space-y-1">
-                  {submissionStatus.submission.videos.map((vid) => (
-                    <li key={vid._id}>
-                      <a
-                        href={vid.url}
-                        className="text-blue-400 underline"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {vid.original_filename || "Video"}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )} */}
-          </div>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Section for multiple URL inputs */}
-          <div className="space-y-3">
-            <label className="block text-gray-300">URL(s)</label>
-            {repoUrls.map((url, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Input
-                  className="border-green-500/30 flex-grow"
-                  placeholder="e.g., https://github.com/your-repo"
-                  value={url}
-                  onChange={(e) => handleRepoUrlChange(index, e.target.value)}
-                />
-                {repoUrls.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => handleRemoveRepoUrl(index)}
-                    className="p-2"
-                    title="Remove URL"
+              {sub.docs?.length > 0 && (
+                <div>
+                  <div
+                    className={`${mono} text-[0.5rem] tracking-[0.14em] uppercase text-[rgba(95,255,96,0.4)] mb-1.5`}
                   >
-                    <X className="w-5 h-5 text-red-500" />
-                  </Button>
-                )}
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleAddRepoUrl}
-              className="flex items-center gap-2 w-full justify-center sm:w-auto"
-            >
-              <Plus className="w-4 h-4" />
-              Add another URL
-            </Button>
-          </div>
+                    Documents
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {sub.docs.map((d) => (
+                      <div key={d._id} className="flex items-center gap-2">
+                        <LinkRow
+                          href={d.url}
+                          label={d.original_filename || "Document"}
+                        />
+                        <span
+                          className={`${mono} text-[0.52rem] text-[rgba(180,220,180,0.3)]`}
+                        >
+                          ({(d.size / 1024).toFixed(1)} KB)
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {sub.videos?.length > 0 && (
+                <div>
+                  <div
+                    className={`${mono} text-[0.5rem] tracking-[0.14em] uppercase text-[rgba(95,255,96,0.4)] mb-1.5`}
+                  >
+                    Videos
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {sub.videos.map((v) => (
+                      <LinkRow
+                        key={v._id}
+                        href={v.url}
+                        label={v.original_filename || "Video"}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
-          {/* <FileUpload
-              label="Upload Demo Video"
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <div>
+              <FieldLabel required>Submission URL(s)</FieldLabel>
+              <div className="flex flex-col gap-2">
+                {repoUrls.map((url, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input
+                      className={inp + " flex-1"}
+                      placeholder="https://github.com/your-repo"
+                      value={url}
+                      onChange={(e) => {
+                        const a = [...repoUrls];
+                        a[i] = e.target.value;
+                        setRepoUrls(a);
+                      }}
+                    />
+                    {repoUrls.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setRepoUrls(repoUrls.filter((_, j) => j !== i))
+                        }
+                        className="w-8 h-8 flex items-center justify-center rounded-[3px] border border-[rgba(255,60,60,0.2)] bg-[rgba(255,60,60,0.07)] text-[rgba(255,100,100,0.6)] hover:text-[#ff9090] transition-all cursor-pointer flex-shrink-0"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setRepoUrls([...repoUrls, ""])}
+                  className={`${mono} inline-flex items-center gap-1.5 text-[0.6rem] tracking-[0.08em] uppercase px-3 py-2 rounded-[3px] border cursor-pointer transition-all border-[rgba(95,255,96,0.18)] text-[rgba(95,255,96,0.55)] hover:border-[rgba(95,255,96,0.32)] hover:text-[#5fff60] w-full sm:w-auto justify-center`}
+                >
+                  <Plus size={11} /> Add another URL
+                </button>
+              </div>
+            </div>
+
+            <DropZone
+              label="Demo Video"
               icon={FileVideo}
               accept="video/*"
               file={videoFile}
-              onFileChange={handleVideoFileChange}
-              onRemove={handleRemoveVideo}
+              onFileChange={handleVideoChange}
+              onRemove={removeVideo}
               preview={
                 videoFile && (
                   <video
                     src={videoPreviewUrl}
                     controls
-                    className="rounded-lg w-full max-h-24 object-contain"
+                    className="rounded-[2px] w-full max-h-20 object-contain"
                   />
                 )
               }
             />
-
-            <FileUpload
-              label="Upload Documentation (PDF)"
+            <DropZone
+              label="Documentation (PDF)"
               icon={FileText}
               accept="application/pdf"
               file={pdfFile}
-              onFileChange={handlePdfFileChange}
-              onRemove={handleRemovePdf}
-              preview={<FileText className="w-12 h-12 text-blue-500" />}
-            /> */}
-
-          {/* <Button
-              type="submit"
-              disabled={loading || (!isLeader && isTeamMember)}
-              className="cursor-pointer group w-full bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
-            >
-              {loading ? "Submitting..." : "Submit Project"}
-            </Button> */}
-
-          {submissionStatus?.submitted ? (
-            isDeadlineOver ? (
-              <Button
-                type="button"
-                disabled
-                className="w-full bg-gray-700 text-gray-400"
-              >
-                Submission Closed
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                disabled={loading || (!isLeader && isTeamMember)}
-                className="cursor-pointer group w-full bg-yellow-500 text-gray-900 font-bold shadow-lg shadow-yellow-500/20 hover:bg-yellow-400 transition-all duration-300 hover:shadow-yellow-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
-              >
-                {loading ? "Updating..." : "Update Submission"}
-              </Button>
-            )
-          ) : (
-            <Button
-              type="submit"
-              disabled={
-                loading ||
-                (!isLeader && isTeamMember) ||
-                isDeadlineOver
+              onFileChange={(e) =>
+                e.target.files[0] && setPdfFile(e.target.files[0])
               }
-              className="cursor-pointer group w-full bg-green-500 text-gray-900 font-bold shadow-lg shadow-green-500/20 hover:bg-green-400 transition-all duration-300 hover:shadow-green-400/40 transform hover:scale-105 px-6 py-2.5 text-base"
-            >
-              {loading ? "Submitting..." : "Submit Project"}
-            </Button>
-          )}
-        </form>
-      </motion.div>
-    </motion.div>,
+              onRemove={removePdf}
+              preview={
+                <FileText size={22} className="text-[rgba(95,255,96,0.5)]" />
+              }
+            />
+
+            {!isLeader && isTeamMember && (
+              <p
+                className={`${mono} text-[0.6rem] text-[rgba(255,184,77,0.7)] tracking-[0.04em]`}
+              >
+                ⚠ Only team leaders can submit.
+              </p>
+            )}
+
+            {already ? (
+              isDeadlineOver ? (
+                <PrimaryBtn disabled color="gray">
+                  Submission Closed
+                </PrimaryBtn>
+              ) : (
+                <PrimaryBtn
+                  disabled={loading || (!isLeader && isTeamMember)}
+                  color="amber"
+                >
+                  {loading ? "Updating…" : "Update Submission"}
+                </PrimaryBtn>
+              )
+            ) : (
+              <PrimaryBtn
+                disabled={
+                  loading || (!isLeader && isTeamMember) || isDeadlineOver
+                }
+              >
+                {loading ? "Submitting…" : "Submit Project"}
+              </PrimaryBtn>
+            )}
+          </form>
+        </div>
+      </div>
+    </>,
     document.body
   );
 };

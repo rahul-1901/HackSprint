@@ -13,21 +13,20 @@ import {
 import { getAdminDetails, getAdminHackathonDetail } from "../backendApis/api";
 import axios from "axios";
 import AdminGalleryManager from "./AdminGalleryManager";
+import "./Userlist.css"
 
-const GridBackground = () => (
-  <div className="absolute inset-0 h-full w-full bg-gray-900 bg-grid-white/[0.05] -z-20" />
-);
+/* ── Background ── */
+const GridBackground = () => <div className="hu-bg" />;
 
+/* ── Filter buttons ── */
 const FilterButtons = ({ value, onChange }) => (
-  <div className="flex gap-2 mb-4">
+  <div className="hu-filters">
     {["all", "submitted", "not_submitted"].map((type) => (
       <button
         key={type}
         onClick={() => onChange(type)}
-        className={`px-3 py-1.5 rounded-lg text-sm capitalize transition cursor-pointer ${
-          value === type
-            ? "bg-green-500 text-black font-semibold"
-            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+        className={`hu-filter-btn ${
+          value === type ? "hu-filter-btn--active" : "hu-filter-btn--inactive"
         }`}
       >
         {type.replace("_", " ")}
@@ -36,24 +35,27 @@ const FilterButtons = ({ value, onChange }) => (
   </div>
 );
 
+/* ── Empty state ── */
 const EmptyState = ({ message }) => (
-  <div className="text-center p-8 text-gray-500">
-    <Users size={48} className="mx-auto mb-4 opacity-40" />
-    <p>{message}</p>
+  <div className="hu-empty">
+    <Users size={40} />
+    <span>{message}</span>
   </div>
 );
 
+/* ── Submission badge ── */
 const SubmissionBadge = ({ submitted }) =>
   submitted ? (
-    <span className="inline-flex items-center gap-2 bg-green-500/10 text-green-400 px-3 py-1 rounded-full text-sm">
-      <CheckCircle size={16} /> Submitted
+    <span className="hu-badge hu-badge--submitted">
+      <CheckCircle size={11} /> Submitted
     </span>
   ) : (
-    <span className="inline-flex items-center gap-2 bg-gray-500/10 text-gray-400 px-3 py-1 rounded-full text-sm">
-      <XCircle size={16} /> Not Submitted
+    <span className="hu-badge hu-badge--not">
+      <XCircle size={11} /> Not Submitted
     </span>
   );
 
+/* ── Main page ── */
 const HackathonUsersPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -98,7 +100,7 @@ const HackathonUsersPage = () => {
         );
         setResult(response.data);
       } catch {
-        // silent
+        /* silent */
       }
     };
     fetchResult();
@@ -140,117 +142,118 @@ const HackathonUsersPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-400">Loading participants...</p>
-        </div>
+      <div className="hu-loading">
+        <div className="hu-spinner" />
+        <p>Loading participants…</p>
       </div>
     );
   }
 
   if (!hackathon) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Hackathon Not Found</h1>
-          <Link to="/admin" className="text-green-400 hover:underline">
-            Go back to the dashboard
-          </Link>
+      <div className="hu-notfound">
+        <div>
+          <h1>Hackathon Not Found</h1>
+          <Link to="/admin">← Back to Dashboard</Link>
         </div>
       </div>
     );
   }
 
+  /* scoreboard rank helpers */
+  const rankClass = (idx) => {
+    if (idx === 0) return { row: "hu-score-row--1", rank: "hu-score-rank--1" };
+    if (idx === 1) return { row: "hu-score-row--2", rank: "hu-score-rank--2" };
+    if (idx === 2) return { row: "hu-score-row--3", rank: "hu-score-rank--3" };
+    return { row: "hu-score-row--rest", rank: "hu-score-rank--rest" };
+  };
+
   return (
-    <div className="relative min-h-screen bg-gray-900 text-white overflow-hidden mb-15">
+    <div className="hu-root">
       <GridBackground />
 
-      <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-        {/* Header */}
-        <header className="my-5">
-          <Link
-            to="/admin"
-            className="flex items-center gap-2 text-green-400 hover:text-green-300 mb-6 group w-fit"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            Back to Dashboard
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "clamp(1.25rem, 4vw, 2.5rem)",
+        }}
+      >
+        {/* ── Header ── */}
+        <header style={{ marginBottom: "1.75rem" }}>
+          <Link to="/admin" className="hu-back">
+            <ArrowLeft size={13} /> Back to Dashboard
           </Link>
-
-          <p className="text-green-400 text-sm font-semibold tracking-wide uppercase">
-            Hackathon Management
-          </p>
-          <h1 className="text-4xl sm:text-5xl ZaptronFont -tracking-tight text-green-400 md:text-6xl font-extrabold leading-tight mt-2">
-            {hackathon.title}
-          </h1>
+          
+          <h1 className="hu-page-title">{hackathon.title}</h1>
 
           {/* Tabs */}
-          <div className="flex gap-3 mt-6 mb-4 flex-wrap">
+          <div className="hu-tabs">
             <button
               onClick={() => setActiveTab("participants")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all cursor-pointer ${
+              className={`hu-tab ${
                 activeTab === "participants"
-                  ? "bg-green-500/20 text-green-400 border border-green-500/40"
-                  : "bg-gray-800/50 text-gray-400 hover:bg-gray-800 border border-gray-700"
+                  ? "hu-tab--active"
+                  : "hu-tab--inactive"
               }`}
             >
-              <Users className="w-5 h-5" />
-              Participants
+              <Users size={13} /> Participants
             </button>
             <button
               onClick={() => setActiveTab("gallery")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all cursor-pointer ${
-                activeTab === "gallery"
-                  ? "bg-green-500/20 text-green-400 border border-green-500/40"
-                  : "bg-gray-800/50 text-gray-400 hover:bg-gray-800 border border-gray-700"
+              className={`hu-tab ${
+                activeTab === "gallery" ? "hu-tab--active" : "hu-tab--inactive"
               }`}
             >
-              <Images className="w-5 h-5" />
-              Gallery
+              <Images size={13} /> Gallery
             </button>
           </div>
 
           {activeTab === "participants" && (
             <button
               onClick={() => setShowScoreboard(true)}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 cursor-pointer text-white font-semibold px-4 py-2 rounded-lg shadow-lg transition"
+              className="hu-results-btn"
             >
-              <Trophy className="w-4 h-4" />
-              View Results
+              <Trophy size={13} /> View Results
             </button>
           )}
         </header>
 
-        {/* Main Content */}
-        <main className="space-y-8">
+        {/* ── Main content ── */}
+        <main
+          style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
+        >
           {activeTab === "participants" ? (
             <>
-              {/* Teams Section */}
-              <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 shadow-xl">
-                <h2 className="text-2xl font-bold text-green-400 mb-4 flex items-center gap-3">
-                  <Shield size={28} />
-                  Teams ({teams.length})
-                </h2>
-
+              {/* Teams */}
+              <div className="hu-card">
+                <div className="hu-section-title">
+                  <Shield size={16} />
+                  Teams
+                  <span
+                    style={{
+                      fontSize: "0.65rem",
+                      color: "var(--text-muted)",
+                      fontWeight: 400,
+                    }}
+                  >
+                    ({teams.length})
+                  </span>
+                </div>
                 <FilterButtons value={teamFilter} onChange={setTeamFilter} />
-
-                <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl overflow-hidden">
-                  <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-                    <table className="w-full text-left">
-                      <thead className="bg-gray-800 sticky top-0 z-10">
+                <div className="hu-table-wrap">
+                  <div className="hu-table-scroll">
+                    <table className="hu-table">
+                      <thead>
                         <tr>
-                          <th className="p-4 font-semibold text-gray-300">
-                            Team Name
-                          </th>
-                          <th className="p-4 font-semibold text-gray-300">
-                            Members
-                          </th>
-                          <th className="p-4 font-semibold text-gray-300 text-center">
-                            Submission Status
-                          </th>
+                          <th>Team Name</th>
+                          <th>Members</th>
+                          <th className="center">Submission</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-800">
+                      <tbody>
                         {filteredTeams.map((team) => {
                           const submitted = hasTeamSubmitted(team);
                           return (
@@ -262,32 +265,35 @@ const HackathonUsersPage = () => {
                                   `/hackathon/${slug}/submission/${team._id}`
                                 )
                               }
-                              className={`transition-colors ${
-                                submitted
-                                  ? "hover:bg-gray-800/40 cursor-pointer"
-                                  : ""
-                              }`}
+                              className={submitted ? "clickable" : ""}
                             >
-                              <td className="p-4 font-medium text-white">
-                                {team.name}
-                              </td>
-                              <td className="p-4 text-gray-400">
+                              <td className="hu-td-name">{team.name}</td>
+                              <td>
                                 {team.leader && (
-                                  <div className="flex items-center gap-2">
+                                  <div className="hu-leader">
                                     <Shield
-                                      size={14}
-                                      className="text-yellow-400"
+                                      size={11}
+                                      style={{ color: "var(--amber)" }}
                                     />
-                                    {team.leader.name} (Leader)
+                                    {team.leader.name}
+                                    <span
+                                      style={{
+                                        fontSize: "0.58rem",
+                                        color: "var(--amber)",
+                                        opacity: 0.7,
+                                      }}
+                                    >
+                                      (Leader)
+                                    </span>
                                   </div>
                                 )}
                                 {team.members.map((member) => (
-                                  <div key={member._id} className="ml-6">
+                                  <div key={member._id} className="hu-member">
                                     {member.name}
                                   </div>
                                 ))}
                               </td>
-                              <td className="p-4 text-center">
+                              <td className="hu-td-center">
                                 <SubmissionBadge submitted={submitted} />
                               </td>
                             </tr>
@@ -302,35 +308,36 @@ const HackathonUsersPage = () => {
                 </div>
               </div>
 
-              {/* Individual Participants Section */}
-              <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 shadow-xl">
-                <h2 className="text-2xl font-bold text-green-400 mb-4 flex items-center gap-3">
-                  <Users size={28} />
-                  Individual Participants ({individualParticipants.length})
-                </h2>
-
+              {/* Individual Participants */}
+              <div className="hu-card">
+                <div className="hu-section-title">
+                  <Users size={16} />
+                  Individual Participants
+                  <span
+                    style={{
+                      fontSize: "0.65rem",
+                      color: "var(--text-muted)",
+                      fontWeight: 400,
+                    }}
+                  >
+                    ({individualParticipants.length})
+                  </span>
+                </div>
                 <FilterButtons
                   value={participantFilter}
                   onChange={setParticipantFilter}
                 />
-
-                <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-800/50 rounded-2xl overflow-hidden">
-                  <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
-                    <table className="w-full text-left">
-                      <thead className="bg-gray-800 sticky top-0 z-10">
+                <div className="hu-table-wrap">
+                  <div className="hu-table-scroll">
+                    <table className="hu-table">
+                      <thead>
                         <tr>
-                          <th className="p-4 font-semibold text-gray-300">
-                            Name
-                          </th>
-                          <th className="p-4 font-semibold text-gray-300">
-                            Email
-                          </th>
-                          <th className="p-4 font-semibold text-gray-300 text-center">
-                            Submission Status
-                          </th>
+                          <th>Name</th>
+                          <th>Email</th>
+                          <th className="center">Submission</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-800">
+                      <tbody>
                         {filteredParticipants.map((participant) => {
                           const submitted = hasUserSubmitted(participant);
                           return (
@@ -342,19 +349,15 @@ const HackathonUsersPage = () => {
                                   `/hackathon/${slug}/submission/${participant.user?._id}`
                                 )
                               }
-                              className={`transition-colors ${
-                                submitted
-                                  ? "hover:bg-gray-800/40 cursor-pointer"
-                                  : ""
-                              }`}
+                              className={submitted ? "clickable" : ""}
                             >
-                              <td className="p-4 font-medium text-white">
+                              <td className="hu-td-name">
                                 {participant.user?.name || "N/A"}
                               </td>
-                              <td className="p-4 text-gray-400">
+                              <td className="hu-td-muted">
                                 {participant.user?.email || "N/A"}
                               </td>
-                              <td className="p-4 text-center">
+                              <td className="hu-td-center">
                                 <SubmissionBadge submitted={submitted} />
                               </td>
                             </tr>
@@ -370,85 +373,68 @@ const HackathonUsersPage = () => {
               </div>
             </>
           ) : (
-            <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 shadow-xl">
+            <div className="hu-gallery-wrap">
               <AdminGalleryManager hackathonId={slug} />
             </div>
           )}
         </main>
       </div>
 
-      {/* Scoreboard Modal */}
+      {/* ── Scoreboard Modal ── */}
       {showScoreboard && (
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-5"
+          className="hu-modal-overlay"
           onClick={(e) =>
             e.target === e.currentTarget && setShowScoreboard(false)
           }
         >
-          <div className="bg-gray-800 text-white rounded-2xl p-6 w-full max-w-lg shadow-2xl relative border border-gray-700">
-            <button
-              onClick={() => setShowScoreboard(false)}
-              className="absolute top-4 right-4 cursor-pointer text-gray-400 hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+          <div className="hu-modal">
+            <div className="hu-modal-topline" />
 
-            <div className="flex items-center gap-3 mb-6">
-              <Trophy className="w-6 h-6 text-yellow-400" />
-              <h2 className="text-2xl font-bold text-green-400">Scoreboard</h2>
+            <div className="hu-modal-header">
+              <Trophy
+                size={18}
+                style={{ color: "var(--amber)", flexShrink: 0 }}
+              />
+              <div className="hu-modal-title">Scoreboard</div>
+              <button
+                onClick={() => setShowScoreboard(false)}
+                className="hu-modal-close"
+              >
+                <X size={15} />
+              </button>
             </div>
 
             {result?.totalSubmissions > 0 ? (
-              <ul className="space-y-2 max-h-72 overflow-y-auto pr-1">
+              <div className="hu-modal-list">
                 {result.submissions?.map((sub, idx) => {
                   const name =
                     sub.team?.name || sub.participant?.name || "Unknown";
                   const points = sub.hackathonPoints || 0;
-
-                  const rankStyles = {
-                    0: {
-                      rank: "text-yellow-400",
-                      bg: "bg-yellow-500/10 border border-yellow-400/30",
-                    },
-                    1: {
-                      rank: "text-gray-300",
-                      bg: "bg-gray-400/10 border border-gray-300/20",
-                    },
-                    2: {
-                      rank: "text-orange-400",
-                      bg: "bg-orange-500/10 border border-orange-400/20",
-                    },
-                  };
-
-                  const style = rankStyles[idx] || {
-                    rank: "text-gray-400",
-                    bg: "bg-gray-700/50",
-                  };
-
+                  const { row, rank } = rankClass(idx);
                   return (
-                    <li
-                      key={sub._id || idx}
-                      className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:bg-gray-600/40 ${style.bg}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className={`font-bold text-sm w-6 ${style.rank}`}>
+                    <div key={sub._id || idx} className={`hu-score-row ${row}`}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.6rem",
+                        }}
+                      >
+                        <span className={`hu-score-rank ${rank}`}>
                           #{idx + 1}
                         </span>
-                        <span className="text-sm md:text-base font-medium">
-                          {name}
-                        </span>
+                        <span className="hu-score-name">{name}</span>
                       </div>
-                      <span className="text-green-400 font-semibold text-sm md:text-base">
-                        {points} pts
-                      </span>
-                    </li>
+                      <span className="hu-score-pts">{points} pts</span>
+                    </div>
                   );
                 })}
-              </ul>
+              </div>
             ) : (
-              <div className="text-center py-8 text-gray-400">
-                <Trophy className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>No submissions yet.</p>
+              <div className="hu-modal-empty">
+                <Trophy size={36} />
+                <span>No submissions yet.</span>
               </div>
             )}
           </div>

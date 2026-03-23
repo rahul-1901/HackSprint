@@ -1,7 +1,4 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import { Badge } from "./Badge";
-import { Button } from "./Button";
+import React, { useState, useEffect } from "react";
 import {
   Clock,
   Code,
@@ -9,256 +6,244 @@ import {
   ChevronDown,
   ChevronUp,
   Trophy,
+  Link2,
 } from "lucide-react";
 import ChatInterface from "../components/Chat/ChatInterface";
 import Upvote from "./Upvote";
 import Gallery from "./Gallery";
 
+const FontStyle = () => (
+  <style>{`@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+);
+
+const Card = ({ children, className = "" }) => (
+  <div
+    className={`relative bg-[rgba(10,12,10,0.88)] border border-[rgba(95,255,96,0.1)] rounded-[4px] backdrop-blur-sm p-5 hover:border-[rgba(95,255,96,0.24)] transition-all ${className}`}
+  >
+    <span className="absolute top-[-1px] left-[-1px] w-2 h-2 border-t-2 border-l-2 border-[rgba(95,255,96,0.35)]" />
+    <span className="absolute bottom-[-1px] right-[-1px] w-2 h-2 border-b-2 border-r-2 border-[rgba(95,255,96,0.35)]" />
+    {children}
+  </div>
+);
+
+const SectionHead = ({ children }) => (
+  <h3 className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-2xl sm:text-3xl tracking-tight mb-5">
+    {children}
+  </h3>
+);
+
+const SubHead = ({ icon: Icon, children }) => (
+  <h4 className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-lg tracking-tight mb-3 flex items-center gap-2">
+    {Icon && <Icon size={16} className="text-[#5fff60] flex-shrink-0" />}
+    {children}
+  </h4>
+);
+
+const Tag = ({ children, color = "green" }) => {
+  const c =
+    color === "blue"
+      ? "bg-[rgba(96,200,255,0.07)] border-[rgba(96,200,255,0.2)] text-[rgba(96,200,255,0.75)]"
+      : "bg-[rgba(95,255,96,0.07)] border-[rgba(95,255,96,0.2)] text-[rgba(95,255,96,0.75)]";
+  return (
+    <span
+      className={`font-[family-name:'JetBrains_Mono',monospace] inline-block text-[0.6rem] tracking-[0.07em] px-2 py-1 rounded-[2px] border ${c}`}
+    >
+      {children}
+    </span>
+  );
+};
+
+const Label = ({ children }) => (
+  <div className="font-[family-name:'JetBrains_Mono',monospace] text-[0.52rem] tracking-[0.18em] uppercase text-[rgba(95,255,96,0.4)] mb-1">
+    {children}
+  </div>
+);
+
+const Empty = ({ label }) => (
+  <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.65rem] text-[rgba(180,220,180,0.35)] tracking-[0.04em]">
+    No {label} information provided.
+  </p>
+);
+
+const fmtDate = (d) =>
+  new Date(d).toLocaleString("en-US", {
+    weekday: "short",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
 export const ContentSection = ({ activeSection, hackathon }) => {
   const [expandedFAQ, setExpandedFAQ] = useState(null);
 
-  const formatDateTime = (date) =>
-    new Date(date).toLocaleString("en-US", {
-      weekday: "short",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-
-  const SectionCard = ({ children, className = "" }) => (
-    <div
-      className={`bg-gray-900/70 backdrop-blur-sm border border-green-500/20 rounded-xl p-6 hover:border-green-400/30 transition-all duration-300 ${className}`}
-    >
-      {children}
-    </div>
-  );
-
-  const SectionHeader = ({ children }) => (
-    <h3 className="text-3xl font-bold text-white mb-6">{children}</h3>
-  );
-
-  // Component for sections with standard text content
-  const SimpleContentSection = ({ title, content }) => (
+  const SimpleSection = ({ title, content }) => (
     <div>
-      <SectionHeader>{title}</SectionHeader>
-      <SectionCard>
-        <div className="text-gray-300 whitespace-pre-line leading-relaxed prose max-w-none">
-          {content || `No ${title.toLowerCase()} information provided.`}
-        </div>
-      </SectionCard>
+      <SectionHead>{title}</SectionHead>
+      <Card>
+        {content ? (
+          <div className="font-[family-name:'JetBrains_Mono',monospace] text-[0.72rem] text-[rgba(180,220,180,0.65)] leading-relaxed whitespace-pre-line">
+            {content}
+          </div>
+        ) : (
+          <Empty label={title.toLowerCase()} />
+        )}
+      </Card>
     </div>
   );
 
-  const SimpleContentSectionRef = ({ title, content }) => {
+  const RefSection = ({ title, content }) => {
     const urls = Array.isArray(content) ? content : content ? [content] : [];
-
     return (
       <div>
-        <SectionHeader>{title}</SectionHeader>
-        <SectionCard>
+        <SectionHead>{title}</SectionHead>
+        <Card>
           {urls.length > 0 ? (
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               {urls.map((url, i) => (
                 <a
                   key={i}
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-blue-400 hover:underline hover:text-blue-300 break-all"
+                  className="font-[family-name:'JetBrains_Mono',monospace] text-[0.65rem] text-[rgba(95,255,96,0.6)] hover:text-[#5fff60] flex items-center gap-1.5 break-all transition-colors"
                 >
+                  <Link2 size={11} className="flex-shrink-0 opacity-60" />
                   {url}
                 </a>
               ))}
             </div>
           ) : (
-            <p className="text-gray-400">
-              No {title.toLowerCase()} information provided.
-            </p>
+            <Empty label={title.toLowerCase()} />
           )}
-        </SectionCard>
+        </Card>
       </div>
     );
   };
 
-  const ListContentSection = ({ title, content }) => {
-    const isContentAvailable = Array.isArray(content) && content.length > 0;
-
-    const isLink = (text) => {
-      return typeof text === "string" && text.startsWith("http");
-    };
-
+  const ListSection = ({ title, content }) => {
+    const isLink = (t) => typeof t === "string" && t.startsWith("http");
+    const ok = Array.isArray(content) && content.length > 0;
     return (
       <div>
-        <SectionHeader>{title}</SectionHeader>
-        <SectionCard>
-          {isContentAvailable ? (
-            <ul className="list-disc list-inside space-y-3 text-gray-300 prose max-w-none">
-              {content.map((item, index) => (
-                <li key={index}>
+        <SectionHead>{title}</SectionHead>
+        <Card>
+          {ok ? (
+            <ul className="flex flex-col gap-2">
+              {content.map((item, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.58rem] text-[rgba(95,255,96,0.5)] mt-[3px] flex-shrink-0">
+                    {String(i + 1).padStart(2, "0")}.
+                  </span>
                   {isLink(item) ? (
                     <a
                       href={item}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-400 underline hover:text-blue-300"
+                      className="font-[family-name:'JetBrains_Mono',monospace] text-[0.68rem] text-[rgba(95,255,96,0.6)] hover:text-[#5fff60] underline transition-colors"
                     >
                       Rule Book
                     </a>
                   ) : (
-                    item
+                    <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.68rem] text-[rgba(180,220,180,0.6)] leading-relaxed">
+                      {item}
+                    </span>
                   )}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-gray-400">
-              {`No ${title.toLowerCase()} information provided.`}
-            </p>
+            <Empty label={title.toLowerCase()} />
           )}
-        </SectionCard>
+        </Card>
       </div>
     );
   };
 
-  const toggleFAQ = (index) => {
-    setExpandedFAQ(expandedFAQ === index ? null : index);
-  };
+  const TimelineRow = ({ label, date, last }) => (
+    <div
+      className={`flex gap-4 pb-5 ${
+        !last ? "border-b border-[rgba(95,255,96,0.06)]" : ""
+      }`}
+    >
+      <div className="flex flex-col items-center gap-1 flex-shrink-0">
+        <div className="w-2 h-2 rounded-full bg-[#5fff60] mt-1" />
+        {!last && <div className="w-px flex-1 bg-[rgba(95,255,96,0.15)]" />}
+      </div>
+      <div className="pb-1">
+        <div className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-sm tracking-tight">
+          {label}
+        </div>
+        <div className="font-[family-name:'JetBrains_Mono',monospace] text-[0.62rem] text-[rgba(180,220,180,0.45)] mt-0.5">
+          {fmtDate(date)}
+        </div>
+      </div>
+    </div>
+  );
 
   const renderContent = () => {
     switch (activeSection) {
       case "overview":
         return (
-          <div className="space-y-8">
-            <SectionCard>
-              <h4 className="text-xl font-bold text-white mb-4">Description</h4>
-              <p className="text-gray-300 leading-relaxed prose max-w-none">
+          <div className="flex flex-col gap-5">
+            <Card>
+              <SubHead>Description</SubHead>
+              <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.72rem] text-[rgba(180,220,180,0.6)] leading-relaxed">
                 {hackathon.description}
               </p>
-            </SectionCard>
-            <SectionCard>
-              <h4 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-green-400" /> Event Timeline
-              </h4>
+            </Card>
 
-              <div className="relative pl-6 space-y-8 border-l-2 border-green-500/20">
-                <div className="relative">
-                  <div>
-                    <div className="font-bold text-white">
-                      Registration Opens
-                    </div>
-                    <div className="text-gray-400 text-sm">
-                      {formatDateTime(hackathon.startDate)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative">
-                  <div>
-                    <div className="font-bold text-white">
-                      Registration Closes
-                    </div>
-                    <div className="text-gray-400 text-sm">
-                      {formatDateTime(hackathon.endDate)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative">
-                  <div>
-                    <div className="font-bold text-white">Submission Opens</div>
-                    <div className="text-gray-400 text-sm">
-                      {formatDateTime(hackathon.submissionStartDate)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative">
-                  <div>
-                    <div className="font-bold text-white">
-                      Submission Deadline
-                    </div>
-                    <div className="text-gray-400 text-sm">
-                      {formatDateTime(hackathon.submissionEndDate)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </SectionCard>
-            <div className="grid md:grid-cols-2 gap-6">
-              <SectionCard>
-                <h4 className="font-bold text-white mb-3 flex items-center gap-2">
-                  <Code className="w-5 h-5 text-green-400" /> Difficulty
-                </h4>
-                <Badge className="bg-green-500/20 text-green-300 font-medium border-green-500/30 border">
-                  {hackathon.difficulty}
-                </Badge>
-              </SectionCard>
-              <SectionCard>
-                <h4 className="font-bold text-white mb-3 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-green-400" /> Categories
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {hackathon.category?.map((cat, i) => (
-                    <Badge
-                      key={i}
-                      className="bg-green-500/20 text-green-300 font-medium border-green-500/30 border"
-                    >
-                      {cat}
-                    </Badge>
-                  ))}
-                </div>
-              </SectionCard>
-            </div>
-            <SectionCard>
-              <h4 className="text-xl font-bold text-white mb-4">
-                Recommended Tech Stack
-              </h4>
-              <div className="flex flex-wrap gap-3">
-                {hackathon.techStackUsed?.map((tech, i) => (
-                  <span
-                    key={i}
-                    className="bg-gray-800 text-gray-300 border border-green-500/20 px-3 py-1.5 rounded-lg text-sm hover:bg-green-500/10 hover:text-white transition-colors duration-200"
-                  >
-                    {tech}
-                  </span>
+            <Card>
+              <SubHead icon={Clock}>Event Timeline</SubHead>
+              <div className="flex flex-col gap-0">
+                {[
+                  ["Registration Opens", hackathon.startDate],
+                  ["Registration Closes", hackathon.endDate],
+                  ["Submission Opens", hackathon.submissionStartDate],
+                  ["Submission Deadline", hackathon.submissionEndDate],
+                ].map(([label, date], i, arr) => (
+                  <TimelineRow
+                    key={label}
+                    label={label}
+                    date={date}
+                    last={i === arr.length - 1}
+                  />
                 ))}
               </div>
-            </SectionCard>
+            </Card>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Card>
+                <SubHead icon={Code}>Difficulty</SubHead>
+                <Tag>{hackathon.difficulty}</Tag>
+              </Card>
+              <Card>
+                <SubHead icon={Users}>Categories</SubHead>
+                <div className="flex flex-wrap gap-1.5">
+                  {hackathon.category?.map((cat, i) => (
+                    <Tag key={i} color="blue">
+                      {cat}
+                    </Tag>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            <Card>
+              <SubHead>Recommended Tech Stack</SubHead>
+              <div className="flex flex-wrap gap-1.5">
+                {hackathon.techStackUsed?.map((tech, i) => (
+                  <Tag key={i}>{tech}</Tag>
+                ))}
+              </div>
+            </Card>
           </div>
         );
 
-      // --- UPDATED to use ListContentSection for array data ---
-      case "themes":
-        return <ListContentSection title="Themes" content={hackathon.themes} />;
-      case "submission-guide":
-        return (
-          <ListContentSection
-            title="Submission Guide"
-            content={hackathon.projectSubmission}
-          />
-        );
-      case "judging":
-        return (
-          <ListContentSection
-            title="Judging Criteria"
-            content={hackathon.evaluationCriteria}
-          />
-        );
-      case "rules":
-        return (
-          <ListContentSection
-            title="Rules & Guidelines"
-            content={hackathon.TandCforHackathon}
-          />
-        );
-
-      // --- These sections still use SimpleContentSection for string data ---
-      case "prizes":
-        // Use new rewards format if available, fallback to old prize fields
+      case "prizes": {
         const rewards =
-          hackathon.rewards && hackathon.rewards.length > 0
+          hackathon.rewards?.length > 0
             ? hackathon.rewards
             : [
                 hackathon.prizeMoney1 > 0
@@ -271,132 +256,153 @@ export const ContentSection = ({ activeSection, hackathon }) => {
                   ? { description: "3rd Prize", amount: hackathon.prizeMoney3 }
                   : null,
               ].filter(Boolean);
-
-        const totalPrize = rewards.reduce((sum, r) => sum + (r.amount || 0), 0);
-
-        const prizeContent =
-          totalPrize > 0 ? (
-            <div className="space-y-2 text-gray-300">
-              <p>
-                The total prize pool for this event is
-                <span className="ml-1 text-green-400 font-semibold">
-                  ₹{totalPrize.toLocaleString("en-IN")}
-                </span>
-                .
-              </p>
-
-              <ul className="list-disc pl-6 space-y-1">
-                {rewards.map((reward, i) => (
-                  <li key={i}>
-                    <span className="font-medium text-white">
-                      {reward.description}:
-                    </span>{" "}
-                    ₹{reward.amount.toLocaleString("en-IN")}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null;
-
-        return <SimpleContentSection title="Prizes" content={prizeContent} />;
-
-      case "about":
+        const total = rewards.reduce((s, r) => s + (r.amount || 0), 0);
         return (
-          <SimpleContentSection title="About" content={hackathon.aboutUs} />
+          <div>
+            <SectionHead>Prizes</SectionHead>
+            <Card>
+              {total > 0 ? (
+                <div className="flex flex-col gap-3">
+                  <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.68rem] text-[rgba(180,220,180,0.55)]">
+                    Total prize pool:{" "}
+                    <span className="text-[#5fff60] font-semibold">
+                      ₹{total.toLocaleString("en-IN")}
+                    </span>
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {rewards.map((r, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between py-1.5 border-b border-[rgba(95,255,96,0.06)] last:border-b-0"
+                      >
+                        <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.65rem] text-[rgba(180,220,180,0.5)]">
+                          {r.description}
+                        </span>
+                        <span className="font-[family-name:'Syne',sans-serif] font-extrabold text-[#5fff60] text-sm">
+                          ₹{r.amount.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <Empty label="prize" />
+              )}
+            </Card>
+          </div>
         );
+      }
+
+      case "themes":
+        return <ListSection title="Themes" content={hackathon.themes} />;
+      case "submission-guide":
+        return (
+          <ListSection
+            title="Submission Guide"
+            content={hackathon.projectSubmission}
+          />
+        );
+      case "judging":
+        return (
+          <ListSection
+            title="Judging Criteria"
+            content={hackathon.evaluationCriteria}
+          />
+        );
+      case "rules":
+        return (
+          <ListSection
+            title="Rules & Guidelines"
+            content={hackathon.TandCforHackathon}
+          />
+        );
+      case "about":
+        return <SimpleSection title="About" content={hackathon.aboutUs} />;
       case "refMaterial":
         return (
-          <SimpleContentSectionRef
+          <RefSection
             title="Reference Material"
             content={hackathon.refMaterial}
           />
         );
 
-      case "faqs":
+      case "faqs": {
         const faqs = hackathon.FAQs || [];
-
         return (
           <div>
-            <SectionHeader>Frequently Asked Questions</SectionHeader>
-
-            <div className="space-y-4">
-              {faqs.length > 0 ? (
-                faqs.map((faq, idx) => {
-                  const isExpanded = expandedFAQ === idx;
-
+            <SectionHead>Frequently Asked Questions</SectionHead>
+            {faqs.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                {faqs.map((faq, idx) => {
+                  const open = expandedFAQ === idx;
                   return (
                     <div
                       key={idx}
-                      className="border border-green-500/20 rounded-lg bg-gray-900/70 overflow-hidden transition-all duration-300"
+                      className={`relative border rounded-[4px] overflow-hidden transition-all ${
+                        open
+                          ? "border-[rgba(95,255,96,0.28)] bg-[rgba(95,255,96,0.04)]"
+                          : "border-[rgba(95,255,96,0.1)] bg-[rgba(10,12,10,0.88)]"
+                      }`}
                     >
                       <button
-                        onClick={() => toggleFAQ(idx)}
-                        className="w-full p-5 text-left flex items-center justify-between group hover:bg-green-500/5 cursor-pointer"
+                        onClick={() => setExpandedFAQ(open ? null : idx)}
+                        className="w-full flex items-center justify-between gap-4 px-5 py-4 cursor-pointer text-left group"
                       >
-                        <p className="font-semibold text-lg text-white pr-4">
+                        <span className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-sm tracking-tight group-hover:text-[rgba(255,255,255,0.85)]">
                           {faq.question}
-                        </p>
-
-                        <div className="text-green-400 flex-shrink-0 transition-transform duration-300">
-                          {isExpanded ? (
-                            <ChevronUp className="w-5 h-5" />
-                          ) : (
-                            <ChevronDown className="w-5 h-5" />
-                          )}
-                        </div>
+                        </span>
+                        {open ? (
+                          <ChevronUp
+                            size={14}
+                            className="text-[#5fff60] flex-shrink-0"
+                          />
+                        ) : (
+                          <ChevronDown
+                            size={14}
+                            className="text-[rgba(95,255,96,0.45)] flex-shrink-0"
+                          />
+                        )}
                       </button>
-
-                      {isExpanded && (
-                        <div className="px-5 pb-5 border-t border-green-500/20 animate-fade-in">
-                          <p className="text-gray-300 leading-relaxed pt-4">
+                      {open && (
+                        <div className="px-5 pb-4 border-t border-[rgba(95,255,96,0.08)]">
+                          <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.68rem] text-[rgba(180,220,180,0.55)] leading-relaxed pt-3">
                             {faq.answer}
                           </p>
                         </div>
                       )}
                     </div>
                   );
-                })
-              ) : (
-                <SectionCard>
-                  <p className="text-gray-400">
-                    No FAQs provided for this event.
-                  </p>
-                </SectionCard>
-              )}
-            </div>
+                })}
+              </div>
+            ) : (
+              <Card>
+                <Empty label="faqs" />
+              </Card>
+            )}
           </div>
         );
+      }
 
       case "discussion":
-        return (
-          <div>
-            {/* <SectionHeader>Community Discussion</SectionHeader> */}
-            <ChatInterface hackathonId={hackathon._id} />
-          </div>
-        );
-
+        return <ChatInterface hackathonId={hackathon._id} />;
       case "upvote":
-        return (
-          <div>
-            <Upvote />
-          </div>
-        );
-
+        return <Upvote />;
       case "gallery":
         return (
           <div>
-            <SectionHeader>Event Gallery</SectionHeader>
+            <SectionHead>Event Gallery</SectionHead>
             <Gallery />
           </div>
         );
-
       case "results":
         return <ResultsSection hackathonId={hackathon._id} />;
 
       default:
         return (
           <div className="text-center py-12">
-            <p className="text-white font-bold">Section not found.</p>
+            <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.68rem] text-[rgba(180,220,180,0.35)] tracking-[0.06em] uppercase">
+              Section not found.
+            </p>
           </div>
         );
     }
@@ -408,183 +414,132 @@ export const ContentSection = ({ activeSection, hackathon }) => {
     const [error, setError] = useState("");
 
     useEffect(() => {
-      const fetchResults = async () => {
-        try {
-          const response = await fetch(
-            `${
-              import.meta.env.VITE_API_BASE_URL
-            }/api/hackathons/${hackathonId}/results`
-          );
-          if (!response.ok) throw new Error("Failed to fetch results");
-          const data = await response.json();
-          setResults(data);
-        } catch (err) {
-          setError("Results not announced yet or failed to load.");
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchResults();
+      fetch(
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/hackathons/${hackathonId}/results`
+      )
+        .then((r) => {
+          if (!r.ok) throw new Error();
+          return r.json();
+        })
+        .then(setResults)
+        .catch(() => setError("Results not announced yet or failed to load."))
+        .finally(() => setLoading(false));
     }, [hackathonId]);
 
-    // ── Loading ────────────────────────────────────────────────────────────────
     if (loading)
       return (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="h-20 rounded-xl bg-gray-800/50 border border-gray-700/40 overflow-hidden relative"
-            >
-              <div className="absolute inset-0 skeleton-shimmer" />
-            </div>
+              className="h-16 rounded-[4px] bg-[rgba(95,255,96,0.04)] border border-[rgba(95,255,96,0.08)] overflow-hidden relative animate-pulse"
+            />
           ))}
         </div>
       );
 
-    // ── Error / Empty ──────────────────────────────────────────────────────────
     if (error || results.length === 0)
       return (
-        <SectionCard>
+        <Card>
           <div className="flex flex-col items-center justify-center py-10 gap-3">
-            <div className="w-14 h-14 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center">
-              <Trophy className="w-6 h-6 text-gray-600" />
+            <div className="w-12 h-12 rounded-[3px] bg-[rgba(95,255,96,0.05)] border border-[rgba(95,255,96,0.1)] flex items-center justify-center">
+              <Trophy size={20} className="text-[rgba(95,255,96,0.2)]" />
             </div>
-            <p className="text-gray-400 font-medium">
+            <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.65rem] text-[rgba(180,220,180,0.35)] tracking-[0.06em] uppercase">
               {error || "No results announced yet."}
             </p>
-            <p className="text-gray-600 text-sm">
+            <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.58rem] text-[rgba(180,220,180,0.22)]">
               Check back once judging is complete.
             </p>
           </div>
-        </SectionCard>
+        </Card>
       );
 
-    // Podium config
     const podium = [
       {
-        rank: 1,
         label: "1st Place",
         emoji: "🥇",
-        ring: "ring-amber-400/40",
-        bg: "from-amber-500/10 to-amber-600/5",
-        border: "border-amber-500/30",
-        pointColor: "text-amber-400",
-        badgeBg: "bg-amber-400/15 text-amber-300 border-amber-400/30",
-        barColor: "bg-amber-400",
-        glow: "shadow-amber-500/10",
+        border: "border-[rgba(255,196,0,0.3)]",
+        bg: "bg-[rgba(255,196,0,0.07)]",
+        pt: "text-[#ffd700]",
+        badgeCls:
+          "bg-[rgba(255,196,0,0.1)] text-[rgba(255,196,0,0.8)] border-[rgba(255,196,0,0.3)]",
+        bar: "bg-[#ffd700]",
       },
       {
-        rank: 2,
         label: "2nd Place",
         emoji: "🥈",
-        ring: "ring-slate-400/30",
-        bg: "from-slate-500/8 to-slate-600/4",
-        border: "border-slate-500/25",
-        pointColor: "text-slate-300",
-        badgeBg: "bg-slate-400/15 text-slate-300 border-slate-400/30",
-        barColor: "bg-slate-400",
-        glow: "shadow-slate-500/10",
+        border: "border-[rgba(192,192,192,0.25)]",
+        bg: "bg-[rgba(192,192,192,0.06)]",
+        pt: "text-[#c0c0c0]",
+        badgeCls:
+          "bg-[rgba(192,192,192,0.08)] text-[rgba(192,192,192,0.7)] border-[rgba(192,192,192,0.25)]",
+        bar: "bg-[#c0c0c0]",
       },
       {
-        rank: 3,
         label: "3rd Place",
         emoji: "🥉",
-        ring: "ring-orange-700/30",
-        bg: "from-orange-700/8 to-orange-800/4",
-        border: "border-orange-700/25",
-        pointColor: "text-orange-400",
-        badgeBg: "bg-orange-700/15 text-orange-300 border-orange-700/30",
-        barColor: "bg-orange-600",
-        glow: "shadow-orange-700/10",
+        border: "border-[rgba(205,127,50,0.25)]",
+        bg: "bg-[rgba(205,127,50,0.06)]",
+        pt: "text-[#cd7f32]",
+        badgeCls:
+          "bg-[rgba(205,127,50,0.08)] text-[rgba(205,127,50,0.7)] border-[rgba(205,127,50,0.25)]",
+        bar: "bg-[#cd7f32]",
       },
     ];
-
-    const maxPoints = Math.max(
-      ...results.map((r) => r.hackathonPoints || 0),
-      1
-    );
+    const maxPts = Math.max(...results.map((r) => r.hackathonPoints || 0), 1);
 
     return (
       <div>
-        {/* Shimmer keyframe (injected once) */}
-        <style>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .skeleton-shimmer::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
-          animation: shimmer 1.6s infinite;
-        }
-        @keyframes countUp {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .result-row { animation: countUp 0.4s ease both; }
-      `}</style>
+        <SectionHead>Hackathon Results</SectionHead>
 
-        <SectionHeader>Hackathon Results</SectionHeader>
-
-        {/* ── Top 3 podium cards (only if ≥1 result) ─────────────────────── */}
         {results.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-            {results.slice(0, 3).map((submission, index) => {
-              const p = podium[index];
-              const name = submission.team
-                ? submission.team.name
-                : submission.participant?.name || "Unknown";
-              const isTeam = !!submission.team;
-
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+            {results.slice(0, 3).map((sub, i) => {
+              const p = podium[i];
+              const name = sub.team
+                ? sub.team.name
+                : sub.participant?.name || "Unknown";
+              const pct = ((sub.hackathonPoints / maxPts) * 100).toFixed(1);
               return (
                 <div
-                  key={submission._id}
-                  className={`relative group rounded-2xl border bg-gradient-to-br ${p.bg} ${p.border} p-5 flex flex-col gap-3 hover:shadow-xl ${p.glow} transition-all duration-300 hover:-translate-y-0.5`}
-                  style={{ animationDelay: `${index * 80}ms` }}
+                  key={sub._id}
+                  className={`relative rounded-[4px] border ${p.border} ${p.bg} p-4 flex flex-col gap-3 hover:-translate-y-0.5 transition-all`}
                 >
-                  {/* Rank badge */}
+                  <span className="absolute top-[-1px] left-[-1px] w-2 h-2 border-t-2 border-l-2 border-[rgba(95,255,96,0.25)]" />
                   <div className="flex items-center justify-between">
                     <span
-                      className={`text-[11px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full border ${p.badgeBg}`}
+                      className={`font-[family-name:'JetBrains_Mono',monospace] text-[0.55rem] tracking-[0.12em] uppercase px-2 py-[3px] rounded-[2px] border ${p.badgeCls}`}
                     >
                       {p.label}
                     </span>
-                    <span className="text-2xl">{p.emoji}</span>
+                    <span className="text-xl">{p.emoji}</span>
                   </div>
-
-                  {/* Name */}
                   <div>
-                    <h4 className="font-bold text-white text-base leading-tight">
+                    <h4 className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-sm tracking-tight">
                       {name}
                     </h4>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {isTeam ? "Team" : "Individual"}
+                    <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.55rem] text-[rgba(180,220,180,0.3)] mt-0.5">
+                      {sub.team ? "Team" : "Individual"}
                     </p>
                   </div>
-
-                  {/* Points + bar */}
                   <div>
-                    <div className="flex items-end justify-between mb-1.5">
+                    <div className="flex items-end justify-between mb-1">
                       <span
-                        className={`text-2xl font-black tabular-nums ${p.pointColor}`}
+                        className={`font-[family-name:'Syne',sans-serif] font-extrabold text-xl ${p.pt}`}
                       >
-                        {submission.hackathonPoints}
+                        {sub.hackathonPoints}
                       </span>
-                      <span className="text-[10px] text-gray-600 uppercase tracking-wider">
+                      <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.5rem] text-[rgba(180,220,180,0.28)] uppercase tracking-[0.1em]">
                         pts
                       </span>
                     </div>
-                    <div className="h-1 w-full rounded-full bg-gray-700/60 overflow-hidden">
+                    <div className="h-1 w-full rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
                       <div
-                        className={`h-full rounded-full ${p.barColor} transition-all duration-700`}
-                        style={{
-                          width: `${
-                            (submission.hackathonPoints / maxPoints) * 100
-                          }%`,
-                        }}
+                        className={`h-full rounded-full ${p.bar} transition-all duration-700`}
+                        style={{ width: `${pct}%` }}
                       />
                     </div>
                   </div>
@@ -594,55 +549,53 @@ export const ContentSection = ({ activeSection, hackathon }) => {
           </div>
         )}
 
-        {/* ── Remaining results as a ranked list ─────────────────────────── */}
         {results.length > 3 && (
-          <div className="bg-gray-800/30 border border-gray-700/40 rounded-2xl overflow-hidden divide-y divide-gray-700/30">
-            {/* Table header */}
-            <div className="grid grid-cols-[2rem_1fr_auto] gap-4 px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-600">
-              <span>#</span>
-              <span>Participant</span>
-              <span>Score</span>
+          <div className="bg-[rgba(10,12,10,0.88)] border border-[rgba(95,255,96,0.1)] rounded-[4px] overflow-hidden">
+            <div className="grid grid-cols-[2rem_1fr_auto] gap-4 px-5 py-3 border-b border-[rgba(95,255,96,0.07)]">
+              {["#", "Participant", "Score"].map((h) => (
+                <span
+                  key={h}
+                  className="font-[family-name:'JetBrains_Mono',monospace] text-[0.5rem] tracking-[0.16em] uppercase text-[rgba(95,255,96,0.3)]"
+                >
+                  {h}
+                </span>
+              ))}
             </div>
-
-            {results.slice(3).map((submission, i) => {
+            {results.slice(3).map((sub, i) => {
               const rank = i + 4;
-              const name = submission.team
-                ? submission.team.name
-                : submission.participant?.name || "Unknown";
-              const isTeam = !!submission.team;
-
+              const name = sub.team
+                ? sub.team.name
+                : sub.participant?.name || "Unknown";
               return (
                 <div
-                  key={submission._id}
-                  className="result-row grid grid-cols-[2rem_1fr_auto] gap-4 items-center px-5 py-4 hover:bg-gray-700/20 transition-colors duration-150"
-                  style={{ animationDelay: `${(i + 3) * 60}ms` }}
+                  key={sub._id}
+                  className="grid grid-cols-[2rem_1fr_auto] gap-4 items-center px-5 py-3 border-b border-[rgba(95,255,96,0.05)] last:border-b-0 hover:bg-[rgba(95,255,96,0.03)] transition-colors"
                 >
-                  {/* Rank */}
-                  <span className="text-sm font-mono text-gray-500 tabular-nums">
+                  <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.6rem] text-[rgba(95,255,96,0.3)]">
                     {String(rank).padStart(2, "0")}
                   </span>
-
-                  {/* Identity */}
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-gray-700/60 border border-gray-600/40 flex items-center justify-center shrink-0 text-xs font-bold text-gray-400">
-                      {name.charAt(0).toUpperCase()}
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-7 h-7 rounded-[2px] bg-[rgba(95,255,96,0.06)] border border-[rgba(95,255,96,0.12)] flex items-center justify-center flex-shrink-0">
+                      <span className="font-[family-name:'Syne',sans-serif] font-extrabold text-[0.65rem] text-[rgba(95,255,96,0.5)]">
+                        {name.charAt(0).toUpperCase()}
+                      </span>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-200 truncate">
+                      <p className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-sm truncate">
                         {name}
                       </p>
-                      <p className="text-[11px] text-gray-600">
-                        {isTeam ? "Team" : "Individual"}
+                      <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.55rem] text-[rgba(180,220,180,0.28)]">
+                        {sub.team ? "Team" : "Individual"}
                       </p>
                     </div>
                   </div>
-
-                  {/* Score */}
                   <div className="text-right">
-                    <span className="text-sm font-bold text-green-400 tabular-nums">
-                      {submission.hackathonPoints}
+                    <span className="font-[family-name:'Syne',sans-serif] font-extrabold text-[#5fff60] text-sm">
+                      {sub.hackathonPoints}
                     </span>
-                    <span className="text-[10px] text-gray-600 ml-1">pts</span>
+                    <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.5rem] text-[rgba(95,255,96,0.3)] ml-1">
+                      pts
+                    </span>
                   </div>
                 </div>
               );
@@ -650,8 +603,7 @@ export const ContentSection = ({ activeSection, hackathon }) => {
           </div>
         )}
 
-        {/* Footer note */}
-        <p className="text-center text-[11px] text-gray-600 mt-4 tracking-wide">
+        <p className="font-[family-name:'JetBrains_Mono',monospace] text-center text-[0.52rem] tracking-[0.12em] uppercase text-[rgba(95,255,96,0.2)] mt-4">
           Final standings · Ranked by judge score
         </p>
       </div>
@@ -659,8 +611,11 @@ export const ContentSection = ({ activeSection, hackathon }) => {
   };
 
   return (
-    <main className="flex-1 p-6 md:p-8">
-      <div className="max-w-4xl mx-auto">{renderContent()}</div>
-    </main>
+    <>
+      <FontStyle />
+      <main className="flex-1 px-4 py-6 md:px-7 md:py-8 font-[family-name:'JetBrains_Mono',monospace] overflow-hidden">
+        <div className="max-w-3xl mx-auto">{renderContent()}</div>
+      </main>
+    </>
   );
 };

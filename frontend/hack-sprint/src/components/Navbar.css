@@ -1,11 +1,80 @@
-/* @font-face {
-    font-family: 'Zaptron';
-    src: url("../assets/Zaptron-Regular.otf") format('opentype');
-    font-style: normal;
-    font-weight: 400;
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap");
+
+.nb-root {
+  font-family: "JetBrains Mono", monospace;
+}
+.nb-syne {
+  font-family: "Syne", sans-serif;
 }
 
-.ZaptronFont {
-    font-family: 'Zaptron';
-} */
+/* bottom scanline */
+.nb-nav::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(95, 255, 96, 0.28),
+    transparent
+  );
+  pointer-events: none;
+}
 
+/* profile dropdown slide-in */
+@keyframes nb-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.nb-dropdown {
+  animation: nb-drop 0.16s ease forwards;
+}
+
+/* mobile menu slide-down */
+@keyframes nb-slide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.nb-mobile {
+  animation: nb-slide 0.18s ease forwards;
+}
+
+/* nav link active underline */
+.nb-link-active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #5fff60;
+}
+
+/* coin badge pulse */
+@keyframes nb-coin {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 184, 77, 0);
+  }
+  50% {
+    box-shadow: 0 0 8px 2px rgba(255, 184, 77, 0.3);
+  }
+}
+.nb-coin-pulse {
+  animation: nb-coin 2.5s ease infinite;
+}

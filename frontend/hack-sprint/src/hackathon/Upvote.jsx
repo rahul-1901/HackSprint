@@ -14,11 +14,64 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import LoginForm from "./LoginForm";
 
-// ─── Submission Card ───────────────────────────────────────────────────────────
+const PAGE_SIZE = 5;
+
+const MEDALS = {
+  1: {
+    emoji: "🥇",
+    cls: "bg-[rgba(255,196,0,0.12)] text-[#ffd700] border-[rgba(255,196,0,0.3)]",
+  },
+  2: {
+    emoji: "🥈",
+    cls: "bg-[rgba(192,192,192,0.1)] text-[#c0c0c0] border-[rgba(192,192,192,0.3)]",
+  },
+  3: {
+    emoji: "🥉",
+    cls: "bg-[rgba(205,127,50,0.1)] text-[#cd7f32] border-[rgba(205,127,50,0.3)]",
+  },
+};
+
+const AssetPill = ({ color, label }) => {
+  const c = {
+    blue: "bg-[rgba(96,200,255,0.07)] text-[rgba(96,200,255,0.75)] border-[rgba(96,200,255,0.2)]",
+    violet:
+      "bg-[rgba(167,139,250,0.07)] text-[rgba(167,139,250,0.75)] border-[rgba(167,139,250,0.2)]",
+    amber:
+      "bg-[rgba(255,184,77,0.07)] text-[rgba(255,184,77,0.75)] border-[rgba(255,184,77,0.2)]",
+    pink: "bg-[rgba(255,100,150,0.07)] text-[rgba(255,100,150,0.75)] border-[rgba(255,100,150,0.2)]",
+  }[color];
+  return (
+    <span
+      className={`font-[family-name:'JetBrains_Mono',monospace] text-[0.5rem] tracking-[0.1em] uppercase px-1.5 py-[2px] rounded-[2px] border ${c}`}
+    >
+      {label}
+    </span>
+  );
+};
+
+const AssetGroup = ({ icon: Icon, label, color, children }) => {
+  const c = {
+    blue: "text-[rgba(96,200,255,0.7)]",
+    violet: "text-[rgba(167,139,250,0.7)]",
+    amber: "text-[rgba(255,184,77,0.7)]",
+    pink: "text-[rgba(255,100,150,0.7)]",
+  }[color];
+  return (
+    <div>
+      <div
+        className={`font-[family-name:'JetBrains_Mono',monospace] flex items-center gap-1.5 text-[0.55rem] tracking-[0.14em] uppercase mb-2.5 ${c}`}
+      >
+        <Icon size={11} />
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+};
+
 const SubmissionCard = ({
   submission,
   isLiked,
@@ -29,10 +82,10 @@ const SubmissionCard = ({
   canVote,
 }) => {
   const [expanded, setExpanded] = useState(false);
-
-  const teamName =
+  const name =
     submission.team?.name || submission.participant?.name || "Anonymous";
   const isTeam = !!submission.team;
+  const medal = MEDALS[rank];
 
   const hasAssets =
     submission.repoUrl?.length > 0 ||
@@ -40,138 +93,125 @@ const SubmissionCard = ({
     submission.images?.length > 0 ||
     submission.videos?.length > 0;
 
-  const medalColors = {
-    1: "bg-amber-400/20 text-amber-300 border-amber-400/40",
-    2: "bg-gray-400/20 text-gray-300 border-gray-400/40",
-    3: "bg-orange-700/20 text-orange-400 border-orange-700/40",
+  const handleVote = () => {
+    if (isVotingClosed) {
+      toast.info("Voting period has ended.");
+      return;
+    }
+    if (!localStorage.getItem("token")) {
+      toast.info("Login to karlo", { autoClose: 1300 });
+      return;
+    }
+    if (!isLiked && !canVote) {
+      toast.info("Pehle submission khol ke dekh lo!", { autoClose: 1300 });
+      return;
+    }
+    onLike(submission._id);
   };
-  const rankLabel = rank <= 3 ? ["🥇", "🥈", "🥉"][rank - 1] : `#${rank}`;
 
   return (
-    <div className="bg-gray-800/50 border border-gray-700/60 rounded-xl overflow-hidden hover:border-emerald-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-900/20">
-      {/* Card Header */}
-      <div className="flex items-center justify-between px-6 py-5 border-b border-gray-700/40">
-        <div className="flex items-start gap-4">
-          {/* Rank badge */}
+    <div className="relative bg-[rgba(10,12,10,0.88)] border border-[rgba(95,255,96,0.1)] rounded-[4px] overflow-hidden hover:border-[rgba(95,255,96,0.28)] transition-all">
+      <span className="absolute top-[-1px] left-[-1px] w-2 h-2 border-t-2 border-l-2 border-[rgba(95,255,96,0.35)]" />
+      <span className="absolute bottom-[-1px] right-[-1px] w-2 h-2 border-b-2 border-r-2 border-[rgba(95,255,96,0.35)]" />
+
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(95,255,96,0.07)]">
+        <div className="flex items-start gap-3">
           <div
-            className={`shrink-0 w-10 h-10 rounded-lg border flex items-center justify-center text-sm font-bold ${
-              medalColors[rank] ||
-              "bg-gray-700/40 text-gray-400 border-gray-600/40"
+            className={`font-[family-name:'JetBrains_Mono',monospace] w-9 h-9 rounded-[3px] border flex items-center justify-center text-sm flex-shrink-0 ${
+              medal?.cls ||
+              "bg-[rgba(95,255,96,0.05)] text-[rgba(95,255,96,0.45)] border-[rgba(95,255,96,0.15)]"
             }`}
           >
-            {rankLabel}
+            {medal ? medal.emoji : `#${rank}`}
           </div>
 
-          {/* Identity */}
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 mb-0.5">
               {isTeam ? (
-                <Users className="w-4 h-4 text-emerald-400/70 shrink-0" />
+                <Users
+                  size={12}
+                  className="text-[rgba(95,255,96,0.45)] flex-shrink-0"
+                />
               ) : (
-                <User className="w-4 h-4 text-emerald-400/70 shrink-0" />
+                <User
+                  size={12}
+                  className="text-[rgba(95,255,96,0.45)] flex-shrink-0"
+                />
               )}
-              <h3 className="font-semibold text-white text-lg leading-tight">
-                {teamName}
+              <h3 className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-base tracking-tight">
+                {name}
               </h3>
             </div>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.55rem] tracking-[0.07em] text-[rgba(180,220,180,0.35)]">
               {isTeam ? "Team Submission" : "Individual Submission"}
             </p>
-            <p className="text-lg font-bold text-emerald-400 leading-none mt-2">
-              {submission.voteCount || 0}{" "}
-              <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">
+            <div className="flex items-baseline gap-1 mt-1.5">
+              <span className="font-[family-name:'Syne',sans-serif] font-extrabold text-[#5fff60] text-base">
+                {submission.voteCount || 0}
+              </span>
+              <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.5rem] tracking-[0.1em] uppercase text-[rgba(95,255,96,0.35)]">
                 {submission.voteCount === 1 ? "vote" : "votes"}
               </span>
-            </p>
+            </div>
           </div>
         </div>
 
-        {/* Right side: like button only */}
-        <div className="flex items-center gap-4">
-          <button
-            disabled={isVotingClosed}
-            onClick={() => {
-              if (isVotingClosed) {
-                toast.info("Voting period has ended.");
-                return;
-              }
-              
-              if (!localStorage.getItem("token")) {
-                toast.info("Login to karlo", {autoClose: 1300});
-                return;
-              }
-
-              if (isLiked) {
-                onLike(submission._id);
-                return;
-              }
-
-              if (!canVote) {
-                toast.info("Etni jaldi kya hai..pehle submission khol ke dekh lo!", {
-                  autoClose: 1300,
-                });
-                return;
-              }
-
-              onLike(submission._id);
-            }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 border ${
+        <button
+          onClick={handleVote}
+          disabled={isVotingClosed}
+          className={`
+            font-[family-name:'JetBrains_Mono',monospace]
+            inline-flex items-center gap-1.5 text-[0.6rem] tracking-[0.08em] uppercase
+            px-3 py-2 rounded-[3px] border transition-all duration-150
+            ${
               isVotingClosed
-                ? "bg-gray-700/30 text-gray-500 border-gray-600 cursor-not-allowed"
+                ? "bg-transparent border-[rgba(95,255,96,0.07)] text-[rgba(95,255,96,0.2)] cursor-not-allowed"
                 : isLiked
-                ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/40 shadow-inner"
-                : "bg-gray-700/40 text-gray-400 border-gray-600/50 hover:bg-gray-700 hover:text-white hover:border-gray-500"
-            }`}
-          >
-            <ThumbsUp
-              className={`w-4 h-4 transition-transform ${
-                isLiked ? "fill-current scale-110" : ""
-              }`}
-            />
-            <span>{isLiked ? "Liked" : "Like"}</span>
-          </button>
-        </div>
+                ? "bg-[rgba(95,255,96,0.12)] border-[rgba(95,255,96,0.35)] text-[#5fff60] cursor-pointer"
+                : "bg-transparent border-[rgba(95,255,96,0.15)] text-[rgba(95,255,96,0.5)] cursor-pointer hover:bg-[rgba(95,255,96,0.08)] hover:border-[rgba(95,255,96,0.3)] hover:text-[#5fff60]"
+            }
+          `}
+        >
+          <ThumbsUp size={12} className={isLiked ? "fill-current" : ""} />
+          {isLiked ? "Liked" : "Like"}
+        </button>
       </div>
 
-      {/* Expandable assets section */}
       {hasAssets && (
         <>
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="w-full flex items-center justify-between px-6 py-3 text-sm text-gray-400 hover:text-gray-200 hover:bg-gray-700/20 transition-all duration-200 group"
+            className="w-full flex items-center justify-between px-5 py-3 cursor-pointer group hover:bg-[rgba(95,255,96,0.03)] transition-colors"
           >
-            <div className="flex items-center gap-3">
-              {/* Asset type pills */}
+            <div className="flex items-center gap-2">
               <div className="flex gap-1.5">
                 {submission.repoUrl?.length > 0 && (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                    URL
-                  </span>
+                  <AssetPill color="blue" label="URL" />
                 )}
                 {submission.docs?.length > 0 && (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-violet-500/10 text-violet-400 border border-violet-500/20">
-                    DOCS
-                  </span>
+                  <AssetPill color="violet" label="Docs" />
                 )}
                 {submission.images?.length > 0 && (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    IMAGES
-                  </span>
+                  <AssetPill color="amber" label="Images" />
                 )}
                 {submission.videos?.length > 0 && (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-pink-500/10 text-pink-400 border border-pink-500/20">
-                    VIDEO
-                  </span>
+                  <AssetPill color="pink" label="Video" />
                 )}
               </div>
-              <span className="text-gray-500 text-xs">
-                View submission assets
+              <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.58rem] text-[rgba(180,220,180,0.3)] tracking-[0.04em]">
+                View assets
               </span>
             </div>
             {expanded ? (
-              <ChevronUp className="w-4 h-4 group-hover:text-emerald-400 transition-colors" />
+              <ChevronUp
+                size={13}
+                className="text-[rgba(95,255,96,0.4)] group-hover:text-[#5fff60] transition-colors"
+              />
             ) : (
-              <ChevronDown className="w-4 h-4 group-hover:text-emerald-400 transition-colors" />
+              <ChevronDown
+                size={13}
+                className="text-[rgba(95,255,96,0.4)] group-hover:text-[#5fff60] transition-colors"
+              />
             )}
           </button>
 
@@ -180,13 +220,12 @@ const SubmissionCard = ({
               expanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
             }`}
           >
-            <div className="px-6 pb-6 space-y-5 border-t border-gray-700/40 pt-5">
-              {/* Repository */}
+            <div className="px-5 pb-5 pt-4 flex flex-col gap-4 border-t border-[rgba(95,255,96,0.07)]">
               {submission.repoUrl?.length > 0 && (
-                <AssetSection
+                <AssetGroup
                   icon={ClipboardList}
                   label="Submission"
-                  accentClass="text-blue-400"
+                  color="blue"
                 >
                   <div className="flex flex-wrap gap-2">
                     {submission.repoUrl.map((url, i) => (
@@ -196,24 +235,23 @@ const SubmissionCard = ({
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => onOpenSubmission(submission._id)}
-                        className="inline-flex items-center gap-2 px-3 py-2 bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 hover:border-blue-400/40 rounded-lg text-blue-400 hover:text-blue-300 transition-all duration-200 text-sm"
+                        className="font-[family-name:'JetBrains_Mono',monospace] inline-flex items-center gap-1.5 text-[0.62rem] tracking-[0.04em] px-3 py-1.5 bg-[rgba(96,200,255,0.06)] hover:bg-[rgba(96,200,255,0.12)] border border-[rgba(96,200,255,0.2)] hover:border-[rgba(96,200,255,0.38)] rounded-[2px] text-[rgba(96,200,255,0.7)] hover:text-[rgba(96,200,255,1)] transition-all"
                       >
-                        <ExternalLink className="w-3.5 h-3.5" />
+                        <ExternalLink size={11} />
                         {submission.repoUrl.length > 1
                           ? `Submission ${i + 1}`
                           : "View Submission"}
                       </a>
                     ))}
                   </div>
-                </AssetSection>
+                </AssetGroup>
               )}
 
-              {/* Docs */}
               {submission.docs?.length > 0 && (
-                <AssetSection
+                <AssetGroup
                   icon={FileText}
                   label="Documentation"
-                  accentClass="text-violet-400"
+                  color="violet"
                 >
                   <div className="flex flex-wrap gap-2">
                     {submission.docs.map((doc, i) => (
@@ -223,66 +261,60 @@ const SubmissionCard = ({
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => onOpenSubmission(submission._id)}
-                        className="inline-flex items-center gap-2 px-3 py-2 bg-violet-500/5 hover:bg-violet-500/10 border border-violet-500/20 hover:border-violet-400/40 rounded-lg text-violet-400 hover:text-violet-300 transition-all duration-200 text-sm"
+                        className="font-[family-name:'JetBrains_Mono',monospace] inline-flex items-center gap-1.5 text-[0.62rem] tracking-[0.04em] px-3 py-1.5 bg-[rgba(167,139,250,0.06)] hover:bg-[rgba(167,139,250,0.12)] border border-[rgba(167,139,250,0.2)] hover:border-[rgba(167,139,250,0.38)] rounded-[2px] text-[rgba(167,139,250,0.7)] hover:text-[rgba(167,139,250,1)] transition-all"
                       >
-                        <FileText className="w-3.5 h-3.5" />
+                        <FileText size={11} />
                         {doc.original_filename || `Document ${i + 1}`}
                       </a>
                     ))}
                   </div>
-                </AssetSection>
+                </AssetGroup>
               )}
 
-              {/* Images */}
               {submission.images?.length > 0 && (
-                <AssetSection
+                <AssetGroup
                   icon={ImageIcon}
                   label={`Images (${submission.images.length})`}
-                  accentClass="text-amber-400"
+                  color="amber"
                 >
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {submission.images.map((image, i) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {submission.images.map((img, i) => (
                       <a
                         key={i}
-                        href={image.url}
+                        href={img.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => onOpenSubmission(submission._id)}
-                        className="block rounded-lg overflow-hidden ring-1 ring-gray-700 hover:ring-amber-400/40 transition-all duration-200"
+                        className="block rounded-[2px] overflow-hidden border border-[rgba(255,184,77,0.15)] hover:border-[rgba(255,184,77,0.38)] transition-all"
                       >
                         <img
-                          src={image.url}
+                          src={img.url}
                           alt={`Screenshot ${i + 1}`}
-                          className="w-full h-28 object-cover hover:opacity-80 transition-opacity"
+                          className="w-full h-24 object-cover hover:opacity-80 transition-opacity"
                         />
                       </a>
                     ))}
                   </div>
-                </AssetSection>
+                </AssetGroup>
               )}
 
-              {/* Videos */}
               {submission.videos?.length > 0 && (
-                <AssetSection
-                  icon={Video}
-                  label="Videos"
-                  accentClass="text-pink-400"
-                >
+                <AssetGroup icon={Video} label="Videos" color="pink">
                   <div className="flex flex-wrap gap-2">
-                    {submission.videos.map((video, i) => (
+                    {submission.videos.map((vid, i) => (
                       <a
                         key={i}
-                        href={video.url}
+                        href={vid.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-3 py-2 bg-pink-500/5 hover:bg-pink-500/10 border border-pink-500/20 hover:border-pink-400/40 rounded-lg text-pink-400 hover:text-pink-300 transition-all duration-200 text-sm"
+                        className="font-[family-name:'JetBrains_Mono',monospace] inline-flex items-center gap-1.5 text-[0.62rem] tracking-[0.04em] px-3 py-1.5 bg-[rgba(255,100,150,0.06)] hover:bg-[rgba(255,100,150,0.12)] border border-[rgba(255,100,150,0.2)] hover:border-[rgba(255,100,150,0.38)] rounded-[2px] text-[rgba(255,100,150,0.7)] hover:text-[rgba(255,100,150,1)] transition-all"
                       >
-                        <Video className="w-3.5 h-3.5" />
-                        {video.original_filename || `Video ${i + 1}`}
+                        <Video size={11} />
+                        {vid.original_filename || `Video ${i + 1}`}
                       </a>
                     ))}
                   </div>
-                </AssetSection>
+                </AssetGroup>
               )}
             </div>
           </div>
@@ -292,61 +324,43 @@ const SubmissionCard = ({
   );
 };
 
-// Small helper for asset sections
-const AssetSection = ({ icon: Icon, label, accentClass, children }) => (
-  <div>
-    <h4
-      className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-3 ${accentClass}`}
-    >
-      <Icon className="w-3.5 h-3.5" />
-      {label}
-    </h4>
-    {children}
-  </div>
-);
-
-// ─── Pagination ────────────────────────────────────────────────────────────────
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   if (totalPages <= 1) return null;
 
   const getPages = () => {
-    const pages = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-      return pages;
-    }
-    pages.push(1);
+    if (totalPages <= 7)
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages = [1];
     if (currentPage > 3) pages.push("...");
     for (
       let i = Math.max(2, currentPage - 1);
       i <= Math.min(totalPages - 1, currentPage + 1);
       i++
-    ) {
+    )
       pages.push(i);
-    }
     if (currentPage < totalPages - 2) pages.push("...");
     pages.push(totalPages);
     return pages;
   };
 
+  const btnBase =
+    "font-[family-name:'JetBrains_Mono',monospace] text-[0.6rem] tracking-[0.06em] uppercase border rounded-[3px] transition-all duration-150 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed";
+
   return (
     <div className="flex items-center justify-center gap-1.5 mt-8">
-      {/* Prev */}
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-700 text-gray-400 hover:border-emerald-500/40 hover:text-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+        className={`${btnBase} flex items-center gap-1 px-3 py-2 border-[rgba(95,255,96,0.15)] text-[rgba(95,255,96,0.45)] hover:border-[rgba(95,255,96,0.35)] hover:text-[#5fff60]`}
       >
-        <ChevronDown className="w-3.5 h-3.5 rotate-90" />
-        Prev
+        <ChevronDown size={11} className="rotate-90" /> Prev
       </button>
 
-      {/* Page numbers */}
       {getPages().map((page, i) =>
         page === "..." ? (
           <span
-            key={`ellipsis-${i}`}
-            className="px-2 py-2 text-gray-600 text-sm select-none"
+            key={`e-${i}`}
+            className="font-[family-name:'JetBrains_Mono',monospace] text-[0.6rem] text-[rgba(95,255,96,0.25)] px-1"
           >
             …
           </span>
@@ -354,66 +368,69 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           <button
             key={page}
             onClick={() => onPageChange(page)}
-            className={`w-9 h-9 rounded-lg text-sm font-medium border transition-all duration-200 ${
-              page === currentPage
-                ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/40"
-                : "border-gray-700 text-gray-400 hover:border-emerald-500/30 hover:text-emerald-400"
-            }`}
+            className={`${btnBase} w-8 h-8 flex items-center justify-center
+              ${
+                page === currentPage
+                  ? "bg-[rgba(95,255,96,0.12)] border-[rgba(95,255,96,0.35)] text-[#5fff60]"
+                  : "border-[rgba(95,255,96,0.12)] text-[rgba(95,255,96,0.4)] hover:border-[rgba(95,255,96,0.28)] hover:text-[#5fff60]"
+              }`}
           >
             {page}
           </button>
         )
       )}
 
-      {/* Next */}
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-700 text-gray-400 hover:border-emerald-500/40 hover:text-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+        className={`${btnBase} flex items-center gap-1 px-3 py-2 border-[rgba(95,255,96,0.15)] text-[rgba(95,255,96,0.45)] hover:border-[rgba(95,255,96,0.35)] hover:text-[#5fff60]`}
       >
-        Next
-        <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
+        Next <ChevronDown size={11} className="-rotate-90" />
       </button>
     </div>
   );
 };
 
-const PAGE_SIZE = 5;
-
-// ─── Main Upvote Component ─────────────────────────────────────────────────────
 const Upvote = () => {
   const { id: hackathonId } = useParams();
+  const navigate = useNavigate();
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [likedSubmissions, setLikedSubmissions] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [openedSubmissions, setOpenedSubmissions] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState("");
-  const [hackathon, setHackathon] = useState(null);
   const [isVotingClosed, setIsVotingClosed] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    setIsLoggedIn(!!localStorage.getItem("token"));
     fetchSubmissions();
-    if (token) fetchUserVotes();
+    if (localStorage.getItem("token")) fetchUserVotes();
+  }, [hackathonId]);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${hackathonId}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => {
+        if (data?.votingDate && new Date() > new Date(data.votingDate))
+          setIsVotingClosed(true);
+      })
+      .catch(console.error);
   }, [hackathonId]);
 
   const fetchSubmissions = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
+      const r = await fetch(
         `${
           import.meta.env.VITE_API_BASE_URL
         }/api/votes/hackathon/${hackathonId}`
       );
-      if (!response.ok) throw new Error("Failed to fetch submissions");
-      const data = await response.json();
+      if (!r.ok) throw new Error();
+      const data = await r.json();
       setSubmissions(data.submissions || []);
-    } catch (error) {
-      console.error("Error fetching submissions:", error);
+    } catch {
       toast.error("Failed to load submissions");
     } finally {
       setLoading(false);
@@ -423,28 +440,27 @@ const Upvote = () => {
   const fetchUserVotes = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
+      const r = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/api/votes/user/${hackathonId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (response.ok) {
-        const data = await response.json();
-        setLikedSubmissions(new Set(data.votedSubmissions || []));
+      if (r.ok) {
+        const d = await r.json();
+        setLikedSubmissions(new Set(d.votedSubmissions || []));
       }
-    } catch (error) {
-      console.error("Error fetching user votes:", error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const handleLike = async (submissionId) => {
     if (!isLoggedIn) {
-      setShowLoginModal(true);
+      toast.info("Please log in to vote.");
       return;
     }
-
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
+      const r = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/api/votes/toggle`,
         {
           method: "POST",
@@ -455,274 +471,209 @@ const Upvote = () => {
           body: JSON.stringify({ submissionId, hackathonId }),
         }
       );
-      if (!response.ok) throw new Error("Failed to toggle vote");
-      const data = await response.json();
-
+      if (!r.ok) throw new Error();
+      const data = await r.json();
       setLikedSubmissions((prev) => {
-        const next = new Set(prev);
-        data.voted ? next.add(submissionId) : next.delete(submissionId);
-        return next;
+        const n = new Set(prev);
+        data.voted ? n.add(submissionId) : n.delete(submissionId);
+        return n;
       });
       setSubmissions((prev) =>
-        prev.map((sub) =>
-          sub._id === submissionId
+        prev.map((s) =>
+          s._id === submissionId
             ? {
-                ...sub,
+                ...s,
                 voteCount: data.voted
-                  ? (sub.voteCount || 0) + 1
-                  : Math.max((sub.voteCount || 0) - 1, 0),
+                  ? (s.voteCount || 0) + 1
+                  : Math.max((s.voteCount || 0) - 1, 0),
               }
-            : sub
+            : s
         )
       );
-      // data.voted ? toast.success("Liked!") : toast.info("Like removed");
-    } catch (error) {
-      console.error("Error toggling vote:", error);
-      toast.error("Failed to update vote. Please try again.");
+    } catch {
+      toast.error("Failed to update vote.");
     }
   };
 
-  const handleLoginSuccess = () => {
-    setShowLoginModal(false);
-    setIsLoggedIn(true);
-    fetchUserVotes();
-    toast.success("Login successful! You can now like submissions.");
-  };
+  const sorted = [...submissions]
+    .filter((s) =>
+      (s.team?.name || s.participant?.name || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => (b.voteCount || 0) - (a.voteCount || 0));
 
-  useEffect(() => {
-    const loadHackathon = async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/hackathons/${hackathonId}`
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch hackathon");
-
-        const data = await res.json();
-        setHackathon(data);
-
-        if (data?.votingDate) {
-          const votingEnd = new Date(data.votingDate);
-          const now = new Date();
-
-          if (now > votingEnd) {
-            setIsVotingClosed(true);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching hackathon:", err);
-      }
-    };
-
-    loadHackathon();
-  }, [hackathonId]);
-
-  // Filter submissions based on search query
-  const filteredSubmissions = submissions.filter((submission) => {
-    const teamName = (submission.team?.name || submission.participant?.name || "").toLowerCase();
-    const query = searchQuery.toLowerCase();
-    return teamName.includes(query);
-  });
-
-  // Sort by vote count descending for ranking
-  const sortedSubmissions = [...filteredSubmissions].sort(
-    (a, b) => (b.voteCount || 0) - (a.voteCount || 0)
-  );
-
-  const totalPages = Math.ceil(sortedSubmissions.length / PAGE_SIZE);
-  const paginatedSubmissions = sortedSubmissions.slice(
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const paginated = sorted.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  // ── Loading state ──────────────────────────────────────────────────────────
-  if (loading) {
+  if (loading)
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <div className="w-12 h-12 rounded-full border-2 border-gray-700 border-t-emerald-400 animate-spin" />
-        <p className="text-gray-500 text-sm">Loading submissions…</p>
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[rgba(95,255,96,0.15)] border-t-[#5fff60] animate-spin" />
+        <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.62rem] tracking-[0.08em] uppercase text-[rgba(180,220,180,0.35)]">
+          Loading submissions…
+        </p>
       </div>
     );
-  }
 
-  // ── Empty state ────────────────────────────────────────────────────────────
-  if (submissions.length === 0) {
+  if (submissions.length === 0)
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3">
-        <div className="w-14 h-14 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center mb-2">
-          <FileText className="w-6 h-6 text-gray-600" />
+        <div className="relative w-12 h-12 rounded-[3px] bg-[rgba(95,255,96,0.05)] border border-[rgba(95,255,96,0.12)] flex items-center justify-center">
+          <span className="absolute top-[-1px] left-[-1px] w-2 h-2 border-t-2 border-l-2 border-[rgba(95,255,96,0.3)]" />
+          <FileText size={20} className="text-[rgba(95,255,96,0.2)]" />
         </div>
-        <p className="text-gray-300 font-medium">No submissions yet</p>
-        <p className="text-gray-500 text-sm">
+        <p className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-sm tracking-tight">
+          No submissions yet
+        </p>
+        <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.62rem] text-[rgba(180,220,180,0.35)]">
           Check back once the hackathon is underway.
         </p>
       </div>
     );
-  }
 
-  // ── Main render ────────────────────────────────────────────────────────────
   return (
-    <div>
-      {/* Section header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white">
-            Community Submissions
-          </h2>
-          <p className="text-gray-400 text-sm mt-1">
-            {submissions.length}{" "}
-            {submissions.length === 1 ? "submission" : "submissions"} ·{" "}
-            {!isLoggedIn ? (
-              <button
-                onClick={() => setShowLoginModal(true)}
-                className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors"
-              >
-                Log in to vote
-              </button>
-            ) : (
-              "Vote for your favourites"
-            )}
-          </p>
-        </div>
-
-        {/* Legend */}
-        <div className="hidden sm:flex items-center gap-4 text-xs text-gray-500">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400/60" />
-            Liked
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-gray-600" />
-            Not voted
-          </span>
-        </div>
-      </div>
-
-       {isVotingClosed && (
-        <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-4 flex items-center justify-between">
+    <>
+      <div className="font-[family-name:'JetBrains_Mono',monospace]">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
           <div>
-            <p className="text-red-400 font-semibold text-sm">
-              Voting has ended
-            </p>
-            <p className="text-gray-400 text-xs mt-1">
-              The community voting period is now closed.
+            <h2 className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-2xl tracking-tight">
+              Community Submissions
+            </h2>
+            <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.62rem] text-[rgba(180,220,180,0.4)] mt-1 tracking-[0.04em]">
+              {submissions.length}{" "}
+              {submissions.length === 1 ? "submission" : "submissions"} ·{" "}
+              {!isLoggedIn ? (
+                <button
+                  onClick={() => navigate("/account/login")}
+                  className="text-[#5fff60] hover:text-[#7fff80] underline underline-offset-2 cursor-pointer transition-colors"
+                >
+                  Log in to vote
+                </button>
+              ) : (
+                "Vote for your favourites"
+              )}
             </p>
           </div>
-          <span className="text-xs text-red-300 bg-red-500/20 px-3 py-1 rounded-full border border-red-500/30">
-            Closed
-          </span>
+          <div className="hidden sm:flex items-center gap-4 text-[0.55rem] tracking-[0.08em] uppercase text-[rgba(180,220,180,0.3)]">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#5fff60]" />
+              Liked
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[rgba(95,255,96,0.2)]" />
+              Not voted
+            </span>
+          </div>
         </div>
-      )}
 
-      {/* Search bar */}
-      <div className="mb-6">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
-            placeholder="Search by team or participant name..."
-            className="w-full pl-10 pr-10 py-2.5 bg-gray-800/50 border border-gray-700/60 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-200"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => {
-                setSearchQuery("");
+        {isVotingClosed && (
+          <div className="mb-5 relative bg-[rgba(255,60,60,0.06)] border border-[rgba(255,60,60,0.25)] rounded-[4px] px-5 py-4 flex items-center justify-between">
+            <span className="absolute top-[-1px] left-[-1px] w-2 h-2 border-t-2 border-l-2 border-[rgba(255,60,60,0.4)]" />
+            <div>
+              <p className="font-[family-name:'Syne',sans-serif] font-extrabold text-[#ff9090] text-sm">
+                Voting has ended
+              </p>
+              <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.6rem] text-[rgba(255,150,150,0.45)] mt-0.5">
+                The community voting period is now closed.
+              </p>
+            </div>
+            <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.55rem] tracking-[0.1em] uppercase px-2 py-1 rounded-[2px] bg-[rgba(255,60,60,0.1)] border border-[rgba(255,60,60,0.25)] text-[rgba(255,100,100,0.7)]">
+              Closed
+            </span>
+          </div>
+        )}
+
+        <div className="mb-5">
+          <div className="relative max-w-sm">
+            <Search
+              size={13}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(95,255,96,0.35)] pointer-events-none"
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+              placeholder="Search by team or name…"
+              className="font-[family-name:'JetBrains_Mono',monospace] w-full pl-9 pr-9 py-2 text-[0.65rem] tracking-[0.03em] bg-[rgba(10,12,10,0.7)] border border-[rgba(95,255,96,0.12)] rounded-[3px] text-[#e8ffe8] placeholder-[rgba(95,255,96,0.22)] focus:outline-none focus:border-[rgba(95,255,96,0.38)] focus:shadow-[0_0_0_2px_rgba(95,255,96,0.05)] transition-all [color-scheme:dark]"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setCurrentPage(1);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[rgba(95,255,96,0.35)] hover:text-[#5fff60] transition-colors cursor-pointer"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+          {searchQuery && (
+            <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.58rem] text-[rgba(180,220,180,0.35)] mt-1.5">
+              <span className="text-[#5fff60]">{sorted.length}</span>{" "}
+              {sorted.length === 1 ? "result" : "results"} for "{searchQuery}"
+            </p>
           )}
         </div>
-        {searchQuery && (
-          <p className="text-xs text-gray-500 mt-2">
-            Found{" "}
-            <span className="text-emerald-400 font-medium">
-              {sortedSubmissions.length}
-            </span>{" "}
-            {sortedSubmissions.length === 1 ? "submission" : "submissions"} matching "{searchQuery}"
-          </p>
-        )}
-      </div>
 
-      {/* Page info */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-xs text-gray-500">
-            Showing{" "}
-            <span className="text-gray-300 font-medium">
-              {(currentPage - 1) * PAGE_SIZE + 1}–
-              {Math.min(currentPage * PAGE_SIZE, sortedSubmissions.length)}
-            </span>{" "}
-            of{" "}
-            <span className="text-gray-300 font-medium">
-              {sortedSubmissions.length}
-            </span>{" "}
-            submissions
-          </p>
-          <p className="text-xs text-gray-500">
-            Page{" "}
-            <span className="text-gray-300 font-medium">{currentPage}</span> of{" "}
-            <span className="text-gray-300 font-medium">{totalPages}</span>
-          </p>
-        </div>
-      )}
-
-      {/* Submission list */}
-      <div className="space-y-4">
-        {paginatedSubmissions.map((submission, i) => (
-          <SubmissionCard
-            key={submission._id}
-            submission={submission}
-            isVotingClosed={isVotingClosed}
-            canVote={openedSubmissions.has(submission._id)}
-            onOpenSubmission={(id) => {
-              setOpenedSubmissions((prev) => new Set(prev).add(id));
-            }}
-            isLiked={likedSubmissions.has(submission._id)}
-            onLike={handleLike}
-            rank={(currentPage - 1) * PAGE_SIZE + i + 1}
-          />
-        ))}
-      </div>
-
-      {/* Pagination */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
-
-      {/* Login modal */}
-      {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={() => setShowLoginModal(false)}
-          />
-          <div className="relative z-10 max-w-md w-full mx-4">
-            <LoginForm
-              onLoginSuccess={handleLoginSuccess}
-              redirectTo="#"
-              showTitle={true}
-              showSignupLink={true}
-              showForgotPassword={false}
-              showGoogleLogin={true}
-            />
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mb-4">
+            <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.58rem] text-[rgba(180,220,180,0.35)]">
+              Showing{" "}
+              <span className="text-[rgba(180,220,180,0.65)]">
+                {(currentPage - 1) * PAGE_SIZE + 1}–
+                {Math.min(currentPage * PAGE_SIZE, sorted.length)}
+              </span>{" "}
+              of{" "}
+              <span className="text-[rgba(180,220,180,0.65)]">
+                {sorted.length}
+              </span>
+            </p>
+            <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.58rem] text-[rgba(180,220,180,0.35)]">
+              Page{" "}
+              <span className="text-[rgba(180,220,180,0.65)]">
+                {currentPage}
+              </span>{" "}
+              of{" "}
+              <span className="text-[rgba(180,220,180,0.65)]">
+                {totalPages}
+              </span>
+            </p>
           </div>
+        )}
+
+        <div className="flex flex-col gap-3">
+          {paginated.map((sub, i) => (
+            <SubmissionCard
+              key={sub._id}
+              submission={sub}
+              isVotingClosed={isVotingClosed}
+              canVote={openedSubmissions.has(sub._id)}
+              onOpenSubmission={(id) =>
+                setOpenedSubmissions((prev) => new Set(prev).add(id))
+              }
+              isLiked={likedSubmissions.has(sub._id)}
+              onLike={handleLike}
+              rank={(currentPage - 1) * PAGE_SIZE + i + 1}
+            />
+          ))}
         </div>
-      )}
-    </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      </div>
+    </>
   );
 };
 

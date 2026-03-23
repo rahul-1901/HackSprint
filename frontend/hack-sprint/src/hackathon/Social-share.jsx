@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Share2, Instagram, Linkedin, Link2, Heart, Github } from "lucide-react";
-import { Button } from "./Button";
+import {
+  Share2,
+  Instagram,
+  Linkedin,
+  Link2,
+  Heart,
+  Github,
+} from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
@@ -9,73 +15,59 @@ export const SocialShare = () => {
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState(false);
   const [isCheckingLike, setIsCheckingLike] = useState(true);
-  const { id } = useParams(); // Get hackathon ID from URL
+  const { id } = useParams();
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareText = "Check out this amazing hackathon!";
 
-  // console.log("Current ID:", id);
-
-  // Check if user has liked this hackathon
   useEffect(() => {
-    const checkLikedStatus = async () => {
+    const check = async () => {
       const token = localStorage.getItem("token");
       if (!token || !id) {
         setIsCheckingLike(false);
         return;
       }
-
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/hackathons/wishlist/check/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
+        const res = await axios.get(
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/hackathons/wishlist/check/${id}`,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        setLiked(response.data.liked);
-      } catch (error) {
-        console.error("Error checking liked status:", error);
+        setLiked(res.data.liked);
+      } catch (err) {
+        console.error(err);
       } finally {
         setIsCheckingLike(false);
       }
     };
-
-    checkLikedStatus();
+    check();
   }, [id]);
 
-  // Toggle like/unlike hackathon
   const handleToggleLike = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Please login to add hackathons to your wishlist");
       return;
     }
-
     if (!id) {
       toast.error("Hackathon ID not found");
       return;
     }
-
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/api/hackathons/wishlist/toggle`,
         { hackathonId: id },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      if (response.data.success) {
-        setLiked(response.data.liked);
+      if (res.data.success) {
+        setLiked(res.data.liked);
         toast.success(
-          response.data.liked
-            ? "Added to wishlist! ❤️"
-            : "Removed from wishlist"
+          res.data.liked ? "Added to wishlist! ❤️" : "Removed from wishlist"
         );
       }
-    } catch (error) {
-      console.error("Error toggling like:", error);
-      toast.error(error.response?.data?.message || "Failed to update wishlist");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update wishlist");
     }
   };
 
@@ -85,14 +77,8 @@ export const SocialShare = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Failed to copy link:", err);
+      console.error(err);
     }
-  };
-
-  const shareUrls = {
-    instagram: `https://www.instagram.com/hack.sprint?igsh=MWN6bjlldTV2Z2Nqdg==`,
-    github: `https://github.com/devlup-labs/HackSprint`,
-    linkedin: `https://www.linkedin.com/company/hacksprintiitj/`,
   };
 
   const handleShare = async () => {
@@ -104,98 +90,155 @@ export const SocialShare = () => {
           url: currentUrl,
         });
       } catch (err) {
-        console.error("Share canceled:", err);
+        console.error(err);
       }
     } else {
       handleCopyLink();
     }
   };
 
-  const SocialButton = ({ children, onClick, className, hoverColorClass }) => (
-    <Button
-      variant="ghost"
-      size="icon"
-      className={`w-12 h-12 rounded-full bg-gray-900/50 border border-green-500/20 group transition-all duration-300 hover:scale-110 ${hoverColorClass} ${className || ""}`}
+  const shareUrls = {
+    instagram:
+      "https://www.instagram.com/hack.sprint?igsh=MWN6bjlldTV2Z2Nqdg==",
+    github: "https://github.com/devlup-labs/HackSprint",
+    linkedin: "https://www.linkedin.com/company/hacksprintiitj/",
+  };
+
+  const IconBtn = ({
+    onClick,
+    children,
+    hoverBg = "hover:bg-[rgba(95,255,96,0.1)]",
+    hoverShadow = "",
+    disabled = false,
+    active = false,
+  }) => (
+    <button
       onClick={onClick}
+      disabled={disabled}
+      className={`
+        w-9 h-9 rounded-[3px] border flex items-center justify-center
+        transition-all duration-150 cursor-pointer
+        ${
+          active
+            ? "bg-[rgba(255,60,60,0.12)] border-[rgba(255,60,60,0.3)]"
+            : `bg-[rgba(10,12,10,0.7)] border-[rgba(95,255,96,0.12)] ${hoverBg} hover:border-[rgba(95,255,96,0.3)]`
+        }
+        ${hoverShadow}
+        disabled:opacity-40 disabled:cursor-wait
+      `}
     >
       {children}
-    </Button>
+    </button>
+  );
+
+  /* ── divider ── */
+  const Divider = () => (
+    <div className="w-px h-6 bg-gradient-to-b from-transparent via-[rgba(95,255,96,0.15)] to-transparent" />
   );
 
   return (
-    <aside className="w-24 min-h-[calc(100vh-88px)] sticky top-[88px]">
-      <div className="h-full p-4 flex flex-col items-center gap-6 pt-8 bg-gray-900/50 backdrop-blur-md border-l border-green-500/20">
+    <>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');`}</style>
 
+      <aside className="w-14 min-h-[calc(100vh-88px)] sticky top-[88px] shrink-0 font-[family-name:'JetBrains_Mono',monospace]">
         <div
-          className="text-center cursor-pointer group"
-          onClick={handleShare}
+          className="
+          h-full py-6 flex flex-col items-center gap-4
+          bg-[rgba(8,10,8,0.92)] backdrop-blur-xl
+          border-l border-[rgba(95,255,96,0.08)]
+        "
         >
-          <Share2 className="w-6 h-6 text-green-400 mx-auto mb-1 group-hover:scale-110 transition-transform duration-200" />
-          <span className="text-xs text-gray-400 font-medium group-hover:text-green-400">
-            Share
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-4 items-center">
-          <SocialButton
-            hoverColorClass="hover:bg-[#1DA1F2]/20 cursor-pointer hover:shadow-[0_0_15px_rgba(29,161,242,0.5)] flex items-center justify-center"
-            onClick={() => window.open(shareUrls.instagram, "_blank")}
+          <button
+            onClick={handleShare}
+            className="flex flex-col items-center gap-1 cursor-pointer group"
           >
-            <Instagram className="w-7 h-7 text-[#1DA1F2]" />
-          </SocialButton>
-
-          <SocialButton
-            hoverColorClass="hover:bg-[#1877F2]/20 cursor-pointer hover:shadow-[0_0_15px_rgba(24,119,242,0.5)] flex items-center justify-center"
-            onClick={() => window.open(shareUrls.github, "_blank")}
-          >
-            <Github className="w-7 h-7 text-[#1877F2]" />
-          </SocialButton>
-
-          <SocialButton
-            hoverColorClass="hover:bg-[#0A66C2]/20 cursor-pointer hover:shadow-[0_0_15px_rgba(10,102,194,0.5)] flex items-center justify-center"
-            onClick={() => window.open(shareUrls.linkedin, "_blank")}
-          >
-            <Linkedin className="w-7 h-7 text-[#0A66C2]" />
-          </SocialButton>
-
-          <SocialButton
-            hoverColorClass="hover:bg-green-500/20 cursor-pointer hover:shadow-[0_0_15px_rgba(34,197,94,0.5)] flex items-center justify-center"
-            onClick={handleCopyLink}
-          >
-            <Link2
-              className={`w-7 h-7 text-green-400 transition-transform duration-300 ${
-                copied ? "rotate-12 scale-125" : ""
-              }`}
+            <Share2
+              size={15}
+              className="text-[rgba(95,255,96,0.5)] group-hover:text-[#5fff60] transition-colors"
             />
-          </SocialButton>
-        </div>
+            <span className="text-[0.45rem] tracking-[0.12em] uppercase text-[rgba(95,255,96,0.3)] group-hover:text-[rgba(95,255,96,0.6)] transition-colors">
+              share
+            </span>
+          </button>
 
-        {copied && (
-          <div className="text-xs text-green-400 font-medium animate-pulse">
-            Copied!
+          <Divider />
+
+          <div className="flex flex-col items-center gap-2">
+            <IconBtn
+              onClick={() => window.open(shareUrls.instagram, "_blank")}
+              hoverBg="hover:bg-[rgba(225,48,108,0.1)]"
+              hoverShadow="hover:shadow-[0_0_10px_rgba(225,48,108,0.2)]"
+            >
+              <Instagram
+                size={14}
+                className="text-[rgba(225,48,108,0.65)] group-hover:text-[rgb(225,48,108)]"
+              />
+            </IconBtn>
+
+            <IconBtn
+              onClick={() => window.open(shareUrls.github, "_blank")}
+              hoverBg="hover:bg-[rgba(180,180,180,0.08)]"
+              hoverShadow="hover:shadow-[0_0_10px_rgba(180,180,180,0.12)]"
+            >
+              <Github size={14} className="text-[rgba(200,200,200,0.6)]" />
+            </IconBtn>
+
+            <IconBtn
+              onClick={() => window.open(shareUrls.linkedin, "_blank")}
+              hoverBg="hover:bg-[rgba(10,102,194,0.1)]"
+              hoverShadow="hover:shadow-[0_0_10px_rgba(10,102,194,0.2)]"
+            >
+              <Linkedin size={14} className="text-[rgba(10,102,194,0.7)]" />
+            </IconBtn>
+
+            <IconBtn
+              onClick={handleCopyLink}
+              hoverBg="hover:bg-[rgba(95,255,96,0.1)]"
+              hoverShadow="hover:shadow-[0_0_10px_rgba(95,255,96,0.15)]"
+            >
+              <Link2
+                size={14}
+                className={`text-[rgba(95,255,96,0.55)] transition-all duration-200 ${
+                  copied ? "rotate-12 scale-125 text-[#5fff60]" : ""
+                }`}
+              />
+            </IconBtn>
           </div>
-        )}
 
-        <div className="w-8 h-px bg-green-500/20" />
-
-        <div className="flex flex-col items-center gap-2">
-          <SocialButton
-            hoverColorClass="hover:bg-red-500/20 cursor-pointer flex items-center justify-center hover:shadow-[0_0_15px_rgba(239,68,68,0.5)]"
-            onClick={handleToggleLike}
-            className={isCheckingLike ? "opacity-50 cursor-wait" : ""}
-          >
-            <Heart
-              className={`w-7 h-7 transition-all duration-200 ${
-                liked ? "text-red-500 fill-current scale-110" : "text-red-400/80"
-              }`}
-            />
-          </SocialButton>
-
-          {liked && (
-            <span className="text-xs text-red-400 font-medium">Liked</span>
+          {copied && (
+            <span className="text-[0.45rem] tracking-[0.1em] uppercase text-[#5fff60] animate-pulse">
+              copied
+            </span>
           )}
+
+          <Divider />
+
+          {/* Like */}
+          <div className="flex flex-col items-center gap-1">
+            <IconBtn
+              onClick={handleToggleLike}
+              disabled={isCheckingLike}
+              active={liked}
+              hoverBg="hover:bg-[rgba(255,60,60,0.1)]"
+              hoverShadow="hover:shadow-[0_0_10px_rgba(255,60,60,0.18)]"
+            >
+              <Heart
+                size={14}
+                className={`transition-all duration-200 ${
+                  liked
+                    ? "text-[#ff6060] fill-[#ff6060] scale-110"
+                    : "text-[rgba(255,96,96,0.5)]"
+                }`}
+              />
+            </IconBtn>
+            {liked && (
+              <span className="text-[0.45rem] tracking-[0.1em] uppercase text-[rgba(255,96,96,0.6)]">
+                liked
+              </span>
+            )}
+          </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 };

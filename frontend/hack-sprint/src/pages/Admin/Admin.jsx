@@ -6,7 +6,6 @@ import {
   Target, Award, Images, X, UploadCloud, ImagePlus, Trash2
 } from 'lucide-react';
 
-// ─── Reusable Image Drop Zone ─────────────────────────────────────────────────
 const ImageDropZone = ({ preview, onFileSelect, onClear, label = "Upload Image", accept = "image/*" }) => {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef(null);
@@ -55,7 +54,6 @@ const ImageDropZone = ({ preview, onFileSelect, onClear, label = "Upload Image",
   );
 };
 
-// ─── Gallery Upload ───────────────────────────────────────────────────────────
 const GalleryUpload = ({ items, onAdd, onRemove }) => {
   const inputRef = useRef(null);
   const MAX = 10;
@@ -124,7 +122,6 @@ const GalleryUpload = ({ items, onAdd, onRemove }) => {
   );
 };
 
-// ─── Main Admin Component ─────────────────────────────────────────────────────
 const Admin = () => {
   const [activeTab, setActiveTab] = useState('devquest');
 
@@ -586,7 +583,6 @@ const Admin = () => {
   );
 };
 
-// ─── Helper: Checkbox group ───────────────────────────────────────────────────
 const CheckboxGroup = ({ label, icon, count, options, selected, onToggle, showCustom, customValue, onCustomChange, onCustomBlur, cols = "grid-cols-2 md:grid-cols-4", small }) => (
   <div className="space-y-4">
     <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">{icon}<span>{label} {count}</span></label>
@@ -611,7 +607,6 @@ const CheckboxGroup = ({ label, icon, count, options, selected, onToggle, showCu
   </div>
 );
 
-// ─── Helper: Addable list ─────────────────────────────────────────────────────
 const AddableList = ({ label, icon, count, value, onChange, onAdd, items, onRemove, placeholder }) => (
   <div className="space-y-4">
     <label className="flex items-center space-x-2 text-sm font-semibold text-gray-300">{icon}<span>{label} ({count})</span></label>

@@ -1,314 +1,85 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from "react";
+import "./Styles/NotFound.css"
+
+const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
+  id: i,
+  x: ((i * 47 + 13) % 97),
+  y: ((i * 31 + 7)  % 93),
+  size: (i % 3) + 1.5,
+  color: ["rgba(95,255,96,.6)","rgba(255,96,96,.5)","rgba(96,200,255,.4)","rgba(255,184,77,.4)"][i % 4],
+  dur: 4 + (i % 5),
+  delay: (i * 0.3) % 2.5,
+}));
 
 const NotFound = () => {
-    const [particles, setParticles] = useState([]);
-    const [glitchActive, setGlitchActive] = useState(false);
+  const handleReturnHome = () => { window.location.href = "/"; };
 
-    // Generate random particles
-    useEffect(() => {
-        const generateParticles = () => {
-            const newParticles = [];
-            for (let i = 0; i < 15; i++) {
-                newParticles.push({
-                    id: i,
-                    x: Math.random() * 100,
-                    y: Math.random() * 100,
-                    size: Math.random() * 3 + 1,
-                    color: ['#0FC448', '#D62B2B', '#FFF', '#FF6B6B', '#4ECDC4'][Math.floor(Math.random() * 5)],
-                    duration: Math.random() * 4 + 4,
-                    delay: Math.random() * 2
-                });
-            }
-            setParticles(newParticles);
-        };
+  return (
+    <div className="nf-root">
 
-        generateParticles();
+      <div className="nf-scanlines" />
+
+      <div className="nf-ring" style={{
+        top:"18%", left:"10%", width:200, height:200,
+        borderColor:"rgba(95,255,96,.12)",
+        animation:"nf-ring-pulse 4s ease-in-out infinite",
+      }} />
+      <div className="nf-ring" style={{
+        bottom:"18%", right:"10%", width:150, height:150,
+        borderColor:"rgba(255,96,96,.1)",
+        animation:"nf-ring-pulse 3.5s ease-in-out infinite reverse",
+      }} />
+
+      {PARTICLES.map(p => (
+        <div key={p.id} className="nf-particle" style={{
+          top:`${p.y}%`, left:`${p.x}%`,
+          width:p.size, height:p.size,
+          background:p.color,
+          animation:`nf-particle-float ${p.dur}s ease-in-out ${p.delay}s infinite`,
+        }} />
+      ))}
+
+      <div style={{ position:"relative", zIndex:2, textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center" }}>
+
+        <div className="nf-error-label">// error · page not found</div>
         
-        // Trigger glitch effect periodically
-        const glitchInterval = setInterval(() => {
-            setGlitchActive(true);
-            setTimeout(() => setGlitchActive(false), 200);
-        }, 3000);
+        <div className="nf-display">
+          <span className="nf-number" data-text="4" style={{ color:"transparent" }}>4</span>
 
-        return () => clearInterval(glitchInterval);
-    }, []);
+          <span className="nf-number" data-text="0" style={{ color:"transparent" }}>0</span>
 
-    const handleReturnHome = () => {
-        window.location.href = "/";
-    };
-
-    return (
-        <div style={{ 
-            width: "100vw", 
-            height: "100vh", 
-            background: "linear-gradient(135deg, #060A21 0%, #0A0F2A 50%, #1A0E2E 100%)", 
-            position: "relative", 
-            display: "flex", 
-            flexDirection: "column", 
-            alignItems: "center", 
-            justifyContent: "center", 
-            overflow: "hidden", 
-            padding: "20px", 
-            boxSizing: "border-box" 
-        }}>
-            {/* Animated grid background */}
-            <div style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                backgroundImage: `
-                    linear-gradient(rgba(15, 196, 72, 0.1) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(15, 196, 72, 0.1) 1px, transparent 1px)
-                `,
-                backgroundSize: "50px 50px",
-                opacity: "0.3",
-                animation: "gridMove 20s linear infinite"
-            }} />
-
-            {/* Pulsing circles */}
-            <div style={{
-                position: "absolute",
-                top: "20%",
-                left: "15%",
-                width: "200px",
-                height: "200px",
-                borderRadius: "50%",
-                border: "2px solid rgba(15, 196, 72, 0.2)",
-                animation: "pulse 4s ease-in-out infinite"
-            }} />
-            <div style={{
-                position: "absolute",
-                bottom: "20%",
-                right: "15%",
-                width: "150px",
-                height: "150px",
-                borderRadius: "50%",
-                border: "2px solid rgba(214, 43, 43, 0.2)",
-                animation: "pulse 3s ease-in-out infinite reverse"
-            }} />
-
-            {/* ERROR Title with glitch effect */}
-            <h1 className={`text-8xl sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[180px] ZaptronFont text-transparent bg-clip-text bg-gradient-to-b from-red-600 to-red-800 tracking-widest z-10 text-center ${glitchActive ? 'glitch' : ''}`}
-                style={{ 
-                    // fontFamily: "'Impact', 'Arial Black', sans-serif",
-                    textShadow: glitchActive ? "2px 0 #ff00ff, -2px 0 #00ffff" : "none",
-                    animation: glitchActive ? "glitch 0.2s ease-in-out" : "none"
-                }}>
-                ERROR
-            </h1>
-
-            {/* Main 404 Content Container */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "clamp(15px, 4vw, 30px)", marginBottom: "40px", flexWrap: "nowrap", width: "100%", maxWidth: "800px" }}>
-                {/* First 4 */}
-                <div style={{ 
-                    color: "#FFF", 
-                    textAlign: "center", 
-                    fontFamily: "'Impact', 'Arial Black', sans-serif", 
-                    fontSize: "clamp(60px, 12vw, 200px)", 
-                    fontWeight: "400", 
-                    lineHeight: "1.2", 
-                    minWidth: "auto",
-                    flex: "0 0 auto",
-                    textShadow: "0 0 30px rgba(255, 255, 255, 0.2), 0 0 60px rgba(15, 196, 72, 0.3)",
-                    animation: "textGlow 3s ease-in-out infinite alternate"
-                }}>
-                    4
-                </div>
-
-                {/* Skull and DEAD CODE Container */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minWidth: "auto", flex: "0 0 auto", position: "relative" }}>
-                    {/* Rotating ring around skull */}
-                    <div style={{
-                        position: "absolute",
-                        width: "clamp(70px, 14vw, 220px)",
-                        height: "clamp(70px, 14vw, 220px)",
-                        border: "2px solid rgba(214, 43, 43, 0.3)",
-                        borderRadius: "50%",
-                        animation: "rotate 10s linear infinite"
-                    }} />
-                    
-                    {/* Skull placeholder - you can replace with your skull.png */}
-                    <div style={{ 
-                        width: "clamp(60px, 12vw, 200px)", 
-                        height: "clamp(60px, 12vw, 200px)", 
-                        marginBottom: "0px", 
-                        filter: "drop-shadow(0 0 15px rgba(255, 255, 255, 0.1)) drop-shadow(0 0 30px rgba(214, 43, 43, 0.3))",
-                        background: "radial-gradient(circle, rgba(214, 43, 43, 0.1) 0%, transparent 70%)",
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "clamp(30px, 6vw, 100px)",
-                        animation: "float 6s ease-in-out infinite"
-                    }}>
-                        💀
-                    </div>
-                </div>
-
-                {/* Second 4 */}
-                <div style={{ 
-                    color: "#FFF", 
-                    textAlign: "center", 
-                    fontFamily: "'Impact', 'Arial Black', sans-serif", 
-                    fontSize: "clamp(60px, 12vw, 200px)", 
-                    fontWeight: "400", 
-                    lineHeight: "1.2", 
-                    minWidth: "auto",
-                    flex: "0 0 auto",
-                    textShadow: "0 0 30px rgba(255, 255, 255, 0.2), 0 0 60px rgba(15, 196, 72, 0.3)",
-                    animation: "textGlow 3s ease-in-out infinite alternate"
-                }}>
-                    4
-                </div>
-            </div>
-
-            {/* Sorry message with typewriter effect */}
-            <div style={{ 
-                color: "#FFF", 
-                textAlign: "center", 
-                fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", 
-                fontSize: "clamp(14px, 2.5vw, 22px)", 
-                fontWeight: "400", 
-                lineHeight: "1.4", 
-                marginBottom: "50px", 
-                maxWidth: "90%", 
-                opacity: "0.9",
-                background: "rgba(255, 255, 255, 0.05)",
-                padding: "15px 25px",
-                borderRadius: "10px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255, 255, 255, 0.1)"
-            }}>
-                Sorry, the page you requested could not be found.
-            </div>
-
-            {/* Return Home Button with enhanced effects */}
-            <button 
-                onClick={handleReturnHome} 
-                style={{ 
-                    width: "clamp(160px, 25vw, 220px)", 
-                    height: "clamp(40px, 5vw, 55px)", 
-                    borderRadius: "28px", 
-                    border: "2px solid #0FC448", 
-                    background: "rgba(15, 196, 72, 0.1)", 
-                    color: "#FFF", 
-                    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", 
-                    fontSize: "clamp(14px, 2vw, 18px)", 
-                    fontWeight: "600", 
-                    letterSpacing: "1px", 
-                    cursor: "pointer", 
-                    transition: "all 0.3s ease", 
-                    display: "flex", 
-                    alignItems: "center", 
-                    justifyContent: "center", 
-                    backdropFilter: "blur(10px)", 
-                    boxShadow: "0 4px 20px rgba(15, 196, 72, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
-                    position: "relative",
-                    overflow: "hidden"
-                }} 
-                onMouseEnter={(e) => { 
-                    e.currentTarget.style.background = "rgba(15, 196, 72, 0.2)"; 
-                    e.currentTarget.style.borderColor = "#12d954"; 
-                    e.currentTarget.style.transform = "translateY(-2px)"; 
-                    e.currentTarget.style.boxShadow = "0 6px 25px rgba(15, 196, 72, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"; 
-                }} 
-                onMouseLeave={(e) => { 
-                    e.currentTarget.style.background = "rgba(15, 196, 72, 0.1)"; 
-                    e.currentTarget.style.borderColor = "#0FC448"; 
-                    e.currentTarget.style.transform = "translateY(0)"; 
-                    e.currentTarget.style.boxShadow = "0 4px 20px rgba(15, 196, 72, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)"; 
-                }}>
-                {/* Button shine effect */}
-                <div style={{
-                    position: "absolute",
-                    top: "-2px",
-                    left: "-100%",
-                    width: "100%",
-                    height: "100%",
-                    background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
-                    animation: "shine 3s ease-in-out infinite"
-                }} />
-                Return Home
-            </button>
-
-            {/* Dynamic floating particles */}
-            {particles.map((particle) => (
-                <div
-                    key={particle.id}
-                    style={{
-                        position: "absolute",
-                        top: `${particle.y}%`,
-                        left: `${particle.x}%`,
-                        width: `${particle.size}px`,
-                        height: `${particle.size}px`,
-                        background: particle.color,
-                        borderRadius: "50%",
-                        opacity: "0.6",
-                        animation: `float ${particle.duration}s ease-in-out infinite`,
-                        animationDelay: `${particle.delay}s`
-                    }}
-                />
-            ))}
-
-            {/* CSS animations */}
-            <style>
-                {`
-                    @keyframes float {
-                        0%, 100% { transform: translateY(0px); }
-                        50% { transform: translateY(-20px); }
-                    }
-                    
-                    @keyframes pulse {
-                        0%, 100% { transform: scale(1); opacity: 0.3; }
-                        50% { transform: scale(1.1); opacity: 0.6; }
-                    }
-                    
-                    @keyframes rotate {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                    
-                    @keyframes textGlow {
-                        0% { text-shadow: 0 0 30px rgba(255, 255, 255, 0.2), 0 0 60px rgba(15, 196, 72, 0.3); }
-                        100% { text-shadow: 0 0 40px rgba(255, 255, 255, 0.4), 0 0 80px rgba(15, 196, 72, 0.5); }
-                    }
-                    
-                    @keyframes gridMove {
-                        0% { transform: translate(0, 0); }
-                        100% { transform: translate(50px, 50px); }
-                    }
-                    
-                    @keyframes shine {
-                        0% { left: -100%; }
-                        100% { left: 100%; }
-                    }
-                    
-                    @keyframes glitch {
-                        0% { transform: translateX(0); }
-                        20% { transform: translateX(-2px); }
-                        40% { transform: translateX(2px); }
-                        60% { transform: translateX(-2px); }
-                        80% { transform: translateX(2px); }
-                        100% { transform: translateX(0); }
-                    }
-                    
-                    @media (max-width: 768px) {
-                        body {
-                            overflow-x: hidden;
-                        }
-                    }
-                    
-                    @media (max-width: 480px) {
-                        .main-container {
-                            gap: 20px;
-                        }
-                    }
-                `}
-            </style>
+          <span className="nf-number" data-text="4" style={{ color:"transparent" }}>4</span>
         </div>
-    );
+
+        <div className="nf-msg">
+          <span style={{ color:"rgba(95,255,96,.55)", letterSpacing:"0.12em" }}>KERNEL PANIC</span>
+          <br />
+          <span style={{ fontSize:"0.65rem" }}>
+            The page you requested could not be located.<br />
+            It may have been moved, deleted, or never existed.
+          </span>
+        </div>
+
+        <div style={{
+          fontFamily:"'JetBrains Mono',monospace",
+          fontSize:"0.58rem",
+          color:"rgba(95,255,96,.5)",
+          letterSpacing:"0.06em",
+          marginBottom:"1.75rem",
+          lineHeight:1.8,
+          textAlign:"left",
+        }}>
+          <span style={{ color:"rgba(96,200,255,.5)" }}>GET</span> <span style={{ color:"rgba(255,184,77,.5)" }}>/??</span> HTTP/1.1<br />
+          {"<"} 404 Not Found<br />
+          {"<"} Content-Type: text/void
+        </div>
+
+        <button onClick={handleReturnHome} className="nf-btn">
+          ← Return Home
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default NotFound;

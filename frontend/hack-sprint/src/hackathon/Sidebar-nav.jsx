@@ -1,12 +1,21 @@
 import React from "react";
 import {
-  LayoutDashboard, Award, FileText, Scale, CircleHelp, Info, MessagesSquare, NotebookPen, Target as ThemeIcon, ThumbsUp, Images
+  LayoutDashboard,
+  Award,
+  FileText,
+  Scale,
+  CircleHelp,
+  Info,
+  MessagesSquare,
+  NotebookPen,
+  Target as ThemeIcon,
+  ThumbsUp,
+  Images,
 } from "lucide-react";
 
 export const SidebarNav = ({ activeSection, onSectionChange }) => {
   const sections = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
-   
     { id: "prizes", label: "Prizes", icon: Award },
     { id: "submission-guide", label: "Submission", icon: NotebookPen },
     { id: "judging", label: "Judging", icon: Scale },
@@ -16,36 +25,78 @@ export const SidebarNav = ({ activeSection, onSectionChange }) => {
     { id: "rules", label: "Rules", icon: FileText },
     { id: "faqs", label: "FAQs", icon: CircleHelp },
     { id: "about", label: "About", icon: Info },
-    { id: "refMaterial", label: "Reference Material", icon: FileText },
+    { id: "refMaterial", label: "Reference", icon: FileText },
     { id: "discussion", label: "Discussion", icon: MessagesSquare },
   ];
 
   return (
-    <aside className="w-full lg:w-64 lg:min-h-[calc(100vh-88px)] lg:sticky top-[88px] shrink-0">
-      <div className="p-4 lg:p-6 h-full bg-gray-900/50 backdrop-blur-md border-b lg:border-r lg:border-b-0 border-green-500/20">
-        <h3 className="hidden lg:block text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-          Navigation
-        </h3>
-        <ul className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible space-x-1 lg:space-x-0 lg:space-y-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {sections.map((section) => (
-            <li key={section.id} className="flex-shrink-0">
-              <button
-                onClick={() => onSectionChange(section.id)}
-                className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-all duration-200 flex items-center gap-3 group font-medium cursor-pointer ${activeSection === section.id
-                    ? "bg-green-400/10 text-green-300"
-                    : "text-gray-400 hover:text-white hover:bg-green-500/5"
-                  }`}
-              >
-                <section.icon className={`w-4 h-4 transition-colors ${activeSection === section.id ? 'text-green-400' : 'text-gray-500 group-hover:text-white'}`} />
-                <span>{section.label}</span>
-                {activeSection === section.id && (
-                  <div className="hidden lg:block ml-auto w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </aside>
+    <>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+
+      <aside className="w-full lg:w-56 lg:min-h-[calc(100vh-88px)] lg:sticky top-[88px] shrink-0">
+        <div
+          className="
+          h-full px-3 py-3 lg:px-4 lg:py-5
+          bg-[rgba(8,10,8,0.92)] backdrop-blur-xl
+          border-b border-[rgba(95,255,96,0.08)]
+          lg:border-b-0 lg:border-r lg:border-[rgba(95,255,96,0.08)]
+        "
+        >
+          <div className="hidden lg:block font-[family-name:'JetBrains_Mono',monospace] text-[0.52rem] tracking-[0.2em] uppercase text-[rgba(95,255,96,0.38)] border-l-2 border-[rgba(95,255,96,0.28)] pl-2 mb-4">
+            Navigation
+          </div>
+
+          <ul
+            className="
+            flex flex-row lg:flex-col
+            gap-1
+            overflow-x-auto lg:overflow-x-visible
+            [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]
+          "
+          >
+            {sections.map((section) => {
+              const active = activeSection === section.id;
+              const Icon = section.icon;
+              return (
+                <li key={section.id} className="flex-shrink-0">
+                  <button
+                    onClick={() => onSectionChange(section.id)}
+                    className={`
+                      font-[family-name:'JetBrains_Mono',monospace]
+                      w-full text-left
+                      inline-flex items-center gap-2
+                      text-[0.62rem] tracking-[0.06em]
+                      px-3 py-2 rounded-[3px] border
+                      cursor-pointer transition-all duration-150 group
+                      whitespace-nowrap
+                      ${
+                        active
+                          ? "bg-[rgba(95,255,96,0.1)] border-[rgba(95,255,96,0.28)] text-[#5fff60]"
+                          : "bg-transparent border-transparent text-[rgba(180,220,180,0.42)] hover:bg-[rgba(95,255,96,0.05)] hover:border-[rgba(95,255,96,0.14)] hover:text-[rgba(180,220,180,0.75)]"
+                      }
+                    `}
+                  >
+                    <Icon
+                      size={13}
+                      className={`flex-shrink-0 transition-colors ${
+                        active
+                          ? "text-[#5fff60]"
+                          : "text-[rgba(95,255,96,0.3)] group-hover:text-[rgba(95,255,96,0.6)]"
+                      }`}
+                    />
+
+                    <span>{section.label}</span>
+
+                    {active && (
+                      <span className="hidden lg:block ml-auto w-1.5 h-1.5 rounded-full bg-[#5fff60] animate-pulse flex-shrink-0" />
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </aside>
+    </>
   );
 };

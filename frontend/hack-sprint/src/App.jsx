@@ -13,46 +13,39 @@ import Navbar from "./components/Navbar";
 import HideRoute from "./components/HideRoute";
 import HideRouteFooter from "./components/HideRouteFooter";
 import Loader from "./components/Loader";
-import Quest from "./pages/Quest";
-import About from "./pages/About";
-import Admin from "./pages/Admin";
-import Login from "./pages/Login.jsx";
+import Quest from "./pages/Student/Quest";
+import Admin from "./pages/Admin/Admin.jsx";
+import Login from "./pages/Student/Login.jsx";
 import Questions from "./pages/Questions.jsx";
 import NotFoundPage from "./pages/NotFound";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import ActiveHackathons from "./pages/ActiveHackathons";
-import ExpiredHackathons from "./pages/ExpiredHackathons";
-import Dashboard from "./pages/Dashboard.jsx";
-import Signup from "./pages/Signup.jsx";
+import Dashboard from "./pages/Student/Dashboard.jsx";
+import Signup from "./pages/Student/Signup.jsx";
 import Verification from "./components/Verification.jsx";
 import ResetPassword from "./components/ResetPassword.jsx";
 import RouteHandler from "./components/RouteHandler.jsx";
-import AllHackathons from "./pages/AllHackathons.jsx";
+import AllHackathons from "./pages/Student/AllHackathons.jsx";
 import { ToastContainer } from "react-toastify";
 import HackathonDetails from "./pages/Hackathon.jsx";
 import { RegistrationForm } from "./hackathon/RegistrationForm.jsx";
-import Leaderboard from "./pages/LeaderBoard.jsx";
+import Leaderboard from "./pages/Student/LeaderBoard.jsx";
 import TeamDetails from "./pages/TeamDetails.jsx";
 import VerifyEmail from "./components/verifyEmail.jsx";
 import ForgotPassword from "./components/forgotPassword.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
-import UnderConstruction from "./pages/Devlopment.jsx";
-import Studenthome from "./pages/Studenthome.jsx";
-import Adminhome from "./pages/Adminhome.jsx";
-import AdminLogin from "./pages/AdminLogin.jsx";
-import AdminSignup from "./pages/AdminSignup.jsx";
-import AdminProfile from "./pages/AdminProfile.jsx";
-import RecentlyStartedPage from "./admin/recenthackathon.jsx";
-import LiveHackathonsPage from "./admin/livehackathon.jsx";
-import EndedHackathonsPage from "./admin/endedhackathon.jsx";
+import Studenthome from "./pages/Student/Studenthome.jsx";
+import Adminhome from "./pages/Admin/Adminhome.jsx";
+import AdminLogin from "./pages/Admin/AdminLogin.jsx";
+import AdminSignup from "./pages/Admin/AdminSignup.jsx";
+import AdminProfile from "./pages/Admin/AdminProfile.jsx";
 import HackathonUsersPage from "./admin/userlist.jsx";
 import UserSubmissionDetailPage from "./admin/usersubmission.jsx";
 import ParticipantPoliciesPage from "./pages/Participation.jsx";
 import OrganizerPlaybookPage from "./pages/Organiser.jsx";
 import LegalSupportPage from "./pages/TermsCond.jsx";
-import CreateHackathonPage from "./pages/CreateHackathonPage.jsx";
-import AdminNavbar from "./components/AdminNavbar.jsx";
-import HideAdminRoutes from "./components/HideAdminRoutes.jsx";
+import CreateHackathonPage from "./pages/Admin/CreateHackathonPage.jsx";
+import AdminNavbar from "./components/Admin/AdminNavbar.jsx";
+import HideAdminRoutes from "./components/Admin/HideAdminRoutes.jsx";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -127,21 +120,8 @@ function App() {
           <Route path="/adminhome" element={<Adminhome />} caseSensitive />
           <Route path="/adminlogin" element={<AdminLogin />} caseSensitive />
           <Route path="/admin/signup" element={<AdminSignup />} caseSensitive />
-
-          <Route
-            path="/activehackathons"
-            element={<ActiveHackathons />}
-            caseSensitive
-          ></Route>
-          <Route
-            path="/expiredhackathons"
-            element={<ExpiredHackathons />}
-            caseSensitive
-          ></Route>
           <Route path="/quest" element={<Quest />} caseSensitive />
-          <Route path="/about" element={<About />} caseSensitive />
           <Route path="/hackathons" element={<AllHackathons />} caseSensitive />
-
           <Route path="/hacksprintTeraBaap" element={<Admin />} caseSensitive />
           <Route
             path="/admin"
@@ -155,43 +135,6 @@ function App() {
             }
             caseSensitive
           />
-          <Route
-            path="/admin/recentlystarted"
-            element={
-              <AuthenticateRoute
-                element={<RecentlyStartedPage />}
-                admin={true}
-                authWait={authWait}
-                isAuthenticated={isAuthenticated}
-              />
-            }
-            caseSensitive
-          />
-          <Route
-            path="/admin/livehackathons"
-            element={
-              <AuthenticateRoute
-                element={<LiveHackathonsPage />}
-                admin={true}
-                authWait={authWait}
-                isAuthenticated={isAuthenticated}
-              />
-            }
-            caseSensitive
-          />
-          <Route
-            path="/admin/endedhackathons"
-            element={
-              <AuthenticateRoute
-                element={<EndedHackathonsPage />}
-                admin={true}
-                authWait={authWait}
-                isAuthenticated={isAuthenticated}
-              />
-            }
-            caseSensitive
-          />
-
           <Route
             path="/questions"
             element={

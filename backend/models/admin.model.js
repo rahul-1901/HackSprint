@@ -15,7 +15,7 @@ const adminSchema = new mongoose.Schema({
     },
     password: {  // hashed password
         type: String,
-        required: true,
+        required: false,
     },
 
     lastLogin: {

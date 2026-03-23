@@ -2,11 +2,21 @@ import React, { useState, useEffect } from "react";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
 import { Link } from "react-router-dom";
-import { Calendar, Users, Trophy, Clock, ChevronRight, ThumbsUp } from "lucide-react";
+import {
+  Calendar,
+  Users,
+  Trophy,
+  Clock,
+  ChevronRight,
+  ThumbsUp,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../backendApis/api";
-import LoginForm from "./LoginForm";
 import SubmissionForm from "./SubmissionForm";
+
+const FontStyle = () => (
+  <style>{`@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+);
 
 export const HeroSection = ({
   title,
@@ -29,7 +39,6 @@ export const HeroSection = ({
   const [userData, setUserData] = useState(null);
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSubmissionModal, setShowSubmissionModal] = useState(false);
   const [registrationInfo, setRegistrationInfo] = useState(false);
   const [leaderButton, setLeaderButton] = useState(false);
@@ -37,7 +46,6 @@ export const HeroSection = ({
   const [isLeader, setIsLeader] = useState(false);
   const [isTeamMember, setIsTeamMember] = useState(false);
   const [teamData, setTeamData] = useState(null);
-
   const navigate = useNavigate();
 
   const isWithinRegistrationPeriod = () => {
@@ -50,32 +58,37 @@ export const HeroSection = ({
     );
   };
 
+  const isWithinSubmissionPeriod = () => {
+    const now = new Date();
+    return (
+      submissionStartDate &&
+      submissionEndDate &&
+      now >= new Date(submissionStartDate) &&
+      now <= new Date(submissionEndDate)
+    );
+  };
+
   useEffect(() => {
     const fetchTeamData = async (teamId, currentUserId) => {
       try {
-        if (!teamId) return; // <-- safeguard
-
+        if (!teamId) return;
         const res = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/api/team/${teamId}`
         );
         if (!res.ok) throw new Error("Failed to fetch team");
         const data = await res.json();
         const team = data.team;
-
-        // console.log(team)
         setTeamData(team);
-
         if (
           team?.hackathon?._id &&
           String(team.hackathon._id) === String(hackathonId)
-        ) {
-          const member = team.members?.some(
-            (m) => String(m._id) === String(currentUserId)
+        )
+          setIsTeamMember(
+            team.members?.some(
+              (m) => String(m._id) === String(currentUserId)
+            ) || false
           );
-          setIsTeamMember(member || false);
-        } else {
-          setIsTeamMember(false);
-        }
+        else setIsTeamMember(false);
       } catch (err) {
         console.error("Team fetch error:", err.message);
         setIsTeamMember(false);
@@ -86,39 +99,24 @@ export const HeroSection = ({
       setLoading(true);
       try {
         const res = await getDashboard();
-        const fetchedUserData = res.data.userData;
-        // console.log(fetchedUserData)
-        setUserData(fetchedUserData);
-        setIsVerified(fetchedUserData?.isVerified || false);
-
-        const registered = Array.isArray(fetchedUserData.registeredHackathons)
-          ? fetchedUserData.registeredHackathons.some(
-              (obj) => String(obj?._id) === String(hackathonId)
+        const u = res.data.userData;
+        setUserData(u);
+        setIsVerified(u?.isVerified || false);
+        const registered = Array.isArray(u.registeredHackathons)
+          ? u.registeredHackathons.some(
+              (o) => String(o?._id) === String(hackathonId)
             )
           : false;
         setRegistrationInfo(registered);
-
-        const leader = fetchedUserData.leaderOfHackathons?.some(
-          (obj) => String(obj?._id) === String(hackathonId)
+        const leader = u.leaderOfHackathons?.some(
+          (o) => String(o?._id) === String(hackathonId)
         );
-        if (leader) {
-          setIsLeader(true);
-          setLeaderButton(true);
-        } else {
-          setIsLeader(false);
-          setLeaderButton(false);
-        }
-        // console.log("Leader Status:", isLeader);
-        // console.log("Leader Button:", leaderButton);
-        // console.log("Registration Info:", registrationInfo);
-        // ✅ Always send teamId here
-        if (fetchedUserData?.team) {
-          await fetchTeamData(fetchedUserData.team, fetchedUserData._id);
-        } else {
-          setIsTeamMember(false);
-        }
+        setIsLeader(!!leader);
+        setLeaderButton(!!leader);
+        if (u?.team) await fetchTeamData(u.team, u._id);
+        else setIsTeamMember(false);
       } catch (err) {
-        console.error("Dashboard fetch error:", err.message);
+        console.error(err.message);
         setUserData(null);
         setIsVerified(false);
         setRegistrationInfo(false);
@@ -134,41 +132,31 @@ export const HeroSection = ({
     renderActionButton();
   }, [hackathonId, isLeader, registrationInfo]);
 
-  // useEffect(() => {
-  //   console.log("Team Data Updated:", teamData?.code);
-  // }, [teamData]);
-
   useEffect(() => {
-    if (teamData?.code) {
-      setLeaderValue(teamData.code);
-    } else {
-      setLeaderValue(localStorage.getItem("teamDetails_code"));
-    }
+    if (teamData?.code) setLeaderValue(teamData.code);
+    else setLeaderValue(localStorage.getItem("teamDetails_code"));
   }, [teamData]);
 
   const handleRegister = () => {
     if (isVerified) navigate(`/hackathon/RegistrationForm/${hackathonId}`);
-    else setShowLoginModal(true);
+    else navigate("/account/login");
   };
-
   const handleLeader = () => {
     navigate(`/hackathon/${hackathonId}/team/${leaderValue}`);
   };
-
   const handleSubmit = () => {
     setShowSubmissionModal(true);
   };
 
   const formatDateRange = (start, end) => {
-    const s = new Date(start);
-    const e = new Date(end);
-    const opt = { month: "long", day: "numeric" };
-    if (s.getFullYear() === e.getFullYear()) {
+    const s = new Date(start),
+      e = new Date(end),
+      opt = { month: "long", day: "numeric" };
+    if (s.getFullYear() === e.getFullYear())
       return `${s.toLocaleDateString("en-US", opt)} – ${e.toLocaleDateString(
         "en-US",
         { ...opt, year: "numeric" }
       )}`;
-    }
     return `${s.toLocaleDateString("en-US", {
       ...opt,
       year: "numeric",
@@ -181,130 +169,180 @@ export const HeroSection = ({
     return days > 0 ? days : 0;
   };
 
+  const actionCls = [
+    "font-[family-name:'JetBrains_Mono',monospace]",
+    "inline-flex items-center justify-center gap-2",
+    "text-xs tracking-[0.1em] uppercase",
+    "px-5 py-2.5 rounded-[3px] border cursor-pointer",
+    "transition-all duration-150",
+    "w-full sm:w-auto",
+  ].join(" ");
+
+  const renderActionButton = () => {
+    if (loading || !userData)
+      return (
+        <Link to="/account/login">
+          <button
+            className={`${actionCls} bg-[rgba(95,255,96,0.08)] border-[rgba(95,255,96,0.25)] text-[rgba(95,255,96,0.55)] hover:bg-[rgba(95,255,96,0.14)]`}
+          >
+            Login
+          </button>
+        </Link>
+      );
+    if (!isActive) return null;
+    if (!registrationInfo) {
+      if (isWithinRegistrationPeriod())
+        return (
+          <button
+            onClick={handleRegister}
+            className={`${actionCls} bg-[#5fff60] border-[#5fff60] text-[#050905] font-bold hover:bg-[#7fff80] hover:shadow-[0_0_20px_rgba(95,255,96,0.3)]`}
+          >
+            Register Now <ChevronRight size={14} />
+          </button>
+        );
+      return (
+        <button
+          disabled
+          className={`${actionCls} bg-[rgba(95,255,96,0.04)] border-[rgba(95,255,96,0.1)] text-[rgba(95,255,96,0.28)] cursor-not-allowed`}
+        >
+          Registration Closed
+        </button>
+      );
+    }
+    if (isLeader)
+      return (
+        <div className="relative group inline-block">
+          <button
+            onClick={handleSubmit}
+            disabled={!isWithinSubmissionPeriod()}
+            className={`${actionCls} ${
+              isWithinSubmissionPeriod()
+                ? "bg-[#5fff60] border-[#5fff60] text-[#050905] hover:bg-[#7fff80]"
+                : "bg-gray-700 border-gray-600 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            Submit <ChevronRight size={14} />
+          </button>
+
+          {!isWithinSubmissionPeriod() && (
+            <div
+              className="absolute left-full top-1/2 -translate-y-1/2 ml-3 
+                    whitespace-nowrap text-xs bg-[#111] text-[#5fff60] 
+                    px-3 py-1 rounded opacity-0 group-hover:opacity-100 
+                    transition-opacity duration-200 shadow-lg"
+            >
+              Submission Not Open
+            </div>
+          )}
+        </div>
+      );
+    if (isTeamMember)
+      return (
+        <button
+          disabled
+          className={`${actionCls} bg-[rgba(95,255,96,0.04)] border-[rgba(95,255,96,0.1)] text-[rgba(95,255,96,0.28)] cursor-not-allowed`}
+        >
+          Submit (Leader Only)
+        </button>
+      );
+    return (
+      <div className="relative group inline-block">
+        <button
+          onClick={handleSubmit}
+          disabled={!isWithinSubmissionPeriod()}
+          className={`${actionCls} ${
+            isWithinSubmissionPeriod()
+              ? "bg-[#5fff60] border-[#5fff60] text-[#050905] hover:bg-[#7fff80]"
+              : "bg-gray-700 border-gray-600 text-gray-400 cursor-not-allowed"
+          }`}
+        >
+          Submit <ChevronRight size={14} />
+        </button>
+
+        {!isWithinSubmissionPeriod() && (
+          <div
+            className="absolute left-full top-1/2 -translate-y-1/2 ml-3 
+                whitespace-nowrap text-xs bg-[#111] text-[#5fff60] 
+                px-3 py-1 rounded opacity-0 group-hover:opacity-100 
+                transition-opacity duration-200 shadow-lg"
+          >
+            Submission Not Open
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const StatCard = ({ value, label, icon: Icon }) => (
-    <div className="bg-gray-900/70 backdrop-blur-sm border border-green-500/20 rounded-xl p-4 hover:border-green-400/30 transition-all">
-      <div className="flex items-center gap-4">
-        <div className="w-10 h-10 bg-green-400/10 rounded-lg flex items-center justify-center border border-green-500/20">
-          <Icon className="w-5 h-5 text-green-400" />
+    <div className="relative bg-[rgba(10,12,10,0.88)] border border-[rgba(95,255,96,0.12)] rounded-[4px] p-4 backdrop-blur-sm hover:border-[rgba(95,255,96,0.28)] transition-all">
+      <span className="absolute top-[-1px] left-[-1px] w-2 h-2 border-t-2 border-l-2 border-[rgba(95,255,96,0.4)]" />
+      <span className="absolute bottom-[-1px] right-[-1px] w-2 h-2 border-b-2 border-r-2 border-[rgba(95,255,96,0.4)]" />
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 bg-[rgba(95,255,96,0.07)] rounded-[3px] flex items-center justify-center border border-[rgba(95,255,96,0.18)] flex-shrink-0">
+          <Icon size={16} className="text-[#5fff60]" />
         </div>
         <div>
-          <div className="text-xl font-bold text-white">{value}</div>
-          <div className="text-xs text-gray-400">{label}</div>
+          <div className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-xl leading-tight">
+            {value}
+          </div>
+          <div className="font-[family-name:'JetBrains_Mono',monospace] text-[0.58rem] tracking-[0.1em] uppercase text-[rgba(180,220,180,0.45)] mt-0.5">
+            {label}
+          </div>
         </div>
       </div>
     </div>
   );
 
-  const PrizeStatCard = ({ prize1, prize2, prize3, rewards, icon: Icon }) => {
-    // Use new rewards format if available, fallback to old prize fields
-    const displayRewards = rewards && rewards.length > 0 
-      ? rewards 
-      : [
-          prize1 > 0 ? { description: '1st', amount: prize1 } : null,
-          prize2 > 0 ? { description: '2nd', amount: prize2 } : null,
-          prize3 > 0 ? { description: '3rd', amount: prize3 } : null,
-        ].filter(Boolean);
-
-    const totalPrize = displayRewards.reduce((sum, r) => sum + r.amount, 0);
-
+  const PrizeStatCard = ({ rewards, prize1, prize2, prize3, icon: Icon }) => {
+    const dr =
+      rewards?.length > 0
+        ? rewards
+        : [
+            prize1 > 0 ? { description: "1st", amount: prize1 } : null,
+            prize2 > 0 ? { description: "2nd", amount: prize2 } : null,
+            prize3 > 0 ? { description: "3rd", amount: prize3 } : null,
+          ].filter(Boolean);
+    const total = dr.reduce((s, r) => s + r.amount, 0);
     return (
-      <div className="bg-gray-900/70 backdrop-blur-sm border border-green-500/20 rounded-xl p-4 hover:border-green-400/30 transition-all">
-        <div className="flex items-center gap-4 mb-3">
-          <div className="w-10 h-10 bg-green-400/10 rounded-lg flex items-center justify-center border border-green-500/20">
-            <Icon className="w-5 h-5 text-green-400" />
+      <div className="relative bg-[rgba(10,12,10,0.88)] border border-[rgba(95,255,96,0.12)] rounded-[4px] p-4 backdrop-blur-sm hover:border-[rgba(95,255,96,0.28)] transition-all">
+        <span className="absolute top-[-1px] left-[-1px] w-2 h-2 border-t-2 border-l-2 border-[rgba(95,255,96,0.4)]" />
+        <span className="absolute bottom-[-1px] right-[-1px] w-2 h-2 border-b-2 border-r-2 border-[rgba(95,255,96,0.4)]" />
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-9 h-9 bg-[rgba(95,255,96,0.07)] rounded-[3px] flex items-center justify-center border border-[rgba(95,255,96,0.18)] flex-shrink-0">
+            <Icon size={16} className="text-[#5fff60]" />
           </div>
-          <h3 className="text-xl font-bold text-white">Prize Pool</h3>
+          <div className="font-[family-name:'Syne',sans-serif] font-extrabold text-white text-xl leading-tight">
+            Prize Pool
+          </div>
         </div>
-
-        <div className="space-y-1.5">
-          {displayRewards.slice(0, 4).map((reward, idx) => (
-            <div key={idx} className="flex justify-between items-center text-sm">
-              <span className="text-gray-400">{reward.description}:</span>
-              <span className="text-green-400 font-semibold">₹{reward.amount.toLocaleString("en-IN")}</span>
+        <div className="flex flex-col gap-1">
+          {dr.slice(0, 4).map((r, i) => (
+            <div key={i} className="flex justify-between items-center">
+              <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.62rem] text-[rgba(180,220,180,0.45)]">
+                {r.description}
+              </span>
+              <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.65rem] text-[#5fff60] font-semibold">
+                ₹{r.amount.toLocaleString("en-IN")}
+              </span>
             </div>
           ))}
-          {displayRewards.length > 4 && (
-            <div className="text-xs text-gray-500 mt-1">+{displayRewards.length - 4} more reward{displayRewards.length > 5 ? 's' : ''}</div>
+          {dr.length > 4 && (
+            <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.55rem] text-[rgba(180,220,180,0.28)]">
+              +{dr.length - 4} more
+            </p>
           )}
-          {totalPrize > 0 && displayRewards.length > 1 && (
-            <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-700/50 mt-2">
-              <span className="text-gray-300 font-semibold">Total:</span>
-              <span className="text-green-400 font-bold">₹{totalPrize.toLocaleString("en-IN")}</span>
+          {total > 0 && dr.length > 1 && (
+            <div className="flex justify-between items-center pt-2 mt-1 border-t border-[rgba(95,255,96,0.08)]">
+              <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.6rem] tracking-[0.08em] uppercase text-[rgba(180,220,180,0.55)]">
+                Total
+              </span>
+              <span className="font-[family-name:'Syne',sans-serif] font-extrabold text-[#5fff60] text-sm">
+                ₹{total.toLocaleString("en-IN")}
+              </span>
             </div>
           )}
         </div>
       </div>
-    );
-  };
-
-  const renderActionButton = () => {
-    const baseClasses =
-      "px-6 py-2.5 w-full sm:w-auto flex justify-center sm:justify-start items-center gap-2";
-
-    if (loading || !userData) {
-      return (
-        <Link to="/account/login">
-          <Button
-            className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}
-          >
-            Login
-          </Button>
-        </Link>
-      );
-    }
-    if (!isActive) return null;
-
-    if (!registrationInfo) {
-      if (isWithinRegistrationPeriod()) {
-        return (
-          <Button
-            onClick={handleRegister}
-            className={`bg-green-500 cursor-pointer text-gray-900 ${baseClasses}`}
-          >
-            Register Now <ChevronRight className="w-5 h-5" />
-          </Button>
-        );
-      }
-      return (
-        <Button
-          disabled
-          className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}
-        >
-          Registration Closed
-        </Button>
-      );
-    }
-
-    if (isLeader) {
-      return (
-        <Button
-          onClick={handleSubmit}
-          className={`bg-green-500 cursor-pointer text-gray-900 ${baseClasses}`}
-        >
-          Submit <ChevronRight className="w-5 h-5" />
-        </Button>
-      );
-    }
-
-    if (isTeamMember) {
-      return (
-        <Button
-          disabled
-          className={`bg-gray-700 cursor-pointer text-gray-400 ${baseClasses}`}
-        >
-          Submit (Leader Only)
-        </Button>
-      );
-    }
-
-    // Individual
-    return (
-      <Button
-        onClick={handleSubmit}
-        className={`bg-green-500 cursor-pointer text-gray-900 ${baseClasses}`}
-      >
-        Submit <ChevronRight className="w-5 h-5" />
-      </Button>
     );
   };
 
@@ -314,100 +352,114 @@ export const HeroSection = ({
 
   return (
     <>
-      <div className="border-b border-green-500/20">
-        <div className="w-full h-full bg-gray-900">
+      <FontStyle />
+
+      <div className="border-b border-[rgba(95,255,96,0.1)] bg-[#0a0a0a] font-[family-name:'JetBrains_Mono',monospace] overflow-hidden">
+        <div className="relative w-full h-[60vh] md:h-[60vh] lg:h-[75vh] overflow-hidden">
           <img
             src={imageError ? fallbackImage : imageUrl}
             alt="Hackathon Banner"
-            className="w-full h-[60vh]"
+            className="w-full h-full object-fill sm:object-fill"
             onError={() => setImageError(true)}
           />
+
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,10,0.88)] via-[rgba(10,10,10,0.15)] to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(95,255,96,0.22)] to-transparent" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
-          {/* top badges */}
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            <Badge
-              className={`${
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-7">
+          <div className="flex flex-wrap items-start gap-3 mb-5">
+            <span
+              className={`font-[family-name:'JetBrains_Mono',monospace] inline-flex items-center gap-1.5 text-[0.58rem] tracking-[0.12em] uppercase px-2.5 py-1 rounded-[2px] border ${
                 isActive
-                  ? "bg-green-400/10 text-green-300 border-green-400/20"
-                  : "bg-gray-800 text-gray-400 border-gray-700"
-              } px-3 py-1 text-sm font-medium border`}
+                  ? "bg-[rgba(95,255,96,0.08)] border-[rgba(95,255,96,0.25)] text-[#5fff60]"
+                  : "bg-[rgba(120,120,120,0.07)] border-[rgba(120,120,120,0.2)] text-[rgba(180,180,180,0.5)]"
+              }`}
             >
+              {isActive && (
+                <span className="w-1.5 h-1.5 rounded-full bg-[#5fff60] animate-pulse" />
+              )}
               {isActive ? "Active" : "Ended"}
-            </Badge>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 text-gray-300 text-sm">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-green-400" />
-                <span>
-                  <span className="font-medium text-white">Registration:</span>{" "}
-                  {formatDateRange(startDate, endDate)}
-                </span>
-              </div>
+            </span>
 
-              <div className="flex items-center gap-2 mt-1 sm:mt-0">
-                <Calendar className="w-4 h-4 text-green-400" />
-                <span>
-                  <span className="font-medium text-white">Submission:</span>{" "}
-                  {formatDateRange(submissionStartDate, submissionEndDate)}
-                </span>
-              </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-5">
+              {[
+                ["Registration", startDate, endDate],
+                ["Submission", submissionStartDate, submissionEndDate],
+              ].map(([label, s, e]) => (
+                <div
+                  key={label}
+                  className="flex flex-wrap items-center gap-1.5 text-[0.62rem] text-[rgba(180,220,180,0.5)]"
+                >
+                  <Calendar
+                    size={11}
+                    className="text-[rgba(95,255,96,0.5)] flex-shrink-0"
+                  />
+                  <span className="text-[rgba(180,220,180,0.7)]">{label}:</span>
+                  <span>{formatDateRange(s, e)}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* title + buttons */}
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-            <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 mb-6">
+            <div className="flex-1 min-w-0">
+              <h1 className="font-[family-name:'Syne',sans-serif] font-extrabold text-white leading-tight tracking-tight mb-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
                 {title}
               </h1>
-              <p className="text-lg text-gray-400">{subTitle}</p>
-
-              {/* Role display */}
-              {userData && registrationInfo && (
-                <p className="text-sm text-green-300 mt-2">
-                  Role:{" "}
-                  {isLeader
-                    ? "Leader"
-                    : isTeamMember
-                    ? "Team Member"
-                    : "Individual"}
+              {subTitle && (
+                <p className="font-[family-name:'JetBrains_Mono',monospace] text-sm text-[rgba(180,220,180,0.48)] tracking-[0.02em]">
+                  {subTitle}
                 </p>
+              )}
+              {userData && registrationInfo && (
+                <div className="mt-2 inline-flex items-center gap-1.5">
+                  <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.56rem] tracking-[0.1em] uppercase text-[rgba(95,255,96,0.38)]">
+                    Role:
+                  </span>
+                  <span className="font-[family-name:'JetBrains_Mono',monospace] text-[0.6rem] text-[#5fff60]">
+                    {isLeader
+                      ? "Leader"
+                      : isTeamMember
+                      ? "Team Member"
+                      : "Individual"}
+                  </span>
+                </div>
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 w-full sm:w-auto text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto">
               {leaderButton && (
-                <Button
+                <button
                   onClick={handleLeader}
-                  className="bg-green-500 flex cursor-pointer justify-center sm:justify-start text-gray-900 px-6 py-2.5 w-full sm:w-auto"
+                  className={`${actionCls} bg-[rgba(95,255,96,0.1)] border-[rgba(95,255,96,0.3)] text-[#5fff60] hover:bg-[rgba(95,255,96,0.18)]`}
                 >
-                  Leader Dashboard <ChevronRight className="w-5 h-5 ml-2" />
-                </Button>
+                  Leader Dashboard <ChevronRight size={13} />
+                </button>
               )}
-              {onSectionChange && (
-                <Button
+              {/* {onSectionChange && (
+                <button
                   onClick={() => {
                     onSectionChange("upvote");
-                    // Scroll to the content section after a short delay to let the DOM update
                     setTimeout(() => {
-                      const contentSection = document.getElementById('content-section');
-                      if (contentSection) {
-                        contentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }
+                      document
+                        .getElementById("content-section")
+                        ?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
                     }, 100);
                   }}
-                  className="bg-green-500 flex cursor-pointer justify-center sm:justify-start text-gray-900 px-6 py-2.5 w-full sm:w-auto"
+                  className={`${actionCls} bg-[rgba(95,255,96,0.1)] border-[rgba(95,255,96,0.3)] text-[#5fff60] hover:bg-[rgba(95,255,96,0.18)]`}
                 >
-                  View Voting <ThumbsUp className="w-5 h-5 ml-2" />
-                </Button>
-              )}
+                  View Voting <ThumbsUp size={13} />
+                </button>
+              )} */}
               {renderActionButton()}
             </div>
           </div>
 
-          {/* stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <StatCard
               value={participantCount.toLocaleString()}
               label="Participants"
@@ -428,19 +480,6 @@ export const HeroSection = ({
           </div>
         </div>
       </div>
-
-      {/* modals */}
-      {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/70"
-            onClick={() => setShowLoginModal(false)}
-          />
-          <div className="relative z-10 max-w-md w-full mx-4">
-            <LoginForm onLoginSuccess={() => setShowLoginModal(false)} />
-          </div>
-        </div>
-      )}
 
       {showSubmissionModal && (
         <SubmissionForm

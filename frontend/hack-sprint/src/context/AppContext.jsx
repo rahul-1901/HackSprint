@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 export const AppContent = createContext();
 
 export const AppContextProvider = (props) => {
-
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(false);
@@ -15,16 +14,14 @@ export const AppContextProvider = (props) => {
       const token = localStorage.getItem("token");
       const { data } = await axios.get(`${backendUrl}/api/userData`, {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       // console.log(data);
       setIsLoggedIn(true);
 
-      data.success
-        ? setUserData(data.userData)
-        : console.log("Error...")
+      data.success ? setUserData(data.userData) : console.log("Error...");
     } catch (err) {
       setIsLoggedIn(false);
       // console.log("Error....", err.message)
@@ -50,7 +47,6 @@ export const AppContextProvider = (props) => {
       setIsLoggedIn(true);
     }
   }, []);
-
 
   const value = {
     backendUrl,

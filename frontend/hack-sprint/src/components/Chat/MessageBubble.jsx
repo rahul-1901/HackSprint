@@ -1,29 +1,23 @@
 import React from "react";
 
 const MessageBubble = ({ message, isMe }) => {
-  const messageDate = new Date(message.createdAt);
-  const time = messageDate.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  const date = messageDate.toLocaleDateString([], {
+  const d = new Date(message.createdAt);
+  const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const date = d.toLocaleDateString([], {
     month: "short",
     day: "numeric",
-    year:
-      messageDate.getFullYear() !== new Date().getFullYear()
-        ? "numeric"
-        : undefined,
+    year: d.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
   });
-  const fullDateTime = `${date} at ${time}`;
 
   return (
-    <div className={`flex ${isMe ? "justify-end" : "justify-start"} mb-4`}>
+    <div className={`flex ${isMe ? "justify-end" : "justify-start"} mb-3`}>
       <div
-        className={`flex max-w-[80%] ${isMe ? "flex-row-reverse" : "flex-row"} items-end gap-2`}
+        className={`flex max-w-[82%] items-end gap-2 ${
+          isMe ? "flex-row-reverse" : "flex-row"
+        }`}
       >
-        {/* Avatar */}
         {!isMe && (
-          <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden border border-green-500/30">
+          <div className="flex-shrink-0 w-7 h-7 rounded-full overflow-hidden border border-[rgba(95,255,96,0.2)]">
             {message.sender?.profilePicture ? (
               <img
                 src={message.sender.profilePicture}
@@ -31,31 +25,35 @@ const MessageBubble = ({ message, isMe }) => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gray-800 flex items-center justify-center text-xs text-green-400 font-bold">
-                {message.sender?.name?.[0] || "U"}
+              <div className="w-full h-full bg-[rgba(95,255,96,0.07)] flex items-center justify-center font-[family-name:'Syne',sans-serif] font-extrabold text-[0.65rem] text-[#5fff60]">
+                {message.sender?.name?.[0]?.toUpperCase() || "U"}
               </div>
             )}
           </div>
         )}
 
-        {/* Bubble */}
         <div
-          className={`bg-gray-900/80 backdrop-blur-sm border ${isMe ? "border-green-500/50 rounded-tr-none" : "border-green-500/20 rounded-tl-none"} rounded-xl p-3 shadow-lg`}
+          className={`relative px-3.5 py-2.5 backdrop-blur-sm border rounded-[4px]
+          ${
+            isMe
+              ? "bg-[rgba(95,255,96,0.08)] border-[rgba(95,255,96,0.28)] rounded-tr-none"
+              : "bg-[rgba(10,12,10,0.85)] border-[rgba(95,255,96,0.12)] rounded-tl-none"
+          }`}
         >
           {!isMe && (
-            <p className="text-xs text-green-400 font-semibold mb-1">
+            <p className="font-[family-name:'Syne',sans-serif] font-extrabold text-[0.65rem] text-[#5fff60] tracking-tight mb-1 max-w-[120px] truncate">
               {message.sender?.name || "Unknown"}
             </p>
           )}
 
-          <p className="text-gray-200 text-sm whitespace-pre-wrap leading-relaxed">
+          <p className="font-[family-name:'JetBrains_Mono',monospace] text-[0.7rem] text-[rgba(232,255,232,0.85)] leading-relaxed whitespace-pre-wrap">
             {message.content}
           </p>
 
-          <div className="flex justify-end mt-2">
+          <div className="flex justify-end mt-1.5">
             <span
-              className="text-xs text-gray-500 hover:text-gray-400 transition-colors cursor-help"
-              title={fullDateTime}
+              className="font-[family-name:'JetBrains_Mono',monospace] text-[0.52rem] tracking-[0.06em] text-[rgba(95,255,96,0.3)] hover:text-[rgba(95,255,96,0.55)] transition-colors cursor-help"
+              title={`${date} at ${time}`}
             >
               {time}
             </span>

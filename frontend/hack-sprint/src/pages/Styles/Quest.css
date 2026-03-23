@@ -1,0 +1,239 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap");
+
+.qt-root {
+  font-family: "JetBrains Mono", monospace;
+  color: #e8ffe8;
+}
+.qt-syne {
+  font-family: "Syne", sans-serif;
+}
+
+/* ── Fixed bg grid ── */
+.qt-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+      rgba(95, 255, 96, 0.026) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(95, 255, 96, 0.026) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+.qt-bg::after {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(
+    circle,
+    rgba(95, 255, 96, 0.06) 0%,
+    transparent 65%
+  );
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ── Card corner brackets ── */
+.qt-card::before,
+.qt-card::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-style: solid;
+  border-color: rgba(95, 255, 96, 0.38);
+  transition: border-color 0.2s;
+}
+.qt-card::before {
+  top: -1px;
+  left: -1px;
+  border-width: 2px 0 0 2px;
+}
+.qt-card::after {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 2px 2px 0;
+}
+.qt-card:hover::before,
+.qt-card:hover::after {
+  border-color: rgba(95, 255, 96, 0.7);
+}
+
+/* ── Count box accent corners ── */
+.qt-count-box::before,
+.qt-count-box::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-style: solid;
+  border-color: rgba(95, 255, 96, 0.5);
+}
+.qt-count-box::before {
+  top: -2px;
+  right: -2px;
+  border-width: 2px 2px 0 0;
+}
+.qt-count-box::after {
+  bottom: -2px;
+  left: -2px;
+  border-width: 0 0 2px 2px;
+}
+
+/* ── Hero stagger ── */
+@keyframes qt-up {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.qt-a1 {
+  animation: qt-up 0.7s ease 0.05s both;
+}
+.qt-a2 {
+  animation: qt-up 0.7s ease 0.2s both;
+}
+.qt-a3 {
+  animation: qt-up 0.7s ease 0.35s both;
+}
+.qt-a4 {
+  animation: qt-up 0.7s ease 0.5s both;
+}
+.qt-a5 {
+  animation: qt-up 0.7s ease 0.65s both;
+}
+.qt-a6 {
+  animation: qt-up 0.7s ease 0.8s both;
+}
+
+/* ── Pulse dot ── */
+@keyframes qt-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.35);
+  }
+}
+.qt-pulse {
+  animation: qt-pulse 2.2s ease infinite;
+}
+
+/* ── Modal backdrop ── */
+.qt-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(6px);
+}
+
+/* ── Modal enter ── */
+@keyframes qt-modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.88) translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.qt-modal {
+  animation: qt-modal-in 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ── Scroll hint ── */
+@keyframes qt-hint {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+.qt-hint {
+  animation: qt-hint 2.4s ease infinite;
+}
+
+/* ── Slide in from left ── */
+@keyframes qt-left {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.qt-from-left {
+  animation: qt-left 0.65s ease both;
+}
+
+/* ── Slide in from right ── */
+@keyframes qt-right {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.qt-from-right {
+  animation: qt-right 0.65s ease 0.2s both;
+}
+
+/* ── Info card hover ── */
+.qt-info-card {
+  transition: transform 0.25s ease, border-color 0.2s;
+}
+.qt-info-card:hover {
+  transform: translateY(-3px);
+}
+
+/* ── Previous quest card ── */
+.qt-prev-card {
+  transition: transform 0.22s ease, border-color 0.2s, background 0.2s;
+}
+.qt-prev-card:hover {
+  transform: translateY(-5px);
+}
+
+/* ── Input focus ── */
+.qt-input:focus {
+  outline: none;
+  border-color: rgba(95, 255, 96, 0.42);
+  box-shadow: 0 0 0 2px rgba(95, 255, 96, 0.06);
+}
+
+/* ── modal scroll ── */
+.qt-modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.qt-modal-body::-webkit-scrollbar {
+  width: 3px;
+}
+.qt-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(95, 255, 96, 0.2);
+  border-radius: 2px;
+}

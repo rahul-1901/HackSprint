@@ -87,6 +87,9 @@ export const getHackathonById = (id) => API.get(`/api/hackathons/${id}`);
 export const adminLogin = (credentials) =>
   API.post("/api/admin/login", credentials);
 
+export const adminGoogleAuth = (code) =>
+  API.get(`/api/admin/google?code=${code}`);
+
 /**
  * Fetches the logged-in admin's profile details.
  * The token is automatically attached by the interceptor.
