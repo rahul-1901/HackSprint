@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import "./index.css";
 import {
   BrowserRouter as Router,
   Routes,
@@ -94,8 +95,22 @@ function App() {
     <>
       {showInstall && (
         <button
-          className="install-btn bg-gray-800 text-green-400 rounded-lg border-1 border-green-400/20 hover:bg-gray-800/20 duration-400"
           onClick={handleInstallClick}
+          className="
+          fixed bottom-5 right-5 z-[9999]
+          px-4 py-2
+          bg-[#0b0f0b]
+          text-[#5fff60]
+          border border-[#5fff60]/30
+          rounded-lg
+          font-mono
+          animate-[shake_1.5s_ease-in-out_infinite]
+      
+          hover:bg-[#5fff60]/10
+          hover:border-[#5fff60]
+          hover:shadow-[0_0_12px_rgba(95,255,96,0.4)]
+          active:scale-95
+        "
         >
           Download App
         </button>
